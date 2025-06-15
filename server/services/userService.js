@@ -1,7 +1,41 @@
 // services/userService.js
 import pool from '../config/db.js';
 import { hashPassword } from '../utils/authUtils.js'; // ייבוא לפעולות עדכון סיסמה
+export async function getAttendedClassesCount(userId) {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute(
+            'SELECT COUNT(*) AS count FROM class_registrations WHERE trainee_id = ? AND status = "attended"',
+            [userId]
+        );
+        return rows[0].count;
+    } catch (error) {
+        throw new Error(`Failed to get attended classes count: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
 
+export async function getActiveSubscription(userId) {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute(
+            `SELECT s.name AS subscription_name, us.end_date
+             FROM user_subscriptions us
+             JOIN subscriptions s ON us.subscription_id = s.id
+             WHERE us.trainee_id = ? AND us.is_active = TRUE
+             AND us.end_date >= CURDATE()
+             ORDER BY us.end_date ASC
+             LIMIT 1`,
+            [userId]
+        );
+        return rows[0] || null;
+    } catch (error) {
+        throw new Error(`Failed to get active subscription: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
 //#region Database Operations
 /**
  * בדיקה האם משתמש קיים לפי אימייל
@@ -251,37 +285,6 @@ export async function getUserClassSchedule(userId, startDate = null, endDate = n
 //#endregion
 
 
-// /**
-//  * קבלת פרטי משתמש לפי ID
-//  * @param {number} userId - מזהה המשתמש
-//  * @returns {Promise<Object|null>} אובייקט המשתמש אם נמצא, או null אם לא נמצא
-//  */
-// export async function getUserById(userId) {
-//     if (!userId) {
-//         throw new Error('User ID is required');
-//     }
-
-//     const connection = await pool.getConnection();
-//     try {
-//         const [users] = await connection.execute(
-//             `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url,
-//                     t.date_of_birth, t.gender,
-//                     tr.specialization, tr.bio
-//              FROM users u
-//              LEFT JOIN trainees t ON u.id = t.user_id
-//              LEFT JOIN trainers tr ON u.id = tr.user_id
-//              WHERE u.id = ?`,
-//             [userId]
-//         );
-//         return users[0] || null;
-//     } catch (error) {
-//         throw new Error(`Failed to get user by ID: ${error.message}`);
-//     } finally {
-//         connection.release();
-//     }
-// }
-
-
 /**
  * קבלת רשימת כל המשתמשים
  * @returns {Promise<Array>} מערך של אובייקטי משתמשים
@@ -306,87 +309,6 @@ export async function getAllUsers() {
     }
 }
 
-// /**
-//  * עדכון פרטי משתמש
-//  * @param {number} userId - מזהה המשתמש לעדכון
-//  * @param {Object} userData - הנתונים לעדכון (first_name, last_name, email, phone_number, user_type, etc.)
-//  * @returns {Promise<boolean>} true אם העדכון בוצע בהצלחה, false אחרת
-//  */
-// export async function updateUser(userId, userData) {
-//     const connection = await pool.getConnection();
-//     try {
-//         await connection.beginTransaction();
-
-//         // עדכון טבלת users
-//         const userUpdateQuery = `
-//             UPDATE users
-//             SET first_name = ?, last_name = ?, email = ?, phone_number = ?, user_type = ?
-//             WHERE id = ?`;
-//         await connection.execute(userUpdateQuery, [
-//             userData.first_name,
-//             userData.last_name,
-//             userData.email,
-//             userData.phone_number,
-//             userData.user_type,
-//             userId
-//         ]);
-
-//         // עדכון טבלאות פרופיל ספציפיות
-//         if (userData.user_type === 'trainee') {
-//             const [existingTrainee] = await connection.execute('SELECT user_id FROM trainees WHERE user_id = ?', [userId]);
-//             if (existingTrainee.length > 0) {
-//                 await connection.execute(
-//                     'UPDATE trainees SET date_of_birth = ?, gender = ? WHERE user_id = ?',
-//                     [userData.date_of_birth, userData.gender, userId]
-//                 );
-//             } else {
-//                 await connection.execute(
-//                     'INSERT INTO trainees (user_id, date_of_birth, gender) VALUES (?, ?, ?)',
-//                     [userId, userData.date_of_birth, userData.gender]
-//                 );
-//             }
-//              // לוודא מחיקת פרופיל מאמן אם המשתמש משנה סוג
-//             await connection.execute('DELETE FROM trainers WHERE user_id = ?', [userId]);
-
-//         } else if (userData.user_type === 'trainer') {
-//             const [existingTrainer] = await connection.execute('SELECT user_id FROM trainers WHERE user_id = ?', [userId]);
-//             if (existingTrainer.length > 0) {
-//                 await connection.execute(
-//                     'UPDATE trainers SET specialization = ?, bio = ? WHERE user_id = ?',
-//                     [userData.specialization, userData.bio, userId]
-//                 );
-//             } else {
-//                 await connection.execute(
-//                     'INSERT INTO trainers (user_id, specialization, bio) VALUES (?, ?, ?)',
-//                     [userId, userData.specialization, userData.bio]
-//                 );
-//             }
-//             // לוודא מחיקת פרופיל מתאמן אם המשתמש משנה סוג
-//             await connection.execute('DELETE FROM trainees WHERE user_id = ?', [userId]);
-
-//         } else if (userData.user_type === 'admin') {
-//             // לוודא מחיקת פרופיל מתאמן/מאמן אם המשתמש משנה סוג לאדמין
-//             await connection.execute('DELETE FROM trainees WHERE user_id = ?', [userId]);
-//             await connection.execute('DELETE FROM trainers WHERE user_id = ?', [userId]);
-//         }
-
-//         if (userData.password) {
-//             const passwordHash = await hashPassword(userData.password);
-//             await connection.execute(
-//                 'UPDATE user_credentials SET password_hash = ? WHERE user_id = ?',
-//                 [passwordHash, userId]
-//             );
-//         }
-
-//         await connection.commit();
-//         return true;
-//     } catch (error) {
-//         await connection.rollback();
-//         throw new Error(`Failed to update user: ${error.message}`);
-//     } finally {
-//         connection.release();
-//     }
-// }
 
 /**
  * מחיקת משתמש

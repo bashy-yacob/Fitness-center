@@ -1,18 +1,61 @@
-import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+// import React from 'react';
+// import { useAuth } from '../hooks/useAuth';
 
-// רכיבים פונקציונליים פשוטים שמחזירים אלמנטים
-const AdminDashboard = () => React.createElement('div', null, 
+// // רכיבים פונקציונליים פשוטים שמחזירים אלמנטים
+// const AdminDashboard = () => React.createElement('div', null, 
+//     React.createElement('h2', null, 'Admin Dashboard'),
+//     React.createElement('p', null, 'Manage Users, Classes, and Subscriptions.')
+// );
+// const TrainerDashboard = () => React.createElement('div', null,
+//     React.createElement('h2', null, 'Trainer Dashboard'),
+//     React.createElement('p', null, 'Manage your classes and trainees.')
+// );
+// const TraineeDashboard = () => React.createElement('div', null,
+//     React.createElement('h2', null, 'Trainee Dashboard'),
+//     React.createElement('p', null, 'View your schedule and register for classes.')
+// );
+
+// function Dashboard() {
+//     const { user } = useAuth();
+
+//     if (!user) {
+//         return React.createElement('p', null, 'Loading...');
+//     }
+
+//     const renderDashboard = () => {
+//         switch (user.user_type) {
+//             case 'admin':
+//                 return React.createElement(AdminDashboard);
+//             case 'trainer':
+//                 return React.createElement(TrainerDashboard);
+//             case 'trainee':
+//                 return React.createElement(TraineeDashboard);
+//             default:
+//                 return React.createElement('p', null, 'Unknown user type.');
+//         }
+//     };
+
+//     return React.createElement('div', null,
+//         React.createElement('h1', null, 'Dashboard'),
+//         renderDashboard()
+//     );
+// }
+
+// export default Dashboard;
+
+// src/pages/Dashboard.js
+import React from 'react';
+import { useAuth } from '../hooks/useAuth.js';
+import TraineeDashboardPage from '../pages/Trainee/TraineeDashboardPage.jsx'// Import the new component
+
+// Functional components that return elements
+const AdminDashboard = () => React.createElement('div', null,
     React.createElement('h2', null, 'Admin Dashboard'),
     React.createElement('p', null, 'Manage Users, Classes, and Subscriptions.')
 );
 const TrainerDashboard = () => React.createElement('div', null,
     React.createElement('h2', null, 'Trainer Dashboard'),
     React.createElement('p', null, 'Manage your classes and trainees.')
-);
-const TraineeDashboard = () => React.createElement('div', null,
-    React.createElement('h2', null, 'Trainee Dashboard'),
-    React.createElement('p', null, 'View your schedule and register for classes.')
 );
 
 function Dashboard() {
@@ -29,7 +72,7 @@ function Dashboard() {
             case 'trainer':
                 return React.createElement(TrainerDashboard);
             case 'trainee':
-                return React.createElement(TraineeDashboard);
+                return React.createElement(TraineeDashboardPage); // Render the new component
             default:
                 return React.createElement('p', null, 'Unknown user type.');
         }

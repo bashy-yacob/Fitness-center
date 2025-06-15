@@ -6,6 +6,10 @@ import { validate, registerSchema, updateUserSchema } from '../middleware/valida
 import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
+router.get('/:userId/attended-classes', verifyToken, userController.getAttendedClasses);
+router.get('/:userId/active-subscription', verifyToken, userController.getActiveSubscription);
+
+
 router.post('/me/profile-picture', verifyToken, upload.single('profilePicture'), userController.uploadProfilePicture);
 router.get('/me', verifyToken, userController.getMe);
 router.put('/me', verifyToken, validate(updateUserSchema), userController.updateMe); // נוסיף ולידציה גם כאן

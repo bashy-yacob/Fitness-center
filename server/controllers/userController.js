@@ -2,6 +2,29 @@
 import * as userService from '../services/userService.js';
 import { AppError } from '../middleware/errorMiddleware.js'; // ייבוא AppError לטיפול בשגיאות מותאמות אישית
 
+
+export async function getAttendedClasses(req, res, next) {
+    try {
+        const userId = req.params.userId;
+        const count = await userService.getAttendedClassesCount(userId);
+        res.json({ count: count });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function getActiveSubscription(req, res, next) {
+    try {
+        const userId = req.params.userId;
+        const subscription = await userService.getActiveSubscription(userId);
+        if (!subscription) {
+          return res.status(404).json({ message: 'No active subscription found.' });
+        }
+        res.json(subscription);
+    } catch (error) {
+        next(error);
+    }
+}
 // יצירת משתמש (דרך אדמין) - שימוש בפונקציית הרישום הקיימת או פונקציה ייעודית
 // לצורך הפשטות נשתמש כרגע בפונקציה מ-authService, אך בדרך כלל היית רוצה הפרדה ברורה יותר
 // או פונקציית יצירה ב-userService ללא קשר ללוגיקת אוטנטיקציה.
