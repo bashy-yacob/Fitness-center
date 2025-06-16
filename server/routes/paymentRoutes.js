@@ -8,6 +8,7 @@ const router = express.Router();
 
 // נתיבי ניהול תשלומים (רק לאדמין)
 router.get('/', verifyToken, paymentController.getAllPayments);
+router.get('/user/:userId', verifyToken, isTrainee, paymentController.getPaymentsByUser); // נתיב חדש להיסטוריית תשלומים של משתמש
 router.get('/:id', verifyToken, isTrainee, paymentController.getPaymentById);
 router.patch('/:id/status', verifyToken, validate(updatePaymentStatusSchema), paymentController.updatePaymentStatus); // שימוש ב-PATCH לעדכון חלקי
 router.delete('/:id', verifyToken, paymentController.deletePayment);

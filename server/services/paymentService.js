@@ -77,7 +77,7 @@ export async function getAllPayments(filters = {}) {
  * עדכון סטטוס תשלום
  * @param {number} paymentId - מזהה התשלום לעדכון
  * @param {string} newStatus - הסטטוס החדש (e.g., 'completed', 'failed', 'refunded')
- * @param {string} [notes] - הערות נוספות לעדכון
+ * @param {string} [notes] - הערות נוסxxx לעדכון
  * @returns {Promise<boolean>} true אם העדכון בוצע, false אחרת
  */
 export async function updatePaymentStatus(paymentId, newStatus, notes = null) {
@@ -109,6 +109,40 @@ export async function deletePayment(paymentId) {
         return result.affectedRows > 0;
     } catch (error) {
         throw new Error(`Failed to delete payment: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * קבלת כל התשלומים של משתמש ספציפי
+ * @param {number} userId - מזהה המשתמש
+ * @returns {Promise<Array>} מערך של אובייקטי תשלומים
+ */
+export async function getPaymentsByUser(userId) {
+    const connection = await pool.getConnection();
+    try {
+        const [payments] = await connection.execute(
+            `SELECT p.*, s.name as subscription_name, us.end_date AS subscription_end_date
+             FROM payments p
+             LEFT JOIN user_subscriptions us ON p.user_subscription_id = us.id
+             LEFT JOIN subscriptions s ON us.subscription_type_id = s.id
+             WHERE p.trainee_id = ?
+             ORDER BY p.payment_date DESC`,
+            [userId]
+        );
+        
+        return payments.map(payment => ({
+            id: payment.id,
+            amount: payment.amount,
+            payment_date: payment.payment_date,
+            payment_method: payment.payment_method,
+            status: payment.status,
+            subscription_name: payment.subscription_name,
+            subscription_end_date: payment.subscription_end_date
+        }));
+    } catch (error) {
+        throw new Error(`Failed to get payments for user: ${error.message}`);
     } finally {
         connection.release();
     }

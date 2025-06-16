@@ -15,6 +15,20 @@ export async function getPaymentById(req, res, next) {
     }
 }
 
+export async function getPaymentsByUser(req, res, next) {
+    try {
+        const { userId } = req.params;
+        // וידוא שהמשתמש מנסה לגשת למידע שלו
+        if (req.user.id !== parseInt(userId) && req.user.user_type !== 'admin') {
+            throw new AppError('Unauthorized access to payment history', 403);
+        }
+        const payments = await paymentService.getPaymentsByUser(userId);
+        res.status(200).json(payments);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function getAllPayments(req, res, next) {
     try {
         // ניתן להעביר פילטרים מתוך Query Parameters, לדוגמה: /api/payments?traineeId=1&status=completed

@@ -18,9 +18,13 @@ function TraineeDashboardPage() {
                 const userId = user.id;
 
                 // Fetch classes attended
-                // const attendedClassesResponse = await fetch(`/api/users/${userId}/attended-classes`, {
                 const attendedClassesResponse = await apiService.get(`/users/${userId}/attended-classes`);
-                setClassesAttended(attendedClassesResponse.count);
+                if (attendedClassesResponse && typeof attendedClassesResponse.count === 'number') {
+                    setClassesAttended(attendedClassesResponse.count);
+                } else {
+                    console.error('Unexpected response format:', attendedClassesResponse);
+                    throw new Error('Invalid response format from server');
+                }
 
                 // const subscriptionResponse = await apiService.get(`/users/${userId}/active-subscription`);
                 // setSubscriptionStatus(subscriptionResponse);
