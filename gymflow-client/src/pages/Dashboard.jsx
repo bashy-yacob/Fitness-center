@@ -46,7 +46,7 @@
 // src/pages/Dashboard.js
 import React from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import TraineeDashboardPage from '../pages/Trainee/TraineeDashboardPage.jsx'// Import the new component
+import TraineeDashboardPage from './Trainee/Dashboard.jsx'// Import the new component
 
 // Functional components that return elements
 const AdminDashboard = () => React.createElement('div', null,
