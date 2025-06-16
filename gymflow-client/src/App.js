@@ -3,8 +3,8 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 
 // Import Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
 import Dashboard from './pages/Dashboard';
 import ClassesListPage from './pages/ClassesListPage';
 import MySchedulePage from './pages/MySchedulePage'; // <<< ייבוא העמוד החדש
