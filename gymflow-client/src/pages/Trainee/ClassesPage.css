@@ -1,0 +1,73 @@
+.classes-page-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.classes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.class-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.class-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.class-details h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.class-details p {
+    margin: 4px 0;
+    color: #555;
+}
+
+.register-btn {
+    padding: 10px 20px;
+    background-color: #28a745; /* ירוק */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.register-btn:hover:not(:disabled) {
+    background-color: #218838; /* ירוק כהה יותר */
+}
+
+.register-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* הודעות עזר */
+.loading-message, .error-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2em;
+}
+
+.error-message {
+    color: #d9534f; /* אדום */
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    border-radius: 5px;
+}

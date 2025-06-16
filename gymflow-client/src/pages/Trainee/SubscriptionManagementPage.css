@@ -1,0 +1,80 @@
+.subscription-page-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* רווח בין הכרטיסים */
+}
+
+.card {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Subscription Card Specifics */
+.subscription-card p {
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+/* Payment Table */
+.payment-history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.payment-history-table th, .payment-history-table td {
+    padding: 12px 15px;
+    text-align: right;
+    border-bottom: 1px solid #f0f0f0;
+}
+.payment-history-table thead {
+    background-color: #f9f9f9;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+}
+.action-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+.action-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Status Badges - consistent design */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    color: white;
+    font-weight: 500;
+}
+.status-active, .status-completed {
+    background-color: #28a745; /* Green */
+}
+.status-inactive, .status-failed {
+    background-color: #dc3545; /* Red */
+}
+.status-pending {
+    background-color: #ffc107; /* Yellow */
+    color: #333;
+}
