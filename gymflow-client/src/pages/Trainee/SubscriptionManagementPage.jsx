@@ -1,31 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import apiService from '../../api/apiService'; // הנתיב לקובץ apiService
-import { useAuth } from '../../hooks/useAuth'; // אם צריך פרטי משתמש מחובר
 import { Link } from 'react-router-dom';
+// import { useAuth } from '../../hooks/useAuth';
+// import apiService from '../../api/apiService';
+import './SubscriptionManagementPage.css';
 
+// --- הדמיה ---
+const useAuth = () => ({ user: { id: '123' } });
+const apiService = {
+  get: async (url) => {
+    await new Promise(res => setTimeout(res, 800));
+    if (url.includes('/payments')) {
+      return [
+        { id: 1, payment_date: new Date(Date.now() - 86400000 * 30).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' },
+        { id: 2, payment_date: new Date(Date.now() - 86400000 * 60).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' }
+      ];
+    }
+    if (url.includes('/user-subscriptions/active')) {
+      return { id: 1, name: 'מנוי חודשי', start_date: new Date(Date.now() - 86400000 * 15).toISOString(), end_date: new Date(Date.now() + 86400000 * 15).toISOString(), is_active: true };
+    }
+    return [];
+  }
+};
+
+// --- פונקציות עזר ---
+const formatDate = (isoString) => new Date(isoString).toLocaleDateString('he-IL');
+const formatCurrency = (number) => new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(number);
+
+// --- קומפוננטות UI קטנות ---
+const CurrentSubscriptionCard = ({ subscription }) => (
+    <div className="card subscription-card">
+        <h2>המנוי הנוכחי שלי</h2>
+        {subscription ? (
+            <>
+                <p><strong>סוג:</strong> {subscription.name}</p>
+                <p><strong>תאריך התחלה:</strong> {formatDate(subscription.start_date)}</p>
+                <p><strong>תאריך סיום:</strong> {formatDate(subscription.end_date)}</p>
+                <p><strong>סטטוס:</strong> 
+                    <span className={`status-badge ${subscription.is_active ? 'status-active' : 'status-inactive'}`}>
+                        {subscription.is_active ? 'פעיל' : 'לא פעיל'}
+                    </span>
+                </p>
+            </>
+        ) : (
+            <p>לא נמצא מנוי פעיל.</p>
+        )}
+    </div>
+);
+
+const PaymentHistoryTable = ({ payments }) => (
+    <div className="card">
+        <h2>היסטוריית תשלומים</h2>
+        {payments.length > 0 ? (
+            <table className="payment-history-table">
+                <thead>
+                    <tr>
+                        <th>תאריך</th>
+                        <th>סכום</th>
+                        <th>אמצעי תשלום</th>
+                        <th>סטטוס</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {payments.map(p => (
+                        <tr key={p.id}>
+                            <td>{formatDate(p.payment_date)}</td>
+                            <td>{formatCurrency(p.amount)}</td>
+                            <td>{p.payment_method}</td>
+                            <td>
+                                <span className={`status-badge status-${p.status}`}>
+                                    {p.status}
+                                </span>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        ) : (
+            <p>לא נמצאה היסטוריית תשלומים.</p>
+        )}
+    </div>
+);
+
+// --- הקומפוננטה הראשית ---
 function SubscriptionManagementPage() {
-    const [currentSubscription, setCurrentSubscription] = useState(null);
-    const [paymentHistory, setPaymentHistory] = useState([]);
+    const [subscription, setSubscription] = useState(null);
+    const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { user } = useAuth(); // גישה לפרטי המשתמש המחובר
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchSubscriptionData = async () => {
+            if (!user?.id) return;
             try {
-                setLoading(true);
-                // קבלת היסטוריית תשלומים
-                const paymentData = await apiService.get(`/payments/${user.id}`);
-                setPaymentHistory(paymentData);
+                // שימוש ב-Promise.all להרצת קריאות במקביל
+                const [subscriptionResponse, paymentsResponse] = await Promise.all([
+                    apiService.get(`/user-subscriptions/active/${user.id}`), // נקודת קצה הגיונית למנוי פעיל
+                    apiService.get(`/payments/${user.id}`)
+                ]);
 
-                // קבלת פרטי מנוי נוכחי
-                // כאן יש להניח שיש נקודת קצה מתאימה בשרת
-                // לדוגמה: /subscriptions/my-subscription
-                // או שאפשר לחשב את המנוי הפעיל מתוך היסטוריית המנויים
-                const subscriptionData = await apiService.get('/subscriptions/my-subscriptions');
-                setCurrentSubscription(subscriptionData[0] || null); // מניחים שהשרת מחזיר מערך
+                setSubscription(subscriptionResponse);
+                setPayments(paymentsResponse);
+
             } catch (err) {
-                setError(err.message || 'Failed to load subscription data.');
+                setError('אירעה שגיאה בטעינת נתוני המנוי.');
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -33,117 +111,28 @@ function SubscriptionManagementPage() {
         };
 
         fetchSubscriptionData();
-    }, [user.id]);
+    }, [user]);
 
-    // פונקציות עזר לעיצוב תאריכים ומספרים
-    const formatDate = (isoString) => {
-        return new Date(isoString).toLocaleDateString();
-    };
-
-    const formatCurrency = (number) => {
-        return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(number);
-    };
-
-    // ----- רכיבי UI -----
-
-    if (loading) {
-        return <p>Loading subscription information...</p>;
-    }
-
-    if (error) {
-        return <p style={{ color: 'red' }}>Error: {error}</p>;
-    }
+    if (loading) return <p className="loading-message">טוען מידע על המנוי...</p>;
+    if (error) return <p className="error-message">{error}</p>;
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h1>Subscription Management</h1>
+        <div className="subscription-page-container">
+            <h1>ניהול מנוי וחיובים</h1>
 
-            {/* מידע על המנוי הנוכחי */}
-            <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h2>Current Subscription</h2>
-                {currentSubscription ? (
-                    <>
-                        <p><strong>Type:</strong> {currentSubscription.name}</p>
-                        <p><strong>Start Date:</strong> {formatDate(currentSubscription.start_date)}</p>
-                        <p><strong>End Date:</strong> {formatDate(currentSubscription.end_date)}</p>
-                        <p><strong>Status:</strong> {currentSubscription.is_active ? 'Active' : 'Inactive'}</p>
-                    </>
-                ) : (
-                    <p>No active subscription found.</p>
-                )}
-            </div>
+            <CurrentSubscriptionCard subscription={subscription} />
+            <PaymentHistoryTable payments={payments} />
 
-            {/* היסטוריית תשלומים */}
-            <div>
-                <h2>Payment History</h2>
-                {paymentHistory.length > 0 ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>
-                                <th style={tableHeaderStyle}>Date</th>
-                                <th style={tableHeaderStyle}>Amount</th>
-                                <th style={tableHeaderStyle}>Method</th>
-                                <th style={tableHeaderStyle}>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paymentHistory.map(payment => (
-                                <tr key={payment.id}>
-                                    <td style={tableCellStyle}>{formatDate(payment.payment_date)}</td>
-                                    <td style={tableCellStyle}>{formatCurrency(payment.amount)}</td>
-                                    <td style={tableCellStyle}>{payment.payment_method}</td>
-                                    <td style={tableCellStyle}>{payment.status}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p>No payment history found.</p>
-                )}
-            </div>
-
-            {/* אפשרויות רכישה/חידוש מנוי */}
-            <div style={{ marginTop: '20px' }}>
-                <Link to="/subscriptions/list">
-                    <button style={buttonStyle}>
-                        {currentSubscription ? 'Renew Subscription' : 'Purchase Subscription'}
-                    </button>
-                </Link>
-                {currentSubscription && (
-                    <Link to="/subscriptions/upgrade">
-                        <button style={buttonStyle}>Upgrade Subscription</button>
+            <div className="card actions-card">
+                <h2>פעולות נוספות</h2>
+                <div className="action-buttons">
+                    <Link to="/subscriptions/list" className="action-btn">
+                        {subscription ? 'חידוש / שדרוג מנוי' : 'רכישת מנוי חדש'}
                     </Link>
-                )}
+                </div>
             </div>
         </div>
     );
 }
-
-// ----- סגנונות CSS (אפשר להעביר לקובץ CSS נפרד) -----
-const tableHeaderStyle = {
-    backgroundColor: '#f2f2f2',
-    padding: '8px',
-    borderBottom: '1px solid #ddd',
-    textAlign: 'left'
-};
-
-const tableCellStyle = {
-    padding: '8px',
-    borderBottom: '1px solid #ddd'
-};
-
-const buttonStyle = {
-    backgroundColor: '#4CAF50',
-    border: 'none',
-    color: 'white',
-    padding: '10px 20px',
-    textAlign: 'center',
-    textDecoration: 'none',
-    display: 'inline-block',
-    fontSize: '16px',
-    margin: '4px 2px',
-    cursor: 'pointer',
-    borderRadius: '5px'
-};
 
 export default SubscriptionManagementPage;
