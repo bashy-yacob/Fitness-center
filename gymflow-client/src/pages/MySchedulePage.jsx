@@ -50,43 +50,64 @@ function MySchedulePage() {
         });
     };
 
-    // ----- בניית ה-UI עם React.createElement -----
-
     if (loading) {
-        return React.createElement('p', null, 'Loading your schedule...');
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="card">
+                        <p>Loading your schedule...</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (error) {
-        return React.createElement('p', { style: { color: 'red' } }, error);
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="alert alert-error">
+                        {error}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
-    return React.createElement('div', { style: { padding: '20px' } },
-        React.createElement('h1', null, 'My Schedule'),
-        myClasses.length === 0
-            ? React.createElement('div', null,
-                React.createElement('p', null, 'You are not registered for any classes yet.'),
-                React.createElement(Link, { to: '/classes' }, 'Browse available classes')
-            )
-            : React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px' } },
-                myClasses.map(classItem =>
-                    React.createElement('div', {
-                        key: classItem.id,
-                        style: { border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }
-                    },
-                        React.createElement('h3', { style: { marginTop: 0 } }, classItem.name),
-                        React.createElement('p', null, classItem.description),
-                        React.createElement('p', null,
-                            React.createElement('strong', null, 'Time: '),
-                            `${formatDateTime(classItem.start_time)} - ${formatDateTime(classItem.end_time)}`
-                        ),
-                        React.createElement('button', {
-                            onClick: () => handleUnregister(classItem.id),
-                            style: { backgroundColor: '#f44336', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer' }
-                        }, 'Unregister')
-                    )
-                )
-            )
-    );
+    return (
+        <div className="page-container">
+            <div className="section">
+                <h1>My Schedule</h1>
+                {myClasses.length === 0 ? (
+                    <div className="card">
+                        <p>You are not registered for any classes yet.</p>
+                        <Link to="/classes" className="btn btn-primary">Browse available classes</Link>
+                    </div>
+                ) : (
+                    <div className="card">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {myClasses.map(classItem => (
+                                <div key={classItem.id} className="section" style={{ margin: 0 }}>
+                                    <h3>{classItem.name}</h3>
+                                    <p>{classItem.description}</p>
+                                    <p>
+                                        <strong>Time: </strong>
+                                        {formatDateTime(classItem.start_time)} - {formatDateTime(classItem.end_time)}
+                                    </p>
+                                    <button
+                                        onClick={() => handleUnregister(classItem.id)}
+                                        className="btn"
+                                        style={{ backgroundColor: 'var(--error-color)', color: 'white' }}
+                                    >
+                                        Unregister
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>    );
 }
 
 export default MySchedulePage;

@@ -65,114 +65,124 @@ function RegisterPage() {
             }
         }
     };
+        return (
+        <div className="page-container">
+            <div className="section">
+                <h2>Register for GymFlow</h2>
+                <div className="card">
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="first_name">First Name:</label>
+                            <input
+                                className="form-control"
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value={formData.first_name}
+                                onChange={handleChange}
+                            />
+                        </div>
 
-    return (
-        <div className="register-container">
-            <h2>Register for GymFlow</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="first_name">First Name:</label>
-                    <input
-                        type="text"
-                        id="first_name"
-                        name="first_name"
-                        value={formData.first_name}
-                        onChange={handleChange}
-                    />
+                        <div className="form-group">
+                            <label htmlFor="last_name">Last Name:</label>
+                            <input
+                                className="form-control"
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                value={formData.last_name}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="email">Email:</label>
+                            <input
+                                className="form-control"
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="password">Password:</label>
+                            <input
+                                className="form-control"
+                                type="password"
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="phone_number">Phone Number (Optional):</label>
+                            <input
+                                className="form-control"
+                                type="tel"
+                                id="phone_number"
+                                name="phone_number"
+                                value={formData.phone_number}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="date_of_birth">Date of Birth:</label>
+                            <input
+                                className="form-control"
+                                type="date"
+                                id="date_of_birth"
+                                name="date_of_birth"
+                                value={formData.date_of_birth}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="gender">Gender:</label>
+                            <select
+                                className="form-control"
+                                id="gender"
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleChange}
+                            >
+                                <option value="" disabled>Select...</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        {error && (
+                            <div className="alert alert-error">
+                                {error.split('\n').map((line, index) => (
+                                    <div key={index}>{line}</div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {successMessage && (
+                            <div className="alert alert-success">
+                                {successMessage}
+                            </div>
+                        )}
+
+                        <button type="submit" className="btn btn-primary">
+                            Create Account
+                        </button>
+
+                        <div className="form-group" style={{ marginTop: '1rem', textAlign: 'center' }}>
+                            Already have an account? <Link to="/login" className="nav-link">Login here</Link>
+                        </div>
+                    </form>
                 </div>
-
-                <div className="form-group">
-                    <label htmlFor="last_name">Last Name:</label>
-                    <input
-                        type="text"
-                        id="last_name"
-                        name="last_name"
-                        value={formData.last_name}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="email">Email:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="phone_number">Phone Number (Optional):</label>
-                    <input
-                        type="tel"
-                        id="phone_number"
-                        name="phone_number"
-                        value={formData.phone_number}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="date_of_birth">Date of Birth:</label>
-                    <input
-                        type="date"
-                        id="date_of_birth"
-                        name="date_of_birth"
-                        value={formData.date_of_birth}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="gender">Gender:</label>
-                    <select
-                        id="gender"
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                    >
-                        <option value="" disabled>Select...</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                {error && (
-                    <div className="error-message">
-                        {error.split('\n').map((line, index) => (
-                            <div key={index}>{line}</div>
-                        ))}
-                    </div>
-                )}
-                
-                {successMessage && (
-                    <div className="success-message">
-                        {successMessage}
-                    </div>
-                )}
-
-                <button type="submit" className="submit-button">
-                    Create Account
-                </button>
-
-                <p className="login-link">
-                    Already have an account? <Link to="/login">Login here</Link>
-                </p>
-            </form>
+            </div>
         </div>
     );
 }

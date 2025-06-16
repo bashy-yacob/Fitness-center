@@ -121,47 +121,192 @@ function ProfilePage() {
     };
 
     // --- רינדור הקומפוננטה ---
-    if (loading) return React.createElement('p', null, 'Loading profile...');
+    if (loading) {
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="card">
+                        <p>Loading profile...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const baseImageUrl = 'http://localhost:3000/uploads/';
 
-    return React.createElement('div', { style: { padding: '20px', display: 'flex', flexWrap: 'wrap', gap: '40px' } },
-        
-        // --- עמודה 1: טופס פרטים אישיים ---
-        React.createElement('div', { style: { flex: '1 1 350px' } },
-            React.createElement('h2', null, 'Edit Profile Details'),
-            React.createElement('form', { onSubmit: handleDetailsSubmit },
-                 // כאן מגיע כל קוד הטופס הקיים שלך: first_name, last_name, email, password...
-                React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'First Name:'), React.createElement('input', { type: 'text', name: 'first_name', value: formData.first_name, onChange: handleChange, required: true })),
-                React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'Last Name:'), React.createElement('input', { type: 'text', name: 'last_name', value: formData.last_name, onChange: handleChange, required: true })),
-                React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'Email:'), React.createElement('input', { type: 'email', name: 'email', value: formData.email, onChange: handleChange, required: true })),
-                React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'Phone:'), React.createElement('input', { type: 'tel', name: 'phone_number', value: formData.phone_number, onChange: handleChange })),
-                formData.user_type === 'trainee' && React.createElement(React.Fragment, null, React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'Date of Birth:'), React.createElement('input', { type: 'date', name: 'date_of_birth', value: formData.date_of_birth, onChange: handleChange })), React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'Gender:'), React.createElement('select', { name: 'gender', value: formData.gender, onChange: handleChange }, React.createElement('option', { value: '' }, 'Select...'), React.createElement('option', { value: 'male' }, 'Male'), React.createElement('option', { value: 'female' }, 'Female'), React.createElement('option', { value: 'other' }, 'Other')))),
-                React.createElement('hr', { style: { margin: '20px 0' } }),
-                React.createElement('h4', null, 'Change Password'),
-                React.createElement('div', { style: { marginBottom: '10px' } }, React.createElement('label', { style: { display: 'inline-block', width: '100px' } }, 'New Password:'), React.createElement('input', { type: 'password', name: 'password', value: password, onChange: (e) => setPassword(e.target.value), placeholder: 'Leave blank to keep current' })),
-                React.createElement('button', { type: 'submit', style: { marginTop: '20px', padding: '8px 16px' } }, 'Save Details')
-            )
-        ),
-        
-        // --- עמודה 2: ניהול תמונת פרופיל ---
-        React.createElement('div', { style: { flex: '1 1 300px' } },
-            React.createElement('h2', null, 'Profile Picture'),
-            formData.profile_picture_url 
-                ? React.createElement('img', { src: `${baseImageUrl}${formData.profile_picture_url}`, alt: "Profile", style: { width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ccc', marginBottom: '20px' }})
-                : React.createElement('div', { style: { width: '150px', height: '150px', borderRadius: '50%', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', textAlign: 'center'}}, 'No Picture'),
-            
-            React.createElement('div', null,
-                React.createElement('input', { type: 'file', accept: "image/png, image/jpeg, image/jpg", onChange: (e) => setSelectedFile(e.target.files[0]) }),
-                React.createElement('button', { onClick: handlePictureUpload, disabled: !selectedFile || uploading, style: { marginTop: '10px', padding: '8px 12px' } }, uploading ? 'Uploading...' : 'Upload Picture')
-            )
-        ),
+    return (
+        <div className="page-container">
+            <div className="section">
+                <h1>Profile</h1>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+                    {/* Personal Details Section */}
+                    <div className="card" style={{ flex: '1 1 350px' }}>
+                        <h2>Edit Profile Details</h2>
+                        <form onSubmit={handleDetailsSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="first_name">First Name:</label>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    id="first_name"
+                                    name="first_name"
+                                    value={formData.first_name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
-        // --- אזור להצגת הודעות שגיאה/הצלחה כלליות ---
-        React.createElement('div', { style: { width: '100%', flexBasis: '100%', textAlign: 'center', marginTop: '20px' } },
-             error && React.createElement('p', { style: { color: 'red' } }, error),
-             success && React.createElement('p', { style: { color: 'green' } }, success)
-        )
+                            <div className="form-group">
+                                <label htmlFor="last_name">Last Name:</label>
+                                <input
+                                    className="form-control"
+                                    type="text"
+                                    id="last_name"
+                                    name="last_name"
+                                    value={formData.last_name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="email">Email:</label>
+                                <input
+                                    className="form-control"
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="phone">Phone:</label>
+                                <input
+                                    className="form-control"
+                                    type="tel"
+                                    id="phone"
+                                    name="phone_number"
+                                    value={formData.phone_number}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            {formData.user_type === 'trainee' && (
+                                <>
+                                    <div className="form-group">
+                                        <label htmlFor="date_of_birth">Date of Birth:</label>
+                                        <input
+                                            className="form-control"
+                                            type="date"
+                                            id="date_of_birth"
+                                            name="date_of_birth"
+                                            value={formData.date_of_birth}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="gender">Gender:</label>
+                                        <select
+                                            className="form-control"
+                                            id="gender"
+                                            name="gender"
+                                            value={formData.gender}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select...</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="section" style={{ margin: '1.5rem 0' }}>
+                                <h3>Change Password</h3>
+                                <div className="form-group">
+                                    <label htmlFor="password">New Password:</label>
+                                    <input
+                                        className="form-control"
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Leave blank to keep current"
+                                    />
+                                </div>
+                            </div>
+
+                            <button type="submit" className="btn btn-primary">
+                                Save Details
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Profile Picture Section */}
+                    <div className="card" style={{ flex: '1 1 300px' }}>
+                        <h2>Profile Picture</h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                            {formData.profile_picture_url ? (
+                                <img
+                                    src={`${baseImageUrl}${formData.profile_picture_url}`}
+                                    alt="Profile"
+                                    style={{
+                                        width: '150px',
+                                        height: '150px',
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                        border: '2px solid var(--border-color)'
+                                    }}
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        width: '150px',
+                                        height: '150px',
+                                        borderRadius: '50%',
+                                        backgroundColor: 'var(--section-bg)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '2px solid var(--border-color)'
+                                    }}
+                                >
+                                    No Picture
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <input
+                                    type="file"
+                                    accept="image/png, image/jpeg, image/jpg"
+                                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                                    className="form-control"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handlePictureUpload}
+                                disabled={!selectedFile || uploading}
+                                className="btn btn-primary"
+                            >
+                                {uploading ? 'Uploading...' : 'Upload Picture'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Messages Section */}
+                {error && <div className="alert alert-error">{error}</div>}
+                {success && <div className="alert alert-success">{success}</div>}
+            </div>
+        </div>
     );
 }
 

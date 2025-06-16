@@ -46,42 +46,67 @@
 // src/pages/Dashboard.js
 import React from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import TraineeDashboardPage from './Trainee/Dashboard.jsx'// Import the new component
+import TraineeDashboardPage from './Trainee/jsx/Dashboard.jsx'// Import the new component
 
-// Functional components that return elements
-const AdminDashboard = () => React.createElement('div', null,
-    React.createElement('h2', null, 'Admin Dashboard'),
-    React.createElement('p', null, 'Manage Users, Classes, and Subscriptions.')
+const AdminDashboard = () => (
+    <div className="page-container">
+        <div className="section">
+            <h2>Admin Dashboard</h2>
+            <div className="card">
+                <p>Manage Users, Classes, and Subscriptions.</p>
+            </div>
+        </div>
+    </div>
 );
-const TrainerDashboard = () => React.createElement('div', null,
-    React.createElement('h2', null, 'Trainer Dashboard'),
-    React.createElement('p', null, 'Manage your classes and trainees.')
+
+const TrainerDashboard = () => (
+    <div className="page-container">
+        <div className="section">
+            <h2>Trainer Dashboard</h2>
+            <div className="card">
+                <p>Manage your classes and trainees.</p>
+            </div>
+        </div>
+    </div>
 );
 
 function Dashboard() {
     const { user } = useAuth();
 
     if (!user) {
-        return React.createElement('p', null, 'Loading...');
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="card">
+                        <p>Loading...</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const renderDashboard = () => {
         switch (user.user_type) {
             case 'admin':
-                return React.createElement(AdminDashboard);
+                return <AdminDashboard />;
             case 'trainer':
-                return React.createElement(TrainerDashboard);
+                return <TrainerDashboard />;
             case 'trainee':
-                return React.createElement(TraineeDashboardPage); // Render the new component
+                return <TraineeDashboardPage />;
             default:
-                return React.createElement('p', null, 'Unknown user type.');
+                return (
+                    <div className="page-container">
+                        <div className="section">
+                            <div className="card">
+                                <p>Unknown user type.</p>
+                            </div>
+                        </div>
+                    </div>
+                );
         }
     };
 
-    return React.createElement('div', null,
-        React.createElement('h1', null, 'Dashboard'),
-        renderDashboard()
-    );
+    return renderDashboard();
 }
 
 export default Dashboard;

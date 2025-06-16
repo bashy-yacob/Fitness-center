@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth.js';
+import '../src/index.css'; // Assuming you have a global CSS file for styles
 
 // Admin Pages
 // import AdminDashboard from './pages/Admin/Dashboard';
@@ -11,15 +12,16 @@ import { useAuth } from './hooks/useAuth.js';
 // import TrainerClasses from './pages/Trainer/Classes';
 
 // Trainee Pages
-import TraineeDashboard from './pages/Trainee/Dashboard.jsx';
-import ClassesPage from './pages/Trainee/ClassesPage.jsx';
-import MySchedulePage from './pages/Trainee/MySchedulePage.jsx';
-import ProfilePage from './pages/Trainee/ProfilePage.jsx';
-import SubscriptionManagementPage from './pages/Trainee/SubscriptionManagementPage.jsx';
+import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
+import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
+import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
+import ProfilePage from './pages/Trainee/jsx/ProfilePage.jsx';
+import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
 
 // Shared Pages
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -30,12 +32,12 @@ function App() {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/home');
     };
 
     // פונקציה שמחזירה את הנתיב הנכון לדף הבית לפי סוג המשתמש
     const getHomePath = () => {
-        if (!user) return '/login';
+        if (!user) return '/home';
         switch (user.user_type) {
             // case 'admin':
             //     return '/admin/dashboard';
@@ -44,7 +46,7 @@ function App() {
             case 'trainee':
                 return '/trainee/dashboard';
             default:
-                return '/login';
+                return '/home';
         }
     };
 
@@ -90,10 +92,10 @@ function App() {
             <main>
                 <Routes>
                     {/* Public Routes */}
+                    <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
-
-                    {/* Route to redirect to the correct dashboard */}
+{/* Route to redirect to the correct dashboard */}
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Navigate to={getHomePath()} replace />
@@ -125,31 +127,14 @@ function App() {
                     } /> */}
 
                     {/* Trainee Routes */}
-                    <Route path="/trainee/dashboard" element={
-                        <ProtectedRoute allowedRoles={['trainee']}>
-                            <TraineeDashboard />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/trainee/classes" element={
-                        <ProtectedRoute allowedRoles={['trainee']}>
-                            <ClassesPage />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/trainee/schedule" element={
-                        <ProtectedRoute allowedRoles={['trainee']}>
-                            <MySchedulePage />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/trainee/subscription" element={
-                        <ProtectedRoute allowedRoles={['trainee']}>
-                            <SubscriptionManagementPage />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/trainee/profile" element={
-                        <ProtectedRoute allowedRoles={['trainee']}>
-                            <ProfilePage />
-                        </ProtectedRoute>
-                    } />
+                    <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
+                    <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
+                    <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
+                    <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/trainee/subscription" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
+
+                    {/* Catch-all route - redirect to home */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </main>
         </div>

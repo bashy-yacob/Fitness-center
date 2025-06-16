@@ -1,8 +1,8 @@
-// import React, { useState, useEffect } from 'react';
-// import apiService from '../api/apiService';
-// import { useAuth } from '../hooks/useAuth';
+import React, { useState, useEffect } from 'react';
+import apiService from '../api/apiService';
+import { useAuth } from '../hooks/useAuth';
 
-// function ClassesListPage() {
+function ClassesListPage() {
 //     const [classes, setClasses] = useState([]);
 //     const [loading, setLoading] = useState(true);
 //     const [error, setError] = useState('');
@@ -48,42 +48,69 @@
 
 //     // ----- בניית ה-UI עם React.createElement -----
 
-//     if (loading) {
-//         return React.createElement('p', null, 'Loading classes...');
-//     }
+    if (loading) {
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="card">
+                        <p>Loading classes...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-//     if (error) {
-//         return React.createElement('p', { style: { color: 'red' } }, error);
-//     }
+    if (error) {
+        return (
+            <div className="page-container">
+                <div className="section">
+                    <div className="alert alert-error">
+                        {error}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-//     return React.createElement('div', { style: { padding: '20px' } },
-//         React.createElement('h1', null, 'Available Classes'),
-//         classes.length === 0
-//             ? React.createElement('p', null, 'No classes are available at the moment.')
-//             : React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px' } },
-//                 classes.map(classItem =>
-//                     React.createElement('div', {
-//                         key: classItem.id,
-//                         style: { border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }
-//                     },
-//                         React.createElement('h3', { style: { marginTop: 0 } }, classItem.name),
-//                         React.createElement('p', null, classItem.description),
-//                         React.createElement('p', null, 
-//                             React.createElement('strong', null, 'Time: '), 
-//                             `${formatDateTime(classItem.start_time)} - ${formatDateTime(classItem.end_time)}`
-//                         ),
-//                         React.createElement('p', null, 
-//                             React.createElement('strong', null, 'Capacity: '),
-//                             `${classItem.registrations_count || 0} / ${classItem.max_capacity}` // נניח שהשרת מחזיר ספירת רשומים
-//                         ),
-//                         // הצג כפתור הרשמה רק אם המשתמש הוא מתאמן
-//                         user && user.user_type === 'trainee' && React.createElement('button', {
-//                             onClick: () => handleRegister(classItem.id)
-//                         }, 'Register')
-//                     )
-//                 )
-//             )
-//     );
-// }
+    return (
+        <div className="page-container">
+            <div className="section">
+                <h1>Available Classes</h1>
+                {classes.length === 0 ? (
+                    <div className="card">
+                        <p>No classes are available at the moment.</p>
+                    </div>
+                ) : (
+                    <div className="card">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {classes.map(classItem => (
+                                <div key={classItem.id} className="section" style={{ margin: 0 }}>
+                                    <h3>{classItem.name}</h3>
+                                    <p>{classItem.description}</p>
+                                    <p>
+                                        <strong>Time: </strong>
+                                        {formatDateTime(classItem.start_time)} - {formatDateTime(classItem.end_time)}
+                                    </p>
+                                    <p>
+                                        <strong>Capacity: </strong>
+                                        {classItem.registrations_count || 0} / {classItem.max_capacity}
+                                    </p>
+                                    {user && user.user_type === 'trainee' && (
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => handleRegister(classItem.id)}
+                                        >
+                                            Register
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
-// export default ClassesListPage;
+export default ClassesListPage;
