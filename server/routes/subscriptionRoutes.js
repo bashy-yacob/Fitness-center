@@ -13,13 +13,13 @@ router.get('/types', verifyToken, isAdmin, subscriptionController.getAllSubscrip
 router.get('/types/:id', verifyToken, isAdmin, subscriptionController.getSubscriptionTypeById);
 router.put('/types/:id', verifyToken, isAdmin, validate(updateSubscriptionSchema), subscriptionController.updateSubscriptionType);
 router.delete('/types/:id', verifyToken, isAdmin, subscriptionController.deleteSubscriptionType);
+// נתיב לאדמין לצפייה במנויים של משתמש ספציפי (לפי userId ב-URL)
+router.get('/user/:userId', verifyToken, isAdmin, subscriptionController.getSubscriptionsForUser);
 
 // נתיבים לרכישה וצפייה במנויים של משתמש
 router.post('/purchase', verifyToken, isTrainee, validate(purchaseSubscriptionSchema), subscriptionController.purchaseSubscription); // רכישת מנוי ע"י מתאמן
 router.get('/my-subscriptions', verifyToken, isTrainee, subscriptionController.getUserSubscriptions); // צפייה במנויים של המשתמש המחובר
 
-// נתיב לאדמין לצפייה במנויים של משתמש ספציפי (לפי userId ב-URL)
-router.get('/user/:userId', verifyToken, isAdmin, subscriptionController.getSubscriptionsForUser);
 
 
 export default router;

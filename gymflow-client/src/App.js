@@ -11,6 +11,7 @@ import MySchedulePage from './pages/MySchedulePage'; // <<< ייבוא העמו�
 import ProfilePage from './pages/ProfilePage'; // נייבא את העמוד החדש
 // Import Components
 import ProtectedRoute from './components/ProtectedRoute';
+import SubscriptionManagementPage from './pages/Trainee/SubscriptionManagementPage';
 
 function App() {
     const { isAuthenticated, logout, user } = useAuth();
@@ -37,7 +38,10 @@ function App() {
         if (user.user_type === 'trainee') {
             navLinks.push(' | ');
             navLinks.push(React.createElement(Link, { key: 'my-schedule', to: '/my-schedule' }, 'My Schedule'));
+            navLinks.push(' | '); // add this line
+            navLinks.push(React.createElement(Link, { key: 'subscription', to: '/subscription' }, 'My Subscription')); // add this line
         }
+       
         navLinks.push(
             React.createElement('span', { key: 'welcome', style: { float: 'right', marginRight: '20px' } },
                 `Welcome, ${user.email}! `,
@@ -57,7 +61,7 @@ function App() {
                 // Public Routes
                 React.createElement(Route, { path: '/login', element: React.createElement(LoginPage) }),
                 React.createElement(Route, { path: '/register', element: React.createElement(RegisterPage) }),
-
+                React.createElement(Route, { path: '/subscription', element: React.createElement(ProtectedRoute, null, React.createElement(SubscriptionManagementPage)) }),
                 // Protected Routes - כל הנתיבים כאן דורשים התחברות
                 React.createElement(Route, { path: '/', element: React.createElement(ProtectedRoute, null, React.createElement(Dashboard)) }),
                 React.createElement(Route, { path: '/dashboard', element: React.createElement(ProtectedRoute, null, React.createElement(Dashboard)) }),
