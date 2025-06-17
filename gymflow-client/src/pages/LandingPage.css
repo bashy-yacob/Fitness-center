@@ -1,5 +1,12 @@
 /* Landing Page Styles */
-
+.h3-card{
+     color: var(--h3-primary-color);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(39, 221, 167, 0.2);
+    letter-spacing: 0.5px;
+}
 .landing-page {
   width: 100%;
   overflow-x: hidden;
@@ -157,7 +164,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 2rem;
+  /* padding: 2rem; */
   color: white;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
@@ -574,29 +581,6 @@
   }
 }
 
-/* Applying Animations */
-.feature-card {
-  opacity: 0;
-  animation: scaleIn 0.6s ease-out forwards;
-}
-
-.feature-card:nth-child(1) { animation-delay: 0.1s; }
-.feature-card:nth-child(2) { animation-delay: 0.2s; }
-.feature-card:nth-child(3) { animation-delay: 0.3s; }
-.feature-card:nth-child(4) { animation-delay: 0.4s; }
-
-.class-card {
-  opacity: 0;
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.class-card:nth-child(1) { animation-delay: 0.2s; }
-.class-card:nth-child(2) { animation-delay: 0.4s; }
-.class-card:nth-child(3) { animation-delay: 0.6s; }
-
-.testimonial-card:nth-child(1) { animation-delay: 0.3s; }
-.testimonial-card:nth-child(2) { animation-delay: 0.5s; }
-
 .package-card {
   opacity: 0;
   animation: fadeInUp 0.6s ease-out forwards;
@@ -675,18 +659,6 @@
   .cta-content p {
     font-size: 1rem;
   }
-}
-
-/* Intersection Observer Classes */
-.fade-in {
-  opacity: 0;
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  transform: translateY(20px);
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Dark Mode Optimizations */

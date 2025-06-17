@@ -1,6 +1,5 @@
-// src/components/Card.jsx
-import React from 'react';
-import './card-styles.css'; // <-- הנה השינוי! התאמנו את זה לשם הקובץ החדש
+// import React from 'react';
+import './card-styles.css'; 
 
 const Card = ({ title, children, className = '' }) => {
   return (

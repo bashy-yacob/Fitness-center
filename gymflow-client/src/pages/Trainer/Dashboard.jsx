@@ -1,7 +1,7 @@
 // src/pages/trainer/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Card from '../../components/Card'; // <-- מייבאים את הקומפוננטה המשותפת
+import Card from '../../components/Card.jsx'; // <-- מייבאים את הקומפוננטה המשותפת
 // import { useAuth } from '../../hooks/useAuth';
 // import apiService from '../../api/apiService';
 import './Dashboard.css'; // קובץ CSS ייעודי לעמוד הזה

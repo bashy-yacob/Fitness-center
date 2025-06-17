@@ -3,23 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // שלב 1: ייבוא של קומפוננטת ה-Card המשותפת
-import Card from '../../components/Card'; 
+import Card from '../../components/Card.jsx';
 
 // שלב 2: ייבוא של הכלים האמיתיים שלך (בעתיד הקרוב נוריד מהם את ההערות)
-// import { apiService } from '../../api/apiService'; // נניח שזה שם השירות שלך
-// import { useAuth } from '../../context/AuthContext';
-
-import './Dashboard.css'; // חשוב לייבא את קובץ ה-CSScaa085d4bb1fdf3850411072ce34d8b1e68f:gymflow-client/src/pages/Trainee/jsx/Dashboard.jsx
-
-// כאן הייתה קומפוננטת DashboardCard המקומית - היא נמחקה!
+import { apiService } from '../../api/apiService'; // נניח שזה שם השירות שלך
+import { useAuth } from '../../context/AuthContext';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  // const { user } = useAuth(); // כך נשתמש בקונטקסט האמיתי
-  // const traineeId = user?.id;
+  const { user } = useAuth(); // כך נשתמש בקונטקסט האמיתי
+  const traineeId = user?.id;
   
-  const traineeId = '123'; // נשאיר זמנית את ה-ID עד לחיבור מלא לקונטקסט
-
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,17 +29,17 @@ const Dashboard = () => {
 
       try {
         // ----- כאן תהיה קריאת ה-API האמיתית שלך -----
-        // const response = await apiService.get(`/dashboard/${traineeId}`);
-        // setDashboardData(response.data);
+        const response = await apiService.get(`/dashboard/${traineeId}`);
+        setDashboardData(response.data);
         
-        // --- קוד הדמיה זמני, רק כדי שהעמוד לא יהיה ריק עד לחיבור ---
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setDashboardData({
-          subscriptionStatus: 'פעיל',
-          subscriptionEndDate: '31/12/2025',
-          completedClasses: 15,
-        });
-        // --- סוף קוד הדמיה ---
+        // // --- קוד הדמיה זמני, רק כדי שהעמוד לא יהיה ריק עד לחיבור ---
+        // await new Promise(resolve => setTimeout(resolve, 500));
+        // setDashboardData({
+        //   subscriptionStatus: 'פעיל',
+        //   subscriptionEndDate: '31/12/2025',
+        //   completedClasses: 15,
+        // });
+        // // --- סוף קוד הדמיה ---
 
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);

@@ -1,6 +1,7 @@
 /* Theme styles with dark theme and gym colors */
 :root {
   --primary-color: #0D6E20;    /* Dark green */
+  --h3-primary-color: #22db47;    /* Dark green */
   --secondary-color: #D45ABC;  /* Pink */
   --accent-color: #5AD472;     /* Light green */
   --accent-soft: #C918A6;      /* Purple */

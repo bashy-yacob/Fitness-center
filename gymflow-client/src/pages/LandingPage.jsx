@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './LandingPage.css';
 
+
+// todo אני רוצה להוסיף שכל פעם שמישהו רוצה הלתחבר אז אחרי הרישום הוא יחזור לאן שהוא רצה להגיע לפני הרישום
+//todo אולה יש אפשרות בכל פעם שלוחצים על קישור ישלח לפונקציה גלובלית על מה הוא לחץ
+//todo כלומר למה הוא רוצה להרשם ואז הוא ישלח אותו לרישום ויחזור וישלח אותו לאן שהוא רצה להגיע
 const LandingPage = () => {
   const [openFaqIndex, setOpenFaqIndex] = React.useState(null);
 
@@ -37,7 +41,7 @@ const LandingPage = () => {
       description: 'שייקים, מיצים טבעיים ותוספי תזונה מותאמים אישית'
     }
   ];
-
+// todo  זה מידע שצריך להכנס לבסיס הנתונים ולשלוף אותו משם
   const classes = [
     {
       name: 'יוגה ופילאטיס',
@@ -58,7 +62,7 @@ const LandingPage = () => {
       schedule: '7:00-21:00 | א-ו'
     }
   ];
-
+// todo  זה מידע שצריך להכנס לבסיס הנתונים ולשלוף אותו משם
   const packages = [
     {
       name: 'בסיסי',
@@ -150,7 +154,7 @@ const LandingPage = () => {
                 style={{ backgroundImage: `url(/images/${classItem.image})` }}
               >
                 <div className="class-overlay">
-                  <h3>{classItem.name}</h3>
+                  <h3 className='h3-card'>{classItem.name}</h3>
                   <p>{classItem.description}</p>
                   <Link to="/register" className="btn btn-primary">
                     הרשם עכשיו
