@@ -1,0 +1,69 @@
+.trainer-classes-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.classes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.classes-table th, .classes-table td {
+    padding: 12px 15px;
+    text-align: right;
+    border-bottom: 1px solid #ddd;
+}
+
+.classes-table thead tr {
+    background-color: #f8f9fa;
+}
+
+.classes-table th {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.classes-table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Status Badges - עיצוב אחיד */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    color: white;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-פעיל { background-color: #28a745; } /* ירוק */
+.status-הושלם { background-color: #6c757d; } /* אפור */
+.status-מבוטל { background-color: #dc3545; } /* אדום */
+
+
+/* כפתורי פעולות */
+.actions-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 0.9em;
+    transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+    opacity: 0.8;
+}
+
+.action-btn.view { background-color: #007bff; } /* כחול */
+.action-btn.edit { background-color: #ffc107; color: #333; } /* צהוב */
+.action-btn.cancel { background-color: #dc3545; } /* אדום */
