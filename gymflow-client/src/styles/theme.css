@@ -1,0 +1,19 @@
+/* Theme styles with dark theme and gym colors */
+:root {
+  --primary-color: #0D6E20;    /* Dark green */
+  --secondary-color: #D45ABC;  /* Pink */
+  --accent-color: #5AD472;     /* Light green */
+  --accent-soft: #C918A6;      /* Purple */
+  --dark-accent: #18C93B;      /* Medium green */
+  
+  --background-color: #1a1a1a;  /* Dark background */
+  --section-bg: #242424;       /* Slightly lighter background */
+  --card-bg: #2a2a2a;         /* Card background */
+  
+  --text-color: #ffffff;       /* White text */
+  --text-muted: #888888;      /* Muted text */
+  --border-color: #333333;    /* Border color */
+  
+  --success-color: var(--accent-color);
+  --error-color: var(--secondary-color);
+}
