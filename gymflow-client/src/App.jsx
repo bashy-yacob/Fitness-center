@@ -8,14 +8,15 @@ import '../src/index.css'; // Assuming you have a global CSS file for styles
 // import UsersManagement from './pages/Admin/UsersManagement';
 
 // Trainer Pages
-// import TrainerDashboard from './pages/Trainer/Dashboard';
+import Dashboard from './pages/Dashboard';
+import TrainerDashboard from './pages/Trainer/Dashboard';
 // import TrainerClasses from './pages/Trainer/Classes';
 
 // Trainee Pages
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
 import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
-import ProfilePage from './pages/Trainee/jsx/ProfilePage.jsx';
+import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
 import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
 
 // Shared Pages
@@ -41,8 +42,8 @@ function App() {
         switch (user.user_type) {
             // case 'admin':
             //     return '/admin/dashboard';
-            // case 'trainer':
-            //     return '/trainer/dashboard';
+            case 'trainer':
+                return '/trainer/dashboard';
             case 'trainee':
                 return '/trainee/dashboard';
             default:
@@ -88,14 +89,16 @@ function App() {
             <nav className="nav-bar">
                 {getNavLinks()}
             </nav>
-            
+
             <main>
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
-{/* Route to redirect to the correct dashboard */}
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+                    {/* Route to redirect to the correct dashboard */}
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Navigate to={getHomePath()} replace />
@@ -115,19 +118,26 @@ function App() {
                     } /> */}
 
                     {/* Trainer Routes */}
-                    {/* <Route path="/trainer/dashboard" element={
+                    <Route path="/trainer/dashboard" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerDashboard />
                         </ProtectedRoute>
                     } />
-                    <Route path="/trainer/classes" element={
+                    {/*<Route path="/trainer/classes" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerClasses />
                         </ProtectedRoute>
                     } /> */}
 
+                    {/* Trainee Routes */}                    {/* Trainer Routes */}
+                    <Route path="/trainer/dashboard" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <TrainerDashboard />
+                        </ProtectedRoute>
+                    } />
+
                     {/* Trainee Routes */}
-                    <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
+                    {/* <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} /> */}
                     <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
                     <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

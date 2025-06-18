@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import '../../src/index.css'; // Assuming you have a global CSS file for styles
 
 function LoginPage() {
@@ -12,18 +13,19 @@ function LoginPage() {
     const location = useLocation();
 
     const from = location.state?.from?.pathname || "/dashboard";
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            await auth.login(email, password);
-            navigate(from, { replace: true });
+            const token = await auth.login(email, password);
+            const decodedToken = jwtDecode(token);
+            let targetPath = '/dashboard';
+            navigate(targetPath, { replace: true });
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
             console.error(err);
         }
-    };    return (
+    }; return (
         <div className="page-container">
             <div className="section">
                 <h2>Login to GymFlow</h2>
@@ -40,7 +42,7 @@ function LoginPage() {
                                 required
                             />
                         </div>
-                        
+
                         <div className="form-group">
                             <label htmlFor="password">Password:</label>
                             <input
