@@ -8,6 +8,7 @@ import '../src/index.css'; // Assuming you have a global CSS file for styles
 // import UsersManagement from './pages/Admin/UsersManagement';
 
 // Trainer Pages
+import Dashboard from './pages/Dashboard';
 import TrainerDashboard from './pages/Trainer/Dashboard';
 // import TrainerClasses from './pages/Trainer/Classes';
 
@@ -15,7 +16,7 @@ import TrainerDashboard from './pages/Trainer/Dashboard';
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
 import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
-import ProfilePage from './pages/Trainee/jsx/ProfilePage.jsx';
+import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
 import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
 
 // Shared Pages
@@ -88,14 +89,16 @@ function App() {
             <nav className="nav-bar">
                 {getNavLinks()}
             </nav>
-            
+
             <main>
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
-{/* Route to redirect to the correct dashboard */}
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+                    {/* Route to redirect to the correct dashboard */}
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Navigate to={getHomePath()} replace />
@@ -115,7 +118,7 @@ function App() {
                     } /> */}
 
                     {/* Trainer Routes */}
-                     <Route path="/trainer/dashboard" element={
+                    <Route path="/trainer/dashboard" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerDashboard />
                         </ProtectedRoute>
@@ -134,7 +137,7 @@ function App() {
                     } />
 
                     {/* Trainee Routes */}
-                    <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
+                    {/* <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} /> */}
                     <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
                     <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

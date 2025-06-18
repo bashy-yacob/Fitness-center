@@ -19,23 +19,13 @@ function LoginPage() {
         try {
             const token = await auth.login(email, password);
             const decodedToken = jwtDecode(token);
-            let targetPath;
-            switch (decodedToken.user_type) {
-                case 'trainer':
-                    targetPath = '/trainer/dashboard';
-                    break;
-                case 'trainee':
-                    targetPath = '/trainee/dashboard';
-                    break;
-                default:
-                    targetPath = '/';
-            }
+            let targetPath = '/dashboard';
             navigate(targetPath, { replace: true });
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
             console.error(err);
         }
-    };    return (
+    }; return (
         <div className="page-container">
             <div className="section">
                 <h2>Login to GymFlow</h2>
@@ -52,7 +42,7 @@ function LoginPage() {
                                 required
                             />
                         </div>
-                        
+
                         <div className="form-group">
                             <label htmlFor="password">Password:</label>
                             <input
