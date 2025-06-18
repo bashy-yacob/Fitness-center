@@ -1,33 +1,13 @@
 import React, { useState, useEffect } from 'react';
-// import { useAuth } from '../../hooks/useAuth';
-// import apiService from '../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth';
+import apiService from '../../../api/apiService';
 import '../css/MySchedulePage.css'; // ייבוא קובץ ה-CSS
-
-// הדמיה של ה-hooks וה-api
-const useAuth = () => ({ user: { id: '123' } }); 
-const apiService = {
-  get: async (url) => {
-    console.log(`Fetching from: ${url}`);
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return [
-      { id: 1, name: 'פילאטיס מכשירים', trainer: 'דנה כהן', date: new Date(Date.now() + 86400000 * 3).toISOString(), status: 'נרשם' },
-      { id: 4, name: 'זומבה', trainer: 'רוני לב', date: new Date(Date.now() + 86400000 * 5).toISOString(), status: 'נרשם' },
-      { id: 5, name: 'יוגה למתחילים', trainer: 'יעל לוי', date: new Date(Date.now() - 86400000 * 2).toISOString(), status: 'השתתף' },
-    ];
-  },
-  post: async (url, data) => {
-    console.log(`Posting to: ${url}`, data);
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    return { success: true, message: 'הביטול בוצע בהצלחה.' };
-  }
-};
-
 
 function MySchedulePage() {
     const [myClasses, setMyClasses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [cancellingId, setCancellingId] = useState(null); // ID של החוג בתהליך ביטול
+    const [unregisteringId, setUnregisteringId] = useState(null); // ID of the class being unregistered
     const { user } = useAuth();
 
     useEffect(() => {
@@ -37,8 +17,7 @@ function MySchedulePage() {
                 return;
             }
             try {
-                // Endpoint: GET /my-classes/:traineeId
-                const response = await apiService.get(`/my-classes/${user.id}`);
+                const response = await apiService.get('/classes/my-registrations');
                 setMyClasses(response);
             } catch (err) {
                 setError('אירעה שגיאה בטעינת מערך השיעורים שלך.');
@@ -51,25 +30,26 @@ function MySchedulePage() {
         fetchMyClasses();
     }, [user]);
 
-    const handleCancel = async (classId) => {
+    const handleUnregister = async (classId) => {
         // שיפור עתידי: להחליף את האישור הבא בחלון מודאל מעוצב
         if (!window.confirm('האם את/ה בטוח/ה שברצונך לבטל את ההרשמה לחוג?')) return;
 
-        setCancellingId(classId);
+        setUnregisteringId(classId);
         setError('');
 
         try {
-            // Endpoint: POST /classes/cancel
-            await apiService.post('/classes/cancel', { classId, traineeId: user.id });
+            await apiService.delete(`/classes/${classId}/unregister`);
             
             // עדכון הממשק מיידית עם הצלחה
             setMyClasses(prevClasses => prevClasses.filter(cls => cls.id !== classId));
+            // Optionally, add a success message here, e.g., using a toast notification library
+            // For now, removing from list is the feedback.
 
         } catch (err) {
             setError('ביטול ההרשמה נכשל. אנא נסה/י שוב.');
             console.error(err);
         } finally {
-            setCancellingId(null);
+            setUnregisteringId(null);
         }
     };
 
@@ -109,13 +89,14 @@ function MySchedulePage() {
                                 </td>
                                 <td>
                                     {/* הצג את כפתור הביטול רק אם הסטטוס מאפשר זאת */}
+                                    {/* Assuming 'נרשם' means registered and eligible for unregistration */}
                                     {cls.status === 'נרשם' && (
                                         <button 
-                                            onClick={() => handleCancel(cls.id)}
-                                            disabled={cancellingId === cls.id}
-                                            className="cancel-btn"
+                                            onClick={() => handleUnregister(cls.id)}
+                                            disabled={unregisteringId === cls.id}
+                                            className="cancel-btn" // Consider renaming class if it's generic for actions
                                         >
-                                            {cancellingId === cls.id ? 'מבטל...' : 'בטל הרשמה'}
+                                            {unregisteringId === cls.id ? 'מבטל הרשמה...' : 'בטל הרשמה'}
                                         </button>
                                     )}
                                 </td>

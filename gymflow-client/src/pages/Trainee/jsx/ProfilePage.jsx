@@ -1,40 +1,47 @@
 import React, { useState, useEffect } from 'react';
-// import { useAuth } from '../../hooks/useAuth';
-// import apiService from '../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth';
+import apiService from '../../../api/apiService';
 import '../css/ProfilePage.css'; // ייבוא קובץ ה-CSS
 
-// הדמיה של ה-hooks וה-api
-const useAuth = () => ({ user: { id: '123' } }); 
-const apiService = {
-  get: async (url) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { firstName: 'ישראלה', lastName: 'ישראלי', email: 'israela@gym.com', phoneNumber: '052-1234567', profilePictureUrl: 'https://via.placeholder.com/150' };
-  },
-  put: async (url, data) => {
-    console.log('Updating profile:', url, data);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return { success: true, message: 'הפרופיל עודכן בהצלחה!' };
-  }
-};
-
 // קומפוננטה קטנה לניהול תמונת פרופיל
-const ProfilePicture = ({ imageUrl }) => (
-    <div className="profile-picture-container">
-        <img src={imageUrl} alt="תמונת פרופיל" className="profile-picture" />
-        <button className="upload-btn">שנה תמונה</button>
-        {/* לוגיקה להעלאת קובץ תתווסף כאן בעתיד */}
-    </div>
-);
+const ProfilePicture = ({ imageUrl, onImageChange }) => {
+    const fileInputRef = React.useRef(null);
+
+    const handleButtonClick = () => {
+        fileInputRef.current.click();
+    };
+
+    return (
+        <div className="profile-picture-container">
+            <img src={imageUrl} alt="תמונת פרופיל" className="profile-picture" />
+            <input
+                type="file"
+                accept="image/*"
+                onChange={onImageChange}
+                style={{ display: 'none' }}
+                ref={fileInputRef}
+            />
+            <button type="button" className="upload-btn" onClick={handleButtonClick}>שנה תמונה</button>
+        </div>
+    );
+};
 
 
 function ProfilePage() {
     const { user } = useAuth();
-    // State נפרד לנתוני הטופס
-    const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phoneNumber: '' });
     const [profile, setProfile] = useState(null);
+    // formData now includes profilePictureUrl and is the single source of truth for form fields
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        profilePictureUrl: ''
+    });
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false); // State חדש למצב שמירה
+    const [isUploadingPicture, setIsUploadingPicture] = useState(false); // State for picture upload
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
@@ -42,14 +49,15 @@ function ProfilePage() {
         const fetchProfile = async () => {
             if (!user?.id) return;
             try {
-                const response = await apiService.get(`/user/${user.id}`);
+                const response = await apiService.get('/users/me');
                 setProfile(response);
                 // איתחול הטופס עם המידע מהשרת
                 setFormData({
-                    firstName: response.firstName,
-                    lastName: response.lastName,
-                    email: response.email,
-                    phoneNumber: response.phoneNumber,
+                    firstName: response.firstName || '',
+                    lastName: response.lastName || '',
+                    email: response.email || '',
+                    phoneNumber: response.phoneNumber || '',
+                    profilePictureUrl: response.profilePictureUrl || '',
                 });
             } catch (err) {
                 setError('טעינת נתוני הפרופיל נכשלה.');
@@ -73,13 +81,37 @@ function ProfilePage() {
         setSuccessMessage('');
 
         try {
-            await apiService.put(`/user/${user.id}`, formData);
+            await apiService.put('/users/me', formData);
             setSuccessMessage('הפרופיל עודכן בהצלחה!');
         } catch (err) {
             setError('עדכון הפרופיל נכשל. אנא נסה/י שוב.');
             console.error(err);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleProfilePictureChange = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setIsUploadingPicture(true);
+            setError('');
+            setSuccessMessage('');
+            const imageData = new FormData();
+            imageData.append('profilePicture', file);
+
+            try {
+                const response = await apiService.post('/users/me/profile-picture', imageData);
+                // Assuming the server returns the updated user object or at least the new profilePictureUrl
+                setProfile(prevProfile => ({ ...prevProfile, profilePictureUrl: response.profilePictureUrl }));
+                setFormData(prevFormData => ({ ...prevFormData, profilePictureUrl: response.profilePictureUrl }));
+                setSuccessMessage('תמונת הפרופיל עודכנה בהצלחה!');
+            } catch (err) {
+                setError('העלאת תמונת הפרופיל נכשלה.');
+                console.error(err);
+            } finally {
+                setIsUploadingPicture(false);
+            }
         }
     };
     
@@ -89,7 +121,11 @@ function ProfilePage() {
         <div className="profile-page-container">
             <h1>הפרופיל שלי</h1>
             <div className="profile-content">
-                <ProfilePicture imageUrl={profile?.profilePictureUrl} />
+                <ProfilePicture
+                    imageUrl={formData.profilePictureUrl}
+                    onImageChange={handleProfilePictureChange}
+                />
+                 {isUploadingPicture && <p className="loading-message">מעלה תמונה...</p>}
                 
                 <form onSubmit={handleSubmit} className="profile-form">
                     <div className="form-group">

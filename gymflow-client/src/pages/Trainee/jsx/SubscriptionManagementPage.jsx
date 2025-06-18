@@ -1,30 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-// import { useAuth } from '../../hooks/useAuth';
-// import apiService from '../../api/apiService';
 import '../css/SubscriptionManagementPage.css';
-
-// --- הדמיה ---
-const useAuth = () => ({ user: { id: '123' } });
-const apiService = {
-  get: async (url) => {
-    await new Promise(res => setTimeout(res, 800));
-    if (url.includes('/payments')) {
-      return [
-        { id: 1, payment_date: new Date(Date.now() - 86400000 * 30).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' },
-        { id: 2, payment_date: new Date(Date.now() - 86400000 * 60).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' }
-      ];
-    }
-    if (url.includes('/user-subscriptions/active')) {
-      return { id: 1, name: 'מנוי חודשי', start_date: new Date(Date.now() - 86400000 * 15).toISOString(), end_date: new Date(Date.now() + 86400000 * 15).toISOString(), is_active: true };
-    }
-    return [];
-  }
-};
+import { useAuth } from '../../../hooks/useAuth';
+import apiService from '../../../api/apiService';
 
 // --- פונקציות עזר ---
 const formatDate = (isoString) => new Date(isoString).toLocaleDateString('he-IL');
-const formatCurrency = (number) => new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(number);
 
 // --- קומפוננטות UI קטנות ---
 const CurrentSubscriptionCard = ({ subscription }) => (
@@ -47,63 +28,32 @@ const CurrentSubscriptionCard = ({ subscription }) => (
     </div>
 );
 
-const PaymentHistoryTable = ({ payments }) => (
-    <div className="card">
-        <h2>היסטוריית תשלומים</h2>
-        {payments.length > 0 ? (
-            <table className="payment-history-table">
-                <thead>
-                    <tr>
-                        <th>תאריך</th>
-                        <th>סכום</th>
-                        <th>אמצעי תשלום</th>
-                        <th>סטטוס</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {payments.map(p => (
-                        <tr key={p.id}>
-                            <td>{formatDate(p.payment_date)}</td>
-                            <td>{formatCurrency(p.amount)}</td>
-                            <td>{p.payment_method}</td>
-                            <td>
-                                <span className={`status-badge status-${p.status}`}>
-                                    {p.status}
-                                </span>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        ) : (
-            <p>לא נמצאה היסטוריית תשלומים.</p>
-        )}
-    </div>
-);
-
 // --- הקומפוננטה הראשית ---
 function SubscriptionManagementPage() {
     const [subscription, setSubscription] = useState(null);
-    const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const { user } = useAuth();
 
     useEffect(() => {
         const fetchSubscriptionData = async () => {
-            if (!user?.id) return;
+            if (!user?.id) {
+                setLoading(false); // Stop loading if no user ID
+                return;
+            }
+            setLoading(true);
             try {
-                // שימוש ב-Promise.all להרצת קריאות במקביל
-                const [subscriptionResponse, paymentsResponse] = await Promise.all([
-                    apiService.get(`/user-subscriptions/active/${user.id}`), // נקודת קצה הגיונית למנוי פעיל
-                    apiService.get(`/payments/${user.id}`)
-                ]);
-
+                const subscriptionResponse = await apiService.get(`/users/${user.id}/active-subscription`);
                 setSubscription(subscriptionResponse);
-                setPayments(paymentsResponse);
-
             } catch (err) {
-                setError('אירעה שגיאה בטעינת נתוני המנוי.');
+                 // If API returns 404 or similar for no active subscription, it might be caught here.
+                 // Assuming apiService might return a specific status or error that indicates "not found" vs. a server error.
+                if (err.response && err.response.status === 404) {
+                    setSubscription(null); // Explicitly set to null if not found
+                    setError(''); // Clear any previous server errors
+                } else {
+                    setError('אירעה שגיאה בטעינת נתוני המנוי.');
+                }
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -114,14 +64,17 @@ function SubscriptionManagementPage() {
     }, [user]);
 
     if (loading) return <p className="loading-message">טוען מידע על המנוי...</p>;
-    if (error) return <p className="error-message">{error}</p>;
+    // Error message will be shown if actual error occurs, not for "no subscription"
+    if (error && !subscription) return <p className="error-message">{error}</p>;
+    // If there's an error but we have some stale subscription data, we might still show it, or prioritize error.
+    // For now, if 'error' state is set, it means a real fetch error, not a "no subscription" case.
 
     return (
         <div className="subscription-page-container">
             <h1>ניהול מנוי וחיובים</h1>
 
             <CurrentSubscriptionCard subscription={subscription} />
-            <PaymentHistoryTable payments={payments} />
+            {/* PaymentHistoryTable removed as per subtask scope */}
 
             <div className="card actions-card">
                 <h2>פעולות נוספות</h2>

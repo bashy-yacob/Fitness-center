@@ -1,30 +1,7 @@
 import React, { useState, useEffect } from 'react';
-// import { useAuth } from '../../hooks/useAuth'; // נניח שה-Hook הזה קיים
-// import apiService from '../../api/apiService'; // נניח ששירות ה-API קיים
+import { useAuth } from '../../../hooks/useAuth';
+import apiService from '../../../api/apiService';
 import '../css/ClassesPage.css'; // ייבוא קובץ ה-CSS החדש
-
-// הדמיה של ה-hooks וה-api כדי שהקוד יעבוד
-const useAuth = () => ({ user: { id: '123' } }); 
-const apiService = {
-  get: async (url) => {
-    console.log(`Fetching from: ${url}`);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return [
-      { id: 1, name: 'פילאטיס מכשירים', trainer: 'דנה כהן', category: 'גמישות', date: new Date(Date.now() + 86400000 * 1).toISOString() },
-      { id: 2, name: 'יוגה ויניאסה', trainer: 'יעל לוי', category: 'רוגע', date: new Date(Date.now() + 86400000 * 2).toISOString() },
-      { id: 3, name: 'אימון HIIT', trainer: 'אביב גורן', category: 'כוח', date: new Date(Date.now() + 86400000 * 2).toISOString() }
-    ];
-  },
-  post: async (url, data) => {
-    console.log(`Posting to: ${url}`, data);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    // הדמיית שגיאה אפשרית
-    if (data.classId === 3) {
-      throw new Error("החוג מלא, לא ניתן להירשם.");
-    }
-    return { success: true, message: 'ההרשמה בוצעה בהצלחה!' };
-  }
-};
 
 
 function ClassesPage() {
@@ -37,8 +14,10 @@ function ClassesPage() {
     useEffect(() => {
         const fetchAvailableClasses = async () => {
             try {
-                const availableClasses = await apiService.get('/classes/available');
-                setClasses(availableClasses);
+                const allClasses = await apiService.get('/classes');
+                const now = new Date();
+                const upcomingClasses = allClasses.filter(cls => new Date(cls.date) > now);
+                setClasses(upcomingClasses);
             } catch (err) {
                 setError('אירעה שגיאה בטעינת החוגים.');
                 console.error(err);
@@ -60,10 +39,8 @@ function ClassesPage() {
         setError(''); // איפוס שגיאות קודמות
 
         try {
-            const response = await apiService.post('/classes/register', { 
-                classId: classId, 
-                traineeId: user.id 
-            });
+            // Ensure the endpoint is correct and send an empty object as payload
+            const response = await apiService.post(`/classes/${classId}/register`, {});
             
             // במקום alert, נעדכן את הממשק
             // הסרת החוג מהרשימה כדי לספק פידבק מיידי
