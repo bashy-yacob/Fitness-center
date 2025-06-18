@@ -63,8 +63,8 @@ const apiService = {
 };
 
 // פונקציה לקבלת נתוני לוח המחוונים של המאמן
-export async function fetchTrainerDashboard(trainerId) {
-    return await request(`/trainer/${trainerId}/dashboard`);
-}
+// export async function fetchTrainerDashboard(trainerId) {
+//     return await request(`/trainer/${trainerId}/dashboard`);
+// }
 
 export default apiService;

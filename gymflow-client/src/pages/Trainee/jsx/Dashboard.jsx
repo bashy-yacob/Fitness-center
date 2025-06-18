@@ -1,20 +1,15 @@
-// src/pages/Trainee/jsx/Dashboard.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// שלב 1: ייבוא של קומפוננטת ה-Card המשותפת
-import Card from '../../../components/Card.jsx';
-
-// שלב 2: ייבוא של הכלים האמיתיים שלך (בעתיד הקרוב נוריד מהם את ההערות)
-import  apiService  from '../../../api/apiService.js'; // נניח שזה שם השירות שלך
-import  {useAuth}  from '../../../hooks/useAuth.js';
+import apiService from '../../../api/apiService.js';
+import { useAuth } from '../../../hooks/useAuth.js';
 import '../css/Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // כך נשתמש בקונטקסט האמיתי
+  const { user } = useAuth();
   const traineeId = user?.id;
-  
+
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,18 +23,24 @@ const Dashboard = () => {
       }
 
       try {
-        // ----- כאן תהיה קריאת ה-API האמיתית שלך -----
-        const response = await apiService.get(`/dashboard/${traineeId}`);
-        setDashboardData(response.data);
-        
-        // // --- קוד הדמיה זמני, רק כדי שהעמוד לא יהיה ריק עד לחיבור ---
-        // await new Promise(resolve => setTimeout(resolve, 500));
-        // setDashboardData({
-        //   subscriptionStatus: 'פעיל',
-        //   subscriptionEndDate: '31/12/2025',
-        //   completedClasses: 15,
-        // });
-        // // --- סוף קוד הדמיה ---
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+       
+        const response = await apiService.get(`/trainees/dashboard/${traineeId}`);
+
+       
+        const serverData = response.data;
+
+        const formattedData = {
+          subscriptionStatus: serverData.active_subscription ? 'פעיל' : 'לא פעיל',
+          subscriptionEndDate: serverData.active_subscription ? new Date(serverData.active_subscription.end_date).toLocaleDateString('he-IL') : 'N/A',
+          completedClasses: serverData.attended_classes,
+          // אפשר להוסיף כאן גם נתונים נוספים אם רוצים, למשל:
+          // upcomingClasses: serverData.upcoming_classes 
+        };
+        setDashboardData(formattedData);
 
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
@@ -65,29 +66,31 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      <h1>לוח בקרה</h1>
-      
-      <div className="cards-grid">
-        {/* שלב 3: שימוש בקומפוננטת Card המשותפת */}
-        <Card title="סטטוס המנוי">
-          <p><strong>מצב:</strong> {dashboardData.subscriptionStatus}</p>
-          <p><strong>תוקף עד:</strong> {dashboardData.subscriptionEndDate}</p>
-        </Card>
+      <div className="dashboard-container">
+        <h1>לוח בקרה</h1>
         
-        <Card title="חוגים שהושלמו">
-          <p className="completed-classes-count">{dashboardData.completedClasses}</p>
-        </Card>
+        <div className="cards-grid">
+          {/* עכשיו הקוד הזה יעבוד עם הנתונים החדשים */}
+          <div className="card"> {/* החלפתי ב-div פשוט כי קוד Card לא סופק */}
+            <h3>סטטוס המנוי</h3>
+            <p><strong>מצב:</strong> {dashboardData.subscriptionStatus}</p>
+            <p><strong>תוקף עד:</strong> {dashboardData.subscriptionEndDate}</p>
+          </div>
+          
+          <div className="card">
+             <h3>חוגים שהושלמו</h3>
+            <p className="completed-classes-count">{dashboardData.completedClasses}</p>
+          </div>
+        </div>
+  
+        <div className="quick-actions">
+          <h2>פעולות מהירות</h2>
+          <button onClick={() => navigate('/classes')}>📅 הרשמה לחוג</button>
+          <button onClick={() => navigate('/training-programs')}>🏋️ צפייה בתוכנית האימון</button>
+          <button onClick={() => navigate('/messages')}>💬 שליחת הודעה למאמן</button>
+        </div>
       </div>
-
-      <div className="quick-actions">
-        <h2>פעולות מהירות</h2>
-        <button onClick={() => navigate('/classes')}>📅 הרשמה לחוג</button>
-        <button onClick={() => navigate('/training-programs')}>🏋️ צפייה בתוכנית האימון</button>
-        <button onClick={() => navigate('/messages')}>💬 שליחת הודעה למאמן</button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Dashboard;

@@ -8,6 +8,7 @@ import classRoutes from './routes/classRoutes.js';
 import roomRoutes from './routes/roomRoutes.js'; // וודא שאתה מייבא אותו
 import subscriptionRoutes from './routes/subscriptionRoutes.js'; // ייבוא subscriptionRoutes (נבנה בהמשך)
 import paymentRoutes from './routes/paymentRoutes.js'; // ייבוא paymentRoutes (נבנה בהמשך)
+import traineeRoutes from './routes/traineeRoutes.js';  // הוספת ייבוא של נתיבי מתאמן
 import pool from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/classes', classRoutes);
+app.use('/api/trainees', traineeRoutes);  // הוספת הנתיב למתאמנים
 app.use('/api/rooms', roomRoutes); // הוספת roomRoutes
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);

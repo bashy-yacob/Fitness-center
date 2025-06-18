@@ -1,5 +1,5 @@
-import * as traineeService from '../../services/traineeService.js';
-import { AppError } from '../../middleware/errorMiddleware.js';
+import * as traineeService from '../services/traineeService.js';
+import { AppError } from '../middleware/errorMiddleware.js';
 
 export async function getTraineeDashboard(req, res, next) {
     try {

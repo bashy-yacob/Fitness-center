@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 
+
 export async function getTraineeDashboard(traineeId) {
     const connection = await pool.getConnection();
     try {
