@@ -1,157 +1,67 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import apiService from '../../../api/apiService';
-import '../css/ProfilePage.css'; // ייבוא קובץ ה-CSS
-
-// קומפוננטה קטנה לניהול תמונת פרופיל
-const ProfilePicture = ({ imageUrl, onImageChange }) => {
-    const fileInputRef = React.useRef(null);
-
-    const handleButtonClick = () => {
-        fileInputRef.current.click();
-    };
-
-    return (
-        <div className="profile-picture-container">
-            <img src={imageUrl} alt="תמונת פרופיל" className="profile-picture" />
-            <input
-                type="file"
-                accept="image/*"
-                onChange={onImageChange}
-                style={{ display: 'none' }}
-                ref={fileInputRef}
-            />
-            <button type="button" className="upload-btn" onClick={handleButtonClick}>שנה תמונה</button>
-        </div>
-    );
-};
-
 
 function ProfilePage() {
-    const { user } = useAuth();
-    const [profile, setProfile] = useState(null);
-    // formData now includes profilePictureUrl and is the single source of truth for form fields
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        profilePictureUrl: ''
-    });
-
-    const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false); // State חדש למצב שמירה
-    const [isUploadingPicture, setIsUploadingPicture] = useState(false); // State for picture upload
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const [profileData, setProfileData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (!user?.id) return;
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        const fetchProfileData = async () => {
+            setIsLoading(true);
             try {
-                const response = await apiService.get('/users/me');
-                setProfile(response);
-                // איתחול הטופס עם המידע מהשרת
-                setFormData({
-                    firstName: response.firstName || '',
-                    lastName: response.lastName || '',
-                    email: response.email || '',
-                    phoneNumber: response.phoneNumber || '',
-                    profilePictureUrl: response.profilePictureUrl || '',
-                });
+                const data = await apiService.get('/api/trainee/profile');
+                setProfileData(data);
+                setError(null);
             } catch (err) {
-                setError('טעינת נתוני הפרופיל נכשלה.');
+                setError(err.message || 'Failed to fetch profile data.');
                 console.error(err);
+                setProfileData(null);
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
-        fetchProfile();
-    }, [user]);
+        fetchProfileData();
+    }, [isAuthenticated, navigate]);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    if (isLoading) {
+        return <p className="text-center text-lg">Loading profile...</p>;
+    }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSaving(true);
-        setError('');
-        setSuccessMessage('');
+    if (error) {
+        return <p className="text-center text-lg text-red-500">Error: {error}</p>;
+    }
 
-        try {
-            await apiService.put('/users/me', formData);
-            setSuccessMessage('הפרופיל עודכן בהצלחה!');
-        } catch (err) {
-            setError('עדכון הפרופיל נכשל. אנא נסה/י שוב.');
-            console.error(err);
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    if (!profileData) {
+        return <p className="text-center text-lg">No profile data found.</p>;
+    }
 
-    const handleProfilePictureChange = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setIsUploadingPicture(true);
-            setError('');
-            setSuccessMessage('');
-            const imageData = new FormData();
-            imageData.append('profilePicture', file);
-
-            try {
-                const response = await apiService.post('/users/me/profile-picture', imageData);
-                // Assuming the server returns the updated user object or at least the new profilePictureUrl
-                setProfile(prevProfile => ({ ...prevProfile, profilePictureUrl: response.profilePictureUrl }));
-                setFormData(prevFormData => ({ ...prevFormData, profilePictureUrl: response.profilePictureUrl }));
-                setSuccessMessage('תמונת הפרופיל עודכנה בהצלחה!');
-            } catch (err) {
-                setError('העלאת תמונת הפרופיל נכשלה.');
-                console.error(err);
-            } finally {
-                setIsUploadingPicture(false);
-            }
-        }
-    };
-    
-    if (loading) return <p className="loading-message">טוען פרופיל...</p>;
-    
     return (
-        <div className="profile-page-container">
-            <h1>הפרופיל שלי</h1>
-            <div className="profile-content">
-                <ProfilePicture
-                    imageUrl={formData.profilePictureUrl}
-                    onImageChange={handleProfilePictureChange}
-                />
-                 {isUploadingPicture && <p className="loading-message">מעלה תמונה...</p>}
-                
-                <form onSubmit={handleSubmit} className="profile-form">
-                    <div className="form-group">
-                        <label htmlFor="firstName">שם פרטי</label>
-                        <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="lastName">שם משפחה</label>
-                        <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="email">אימייל</label>
-                        <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="phoneNumber">מספר טלפון</label>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
-                    </div>
-
-                    {error && <p className="error-message form-error">{error}</p>}
-                    {successMessage && <p className="success-message">{successMessage}</p>}
-
-                    <button type="submit" className="submit-btn" disabled={isSaving}>
-                        {isSaving ? 'שומר...' : 'שמור שינויים'}
-                    </button>
-                </form>
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-center mb-8">My Profile</h1>
+            <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md space-y-4">
+                <div>
+                    <p className="text-xl font-medium text-black">Full Name: {profileData.fullName}</p>
+                </div>
+                <div>
+                    <p className="text-slate-500">Email: {profileData.email}</p>
+                </div>
+                <div>
+                    <p className="text-slate-500">Phone Number: {profileData.phoneNumber}</p>
+                </div>
+                <div>
+                    <p className="text-slate-500">Subscription: {profileData.subscriptionStatus}</p>
+                </div>
             </div>
         </div>
     );
