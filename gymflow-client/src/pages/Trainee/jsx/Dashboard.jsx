@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // שלב 1: ייבוא של קומפוננטת ה-Card המשותפת
-import Card from '../../components/Card.jsx';
+import Card from '../../../components/Card.jsx';
 
 // שלב 2: ייבוא של הכלים האמיתיים שלך (בעתיד הקרוב נוריד מהם את ההערות)
-import { apiService } from '../../api/apiService'; // נניח שזה שם השירות שלך
-import { useAuth } from '../../context/AuthContext';
-import './Dashboard.css';
+import  apiService  from '../../../api/apiService.js'; // נניח שזה שם השירות שלך
+import  {useAuth}  from '../../../hooks/useAuth.js';
+import '../css/Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();

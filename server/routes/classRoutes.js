@@ -15,6 +15,11 @@ router.delete('/:id', verifyToken, isAdmin, classController.deleteClass);
 router.post('/:classId/register', verifyToken, isTrainee, classController.registerUserForClass);
 router.delete('/:classId/unregister', verifyToken, isTrainee, classController.unregisterFromClass);
 router.get('/:classId/registrations', verifyToken, isTrainer, classController.getClassRegistrations);
+// Adding a new route for trainer dashboard
+// router.get('/trainer/:trainerId/dashboard', verifyToken, isTrainer, (req, res) => {
+//     // Example response, replace with actual logic
+//     res.json({ message: `Dashboard data for trainer ${req.params.trainerId}` });
+// });
 
 
 export default router;

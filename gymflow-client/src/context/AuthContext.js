@@ -65,6 +65,13 @@ export const AuthProvider = ({ children }) => {
     return React.createElement(AuthContext.Provider, { value }, !loading ? children : null);
 };
 
-// context/AuthContext.js
-// ...
+// export const useAuth = () => {
+//     const context = React.useContext(AuthContext);
+//     if (context === null) {
+//         throw new Error('useAuth must be used within an AuthProvider');
+//     }
+//     return context;
+// };
+
+// export default useAuth;
 

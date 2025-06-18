@@ -8,7 +8,7 @@ import '../src/index.css'; // Assuming you have a global CSS file for styles
 // import UsersManagement from './pages/Admin/UsersManagement';
 
 // Trainer Pages
-// import TrainerDashboard from './pages/Trainer/Dashboard';
+import TrainerDashboard from './pages/Trainer/Dashboard';
 // import TrainerClasses from './pages/Trainer/Classes';
 
 // Trainee Pages
@@ -41,8 +41,8 @@ function App() {
         switch (user.user_type) {
             // case 'admin':
             //     return '/admin/dashboard';
-            // case 'trainer':
-            //     return '/trainer/dashboard';
+            case 'trainer':
+                return '/trainer/dashboard';
             case 'trainee':
                 return '/trainee/dashboard';
             default:
@@ -115,16 +115,23 @@ function App() {
                     } /> */}
 
                     {/* Trainer Routes */}
-                    {/* <Route path="/trainer/dashboard" element={
+                     <Route path="/trainer/dashboard" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerDashboard />
                         </ProtectedRoute>
                     } />
-                    <Route path="/trainer/classes" element={
+                    {/*<Route path="/trainer/classes" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerClasses />
                         </ProtectedRoute>
                     } /> */}
+
+                    {/* Trainee Routes */}                    {/* Trainer Routes */}
+                    <Route path="/trainer/dashboard" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <TrainerDashboard />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Trainee Routes */}
                     <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
