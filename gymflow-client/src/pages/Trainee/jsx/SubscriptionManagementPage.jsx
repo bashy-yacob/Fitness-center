@@ -1,26 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-// import { useAuth } from '../../hooks/useAuth';
-// import apiService from '../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth';
+import apiService from '../../../api/apiService';
 import '../css/SubscriptionManagementPage.css';
-
-// --- הדמיה ---
-const useAuth = () => ({ user: { id: '123' } });
-const apiService = {
-  get: async (url) => {
-    await new Promise(res => setTimeout(res, 800));
-    if (url.includes('/payments')) {
-      return [
-        { id: 1, payment_date: new Date(Date.now() - 86400000 * 30).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' },
-        { id: 2, payment_date: new Date(Date.now() - 86400000 * 60).toISOString(), amount: 250, payment_method: 'credit_card', status: 'completed' }
-      ];
-    }
-    if (url.includes('/user-subscriptions/active')) {
-      return { id: 1, name: 'מנוי חודשי', start_date: new Date(Date.now() - 86400000 * 15).toISOString(), end_date: new Date(Date.now() + 86400000 * 15).toISOString(), is_active: true };
-    }
-    return [];
-  }
-};
 
 // --- פונקציות עזר ---
 const formatDate = (isoString) => new Date(isoString).toLocaleDateString('he-IL');
@@ -33,6 +15,9 @@ const CurrentSubscriptionCard = ({ subscription }) => (
         {subscription ? (
             <>
                 <p><strong>סוג:</strong> {subscription.name}</p>
+                <p><strong>תיאור:</strong> {subscription.description}</p>
+                <p><strong>מחיר:</strong> {formatCurrency(subscription.price)}</p>
+                <p><strong>משך:</strong> {subscription.duration_months} חודשים</p>
                 <p><strong>תאריך התחלה:</strong> {formatDate(subscription.start_date)}</p>
                 <p><strong>תאריך סיום:</strong> {formatDate(subscription.end_date)}</p>
                 <p><strong>סטטוס:</strong> 
@@ -94,12 +79,29 @@ function SubscriptionManagementPage() {
             if (!user?.id) return;
             try {
                 // שימוש ב-Promise.all להרצת קריאות במקביל
-                const [subscriptionResponse, paymentsResponse] = await Promise.all([
-                    apiService.get(`/user-subscriptions/active/${user.id}`), // נקודת קצה הגיונית למנוי פעיל
-                    apiService.get(`/payments/${user.id}`)
+                const [subscriptionsArray, paymentsResponse] = await Promise.all([
+                    apiService.get(`/api/subscriptions/my-subscriptions`),
+                    apiService.get(`/api/payments/user/${user.id}`)
                 ]);
 
-                setSubscription(subscriptionResponse);
+                let activeSubscription = null;
+                if (subscriptionsArray && subscriptionsArray.length > 0) {
+                    // Prioritize subscriptions marked as is_active
+                    activeSubscription = subscriptionsArray.find(sub => sub.is_active === true);
+
+                    if (!activeSubscription) {
+                        // Fallback: find the latest subscription that hasn't ended
+                        const now = new Date();
+                        const sortedSubscriptions = subscriptionsArray
+                            .filter(sub => new Date(sub.end_date) > now) // Filter out expired subscriptions
+                            .sort((a, b) => new Date(b.start_date) - new Date(a.start_date)); // Sort by most recent start_date
+
+                        if (sortedSubscriptions.length > 0) {
+                            activeSubscription = sortedSubscriptions[0];
+                        }
+                    }
+                }
+                setSubscription(activeSubscription);
                 setPayments(paymentsResponse);
 
             } catch (err) {
