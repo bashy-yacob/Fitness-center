@@ -18,6 +18,8 @@ import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
 import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
 import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
+import MessagesPage from './pages/Trainee/jsx/MessagesPage.jsx';
+import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';
 
 // Shared Pages
 import LoginPage from './pages/LoginPage.jsx';
@@ -142,6 +144,8 @@ function App() {
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
                     <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/trainee/subscription" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
+                    <Route path="/trainee/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                    <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
 
                     {/* Catch-all route - redirect to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />

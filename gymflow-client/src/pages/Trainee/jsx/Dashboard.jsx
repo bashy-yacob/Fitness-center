@@ -85,9 +85,9 @@ const Dashboard = () => {
   
         <div className="quick-actions">
           <h2>פעולות מהירות</h2>
-          <button onClick={() => navigate('/classes')}>📅 הרשמה לחוג</button>
-          <button onClick={() => navigate('/training-programs')}>🏋️ צפייה בתוכנית האימון</button>
-          <button onClick={() => navigate('/messages')}>💬 שליחת הודעה למאמן</button>
+          <button onClick={() => navigate('/trainee/classes')}>📅 הרשמה לחוג</button>
+          <button onClick={() => navigate('/trainee/training-program')}>🏋️ צפייה בתוכנית האימון</button>
+          <button onClick={() => navigate('/trainee/messages')}>💬 שליחת הודעה למאמן</button>
         </div>
       </div>
     );
