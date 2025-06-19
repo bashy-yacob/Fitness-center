@@ -7,6 +7,7 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [redirectPath, setRedirectPath] = useState(null);
 
     const updateUserContext = (newUserData) => {
         setUser(newUserData);
@@ -59,6 +60,8 @@ export const AuthProvider = ({ children }) => {
         updateUserContext,
         isAuthenticated: !!user,
         loading,
+        redirectPath,
+        setRedirectPath,
     };
 
     // כאן ההבדל המרכזי - שימוש ב-React.createElement במקום JSX

@@ -1,14 +1,20 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import PricingSection from '../components/PricingSection';
 import './LandingPage.css';
-
+import { classService } from '../api/classService';
+import { useAuth } from '../hooks/useAuth';
 
 // todo אני רוצה להוסיף שכל פעם שמישהו רוצה הלתחבר אז אחרי הרישום הוא יחזור לאן שהוא רצה להגיע לפני הרישום
 //todo אולה יש אפשרות בכל פעם שלוחצים על קישור ישלח לפונקציה גלובלית על מה הוא לחץ
 //todo כלומר למה הוא רוצה להרשם ואז הוא ישלח אותו לרישום ויחזור וישלח אותו לאן שהוא רצה להגיע
 const LandingPage = () => {
   const [openFaqIndex, setOpenFaqIndex] = React.useState(null);
+  const [classes, setClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
+  const [classesError, setClassesError] = useState(null);
+  const { isAuthenticated, setRedirectPath } = useAuth();
+  const navigate = useNavigate();
 
   const features = [
     {
@@ -42,28 +48,21 @@ const LandingPage = () => {
       description: 'שייקים, מיצים טבעיים ותוספי תזונה מותאמים אישית'
     }
   ];
-// todo  זה מידע שצריך להכנס לבסיס הנתונים ולשלוף אותו משם
-  const classes = [
-    {
-      name: 'יוגה ופילאטיס',
-      image: 'kelly-sikkema-IZOAOjvwhaM-unsplash.jpg',
-      description: 'שיפור הגמישות והיציבה עם המדריכים הטובים ביותר',
-      schedule: '6:00-22:00 | א-ו'
-    },
-    {
-      name: 'אימוני כוח',
-      image: 'samuel-girven-VJ2s0c20qCo-unsplash.jpg',
-      description: 'בניית שריר וחיזוק הגוף עם מאמנים מקצועיים',
-      schedule: '24/7 | כל השבוע'
-    },
-    {
-      name: 'אירובי ו-HIIT',
-      image: 'alora-griffiths-zEAX0E0KJxs-unsplash.jpg',
-      description: 'שריפת קלוריות ושיפור סיבולת לב-ריאה',
-      schedule: '7:00-21:00 | א-ו'
-    }
-  ];
 
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        setClassesLoading(true);
+        const data = await classService.getAllClasses();
+        setClasses(data);
+      } catch (err) {
+        setClassesError('שגיאה בטעינת החוגים');
+      } finally {
+        setClassesLoading(false);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   const faqs = [
     {
@@ -127,24 +126,42 @@ const LandingPage = () => {
       {/* Classes Section */}
       <section className="classes-section section">
         <h2>השיעורים שלנו</h2>
-        <div className="classes-grid">
-          {classes.map((classItem, index) => (
-            <div key={index} className="class-card card">
-              <div 
-                className="class-image" 
-                style={{ backgroundImage: `url(/images/${classItem.image})` }}
-              >
-                <div className="class-overlay">
-                  <h3 className='h3-card'>{classItem.name}</h3>
-                  <p>{classItem.description}</p>
-                  <Link to="/register" className="btn btn-primary">
-                    הרשם עכשיו
-                  </Link>
+        {classesLoading ? (
+          <div>טוען חוגים...</div>
+        ) : classesError ? (
+          <div style={{ color: 'red' }}>{classesError}</div>
+        ) : (
+          <div className="classes-grid">
+            {classes.map((classItem, index) => (
+              <div key={classItem.id || index} className="class-card card">
+                <div
+                  className="class-image"
+                  style={{ backgroundImage: `url(/images/${classItem.image || 'fitness-4998981_1280.jpg'})` }}
+                >
+                  <div className="class-overlay">
+                    <h3 className='h3-card'>{classItem.name}</h3>
+                    <p>{classItem.description}</p>
+                    <Link
+                      to={isAuthenticated ? '#' : '/register'}
+                      className="btn btn-primary"
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          setRedirectPath('/register');
+                          // שמור מזהה החוג ב-localStorage
+                          localStorage.setItem('pendingClassId', classItem.id);
+                        } else {
+                          // כאן אפשר להפעיל רישום אוטומטי לחוג אם תרצה
+                        }
+                      }}
+                    >
+                      הרשם עכשיו
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>      {/* Pricing Section */}
       <PricingSection />
 
