@@ -15,7 +15,7 @@ router.get('/me', verifyToken, userController.getMe);
 router.put('/me', verifyToken, validate(updateUserSchema), userController.updateMe); // נוסיף ולידציה גם כאן
 
 // נתיבים לניהול משתמשים על ידי אדמין
-// כל הנתיבים הללו מוגנים על ידי verifyToken ו-isAdmin
+
 router.post('/', verifyToken, isAdmin, validate(registerSchema), userController.createUserByAdmin); // יצירת משתמש על ידי אדמין
 router.get('/', verifyToken, isAdmin, userController.getAllUsers); // קבלת כל המשתמשים
 router.get('/:id', verifyToken, isAdmin, userController.getUserById); // קבלת משתמש ספציפי

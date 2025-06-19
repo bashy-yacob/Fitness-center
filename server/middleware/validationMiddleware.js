@@ -285,6 +285,68 @@ const updatePaymentStatusSchema = Joi.object({
     }),
 });
 
+// סכימת ולידציה ליצירת חבילת מחיר חדשה
+const createPricingSchema = Joi.object({
+    name: Joi.string().trim().min(2).max(255).required().messages({
+        'string.base': 'שם החבילה חייב להיות טקסט',
+        'string.empty': 'שם החבילה לא יכול להיות ריק',
+        'string.min': 'שם החבילה חייב להכיל לפחות 2 תווים',
+        'string.max': 'שם החבילה לא יכול להכיל יותר מ-255 תווים',
+        'any.required': 'שם החבילה הוא שדה חובה'
+    }),
+    description: Joi.string().trim().max(1000).required().messages({
+        'string.base': 'תיאור החבילה חייב להיות טקסט',
+        'string.empty': 'תיאור החבילה לא יכול להיות ריק',
+        'string.max': 'תיאור החבילה לא יכול להכיל יותר מ-1000 תווים',
+        'any.required': 'תיאור החבילה הוא שדה חובה'
+    }),
+    price: Joi.number().positive().required().messages({
+        'number.base': 'המחיר חייב להיות מספר',
+        'number.positive': 'המחיר חייב להיות מספר חיובי',
+        'any.required': 'מחיר הוא שדה חובה'
+    }),
+    duration_days: Joi.number().integer().positive().required().messages({
+        'number.base': 'משך המנוי חייב להיות מספר',
+        'number.integer': 'משך המנוי חייב להיות מספר שלם',
+        'number.positive': 'משך המנוי חייב להיות מספר חיובי',
+        'any.required': 'משך המנוי הוא שדה חובה'
+    }),
+    max_classes_per_month: Joi.number().integer().min(0).optional().messages({
+        'number.base': 'מספר החוגים המקסימלי חייב להיות מספר',
+        'number.integer': 'מספר החוגים המקסימלי חייב להיות מספר שלם',
+        'number.min': 'מספר החוגים המקסימלי לא יכול להיות שלילי'
+    })
+});
+
+// סכימת ולידציה לעדכון חבילת מחיר קיימת
+const updatePricingSchema = Joi.object({
+    name: Joi.string().trim().min(2).max(255).optional().messages({
+        'string.base': 'שם החבילה חייב להיות טקסט',
+        'string.empty': 'שם החבילה לא יכול להיות ריק',
+        'string.min': 'שם החבילה חייב להכיל לפחות 2 תווים',
+        'string.max': 'שם החבילה לא יכול להכיל יותר מ-255 תווים'
+    }),
+    description: Joi.string().trim().max(1000).optional().messages({
+        'string.base': 'תיאור החבילה חייב להיות טקסט',
+        'string.empty': 'תיאור החבילה לא יכול להיות ריק',
+        'string.max': 'תיאור החבילה לא יכול להכיל יותר מ-1000 תווים'
+    }),
+    price: Joi.number().positive().optional().messages({
+        'number.base': 'המחיר חייב להיות מספר',
+        'number.positive': 'המחיר חייב להיות מספר חיובי'
+    }),
+    duration_days: Joi.number().integer().positive().optional().messages({
+        'number.base': 'משך המנוי חייב להיות מספר',
+        'number.integer': 'משך המנוי חייב להיות מספר שלם',
+        'number.positive': 'משך המנוי חייב להיות מספר חיובי'
+    }),
+    max_classes_per_month: Joi.number().integer().min(0).optional().messages({
+        'number.base': 'מספר החוגים המקסימלי חייב להיות מספר',
+        'number.integer': 'מספר החוגים המקסימלי חייב להיות מספר שלם',
+        'number.min': 'מספר החוגים המקסימלי לא יכול להיות שלילי'
+    })
+});
+
 export {
     validate,
     registerSchema,
@@ -298,4 +360,6 @@ export {
     updateSubscriptionSchema,
     purchaseSubscriptionSchema,
     updatePaymentStatusSchema, // ייצוא הסכימה החדשה
+    createPricingSchema,
+    updatePricingSchema
 };

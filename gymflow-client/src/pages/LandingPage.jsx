@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import PricingSection from '../components/PricingSection';
 import './LandingPage.css';
 
 
@@ -62,27 +63,7 @@ const LandingPage = () => {
       schedule: '7:00-21:00 | א-ו'
     }
   ];
-// todo  זה מידע שצריך להכנס לבסיס הנתונים ולשלוף אותו משם
-  const packages = [
-    {
-      name: 'בסיסי',
-      price: '199',
-      features: ['גישה לאזור המשקולות', 'אזור הקרדיו','כניסה חופשית', 'שירותים ומלתחות'],
-      recommended: false
-    },
-    {
-      name: 'פרימיום',
-      price: '299',
-      features: ['כל התכונות של הבסיסי', 'כל השיעורים הקבוצתיים', 'ייעוץ תזונה חודשי', 'חניה חינם'],
-      recommended: true
-    },
-    {
-      name: 'VIP',
-      price: '499',
-      features: ['כל התכונות של הפרימיום', '2 אימונים אישיים בחודש', 'ליווי תזונאי צמוד', 'טיפולי ספא חודשיים'],
-      recommended: false
-    }
-  ];
+
 
   const faqs = [
     {
@@ -164,37 +145,8 @@ const LandingPage = () => {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Packages Section */}
-      <section className="packages-section section">
-        <h2>חבילות מחיר</h2>
-        <p className="section-subtitle">בחר את החבילה המתאימה לך</p>
-        <div className="packages-grid">
-          {packages.map((pkg, index) => (
-            <div key={index} className={`package-card ${pkg.recommended ? 'recommended' : ''}`}>
-              {pkg.recommended && <div className="recommended-badge">הכי פופולרי!</div>}
-              <h3>{pkg.name}</h3>
-              <div className="package-price">
-                <span className="currency">₪</span>
-                <span className="amount">{pkg.price}</span>
-                <span className="period">/ חודש</span>
-              </div>
-              <ul className="package-features">
-                {pkg.features.map((feature, idx) => (
-                  <li key={idx}>
-                    <span className="check-icon">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" className={`btn ${pkg.recommended ? 'btn-primary' : 'btn-outline'}`}>
-                הרשמה עכשיו
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
+      </section>      {/* Pricing Section */}
+      <PricingSection />
 
       {/* Testimonials Section */}
       <section className="testimonials-section section">

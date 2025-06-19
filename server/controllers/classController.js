@@ -62,7 +62,8 @@ export async function deleteClass(req, res, next) {
 export async function registerForClass(req, res, next) {
     try {
         const { classId } = req.params;
-        // req.userId מגיע מה-verifyToken middleware
+        
+        
         const registrationId = await classService.registerForClass(req.userId, classId);
         res.status(201).json({ message: 'Successfully registered for class', registrationId });
     } catch (error) {

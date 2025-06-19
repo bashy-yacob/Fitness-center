@@ -8,7 +8,7 @@ const router = express.Router();
 
 // נתיבי ניהול חדרים (למנהלים בלבד)
 router.post('/', verifyToken, isAdmin, validate(createRoomSchema), roomController.createRoom);
-router.get('/', verifyToken, isAdmin, roomController.getAllRooms); // אולי גם מאמנים צריכים לראות חדרים? תלוי במודל העסקי.
+router.get('/', verifyToken, isAdmin, roomController.getAllRooms); 
 router.get('/:id', verifyToken, isAdmin, roomController.getRoomById);
 router.put('/:id', verifyToken, isAdmin, validate(updateRoomSchema), roomController.updateRoom);
 router.delete('/:id', verifyToken, isAdmin, roomController.deleteRoom);

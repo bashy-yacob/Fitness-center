@@ -54,7 +54,7 @@ export async function deleteSubscriptionType(req, res, next) {
 // ניהול מנויים של משתמשים
 export async function purchaseSubscription(req, res, next) {
     try {
-        // req.userId מגיע מה-verifyToken middleware ומייצג את ה-traineeId
+        
         const traineeId = req.userId;
         const { subscriptionTypeId, paymentDetails } = req.body;
         const result = await subscriptionService.purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails);
@@ -66,7 +66,7 @@ export async function purchaseSubscription(req, res, next) {
 
 export async function getUserSubscriptions(req, res, next) {
     try {
-        // req.userId מגיע מה-verifyToken middleware ומייצג את ה-traineeId
+       
         const traineeId = req.userId;
         const subscriptions = await subscriptionService.getUserSubscriptions(traineeId);
         res.status(200).json(subscriptions);

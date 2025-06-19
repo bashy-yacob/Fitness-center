@@ -2,15 +2,17 @@
 import jwt from 'jsonwebtoken';
 
 // חשוב להשתמש באותו מפתח סודי כמו בקובץ authService
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; 
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 const verifyToken = (req, res, next) => {
+  console.log(`verifyToken middleware triggered for path: ${req.originalUrl}`);
+
   // קבלת הטוקן מה-Header. נהוג להוסיף 'Bearer ' לפני הטוקן.
   const authHeader = req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
-  
+
   const token = authHeader.split(' ')[1]; // חילוץ הטוקן עצמו
 
   try {
@@ -19,8 +21,8 @@ const verifyToken = (req, res, next) => {
 
     // שמירת כל המידע המפוענח מהטוקן לתוך אובייקט req.user
     // כך יהיה לנו גישה גם ל-id וגם ל-user_type
-    req.user = decoded; 
-    
+    req.user = decoded;
+
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

@@ -22,10 +22,7 @@ export async function login(req, res) {
 
 export async function logout(req, res) {
      try {
-        // עבור JWT, התנתקות היא בעיקר מחיקת הטוקן בצד הלקוח.
-        // אין צורך בפעולה מיוחדת בצד השרת אלא אם יש מנגנון רשימה שחורה.
-        // אם ה-middleware (verifyToken) עבר בהצלחה, זה אומר שהטוקן תקין.
-        // אנו פשוט נשלח הודעת הצלחה.
+       
         res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
         res.status(500).json({ error: error.message }); // שינוי סטטוס ל-500 עבור שגיאות שרת פנימיות
