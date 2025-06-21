@@ -26,7 +26,9 @@ export async function getClassById(req, res, next) {
 
 export async function getAllClasses(req, res, next) {
     try {
-        const classes = await classService.getAllClasses();
+        // אם המשתמש מחובר (ויש לו טוקן), ניקח את ה-ID שלו. אם לא, traineeId יהיה null.
+        const traineeId = req.user ? req.user.id : null;
+        const classes = await classService.getAllClasses(traineeId);
         res.status(200).json(classes);
     } catch (error) {
         next(error);
@@ -127,6 +129,27 @@ export async function getRegisteredClassesForUser(req, res, next) {
         const classes = await classService.getRegisteredClassesForUser(traineeId);
         res.status(200).json(classes);
     } catch (error) {
+        next(error);
+    }
+}
+export async function payAndRegisterForClass(req, res, next) {
+    try {
+        const classId = parseInt(req.params.classId, 10);
+        const traineeId = req.user.id;
+
+        // בדוק תקינות קלט בסיסית לפני קריאה לשירות
+        if (isNaN(classId)) {
+            throw new AppError('Invalid Class ID provided.', 400);
+        }
+
+        const result = await classService.processRegistrationWithPayment(traineeId, classId);
+
+        res.status(201).json({
+            message: 'Successfully registered and payment processed.',
+            data: result
+        });
+    } catch (error) {
+        // העבר את השגיאה ל-middleware המרכזי
         next(error);
     }
 }
