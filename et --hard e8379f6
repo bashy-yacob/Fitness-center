@@ -1,0 +1,21 @@
+[33me8379f6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m הוספתי את עמוד הרישום ושינויים בטפסים
+[33m416bab0[m[33m ([m[1;31morigin/feature/integrate-trainee-pages[m[33m)[m feat: Implement class service and integrate class fetching in LandingPage
+[33m31b8551[m Refactor: Remove authentication and class management routes and controllers
+[33me19a66a[m refactor: Clean up and optimize API service and trainee dashboard logic
+[33m4d25cc4[m Merge branch 'main' into feature/integrate-trainee-pages
+[33m11be925[m Integrate Trainee Pages with Backend API
+[33m614a9e9[m feat: Update routing and components for user dashboards; refactor login logic and remove unused profile page
+[33md883d85[m feat: Implement Trainer Dashboard with data fetching and error handling; add CSS styles for dashboard layout
+[33m793861d[m refactor: Update imports and clean up unused code in various components; enhance LandingPage styles
+[33m6d1e72a[m פתרון קונפליקט ב-Dashboard.jsx
+[33m7a2efdb[m Your descriptive commit message here
+[33m1139caa[m feat: Add Trainee pages and components for subscription management, classes, dashboard, messages, and profile
+[33m733741e[m Add new pages and components for Classes, Dashboard, My Schedule, Profile, and Messages
+[33m0dbf3bf[m Merge branch 'main' of https://github.com/bashy-yacob/Fitness-center
+[33m3d186d3[m Refactor Login and Register pages to use JSX and add corresponding CSS styles
+[33m9cc4130[m Your descriptive commit message here
+[33mc20ec5b[m Add user-specific payment history retrieval and validation
+[33mc02d90f[m Add subscription management page and update routing for trainee access
+[33m9345bdc[m Add trainee dashboard functionality and related routes
+[33m5458130[m הוספת קבצי הפרויקט
+[33m5b95c5e[m first commit

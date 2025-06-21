@@ -55,29 +55,53 @@ export async function getClassById(classId) {
     }
 }
 
-/**
- * קבלת כל החוגים (אפשרות לסינון עתידי)
- * @returns {Promise<Array>} מערך של אובייקטי חוגים
- */
+
+
+// בקובץ: src/services/classService.js
 export async function getAllClasses() {
     const connection = await pool.getConnection();
     try {
-        const [classes] = await connection.execute(
-            `SELECT c.*, r.name AS room_name, r.capacity AS room_capacity,
-                    u.first_name AS trainer_first_name, u.last_name AS trainer_last_name
-             FROM classes c
-             INNER JOIN rooms r ON c.room_id = r.id
-             INNER JOIN users u ON c.trainer_id = u.id
-             ORDER BY c.start_time ASC`
-        );
-        return classes;
+        const query = `
+            SELECT 
+                c.id, c.name, c.description, c.start_time, c.end_time,
+                c.max_capacity, r.name AS room_name,
+                CONCAT(u.first_name, ' ', u.last_name) AS trainer_name,
+                (SELECT COUNT(*) FROM class_registrations cr WHERE cr.class_id = c.id AND cr.status = 'registered') AS registered_count
+            FROM classes c
+            JOIN rooms r ON c.room_id = r.id
+            JOIN trainers t ON c.trainer_id = t.user_id
+            JOIN users u ON t.user_id = u.id
+            WHERE c.start_time > ? AND c.is_active = TRUE
+            ORDER BY c.start_time ASC;
+        `;
+
+        // הנה התיקון: אנחנו יוצרים תאריך ב-Node.js ושולחים אותו כפרמטר
+        const now = new Date();
+        const [classes] = await connection.execute(query, [now]); // <-- העברת התאריך לשאילתה
+
+        return classes.map(cls => {
+            const availableSlots = cls.max_capacity - cls.registered_count;
+            return {
+                id: cls.id,
+                name: cls.name,
+                description: cls.description,
+                startTime: cls.start_time,
+                endTime: cls.end_time,
+                maxCapacity: cls.max_capacity,
+                roomName: cls.room_name,
+                trainerName: cls.trainer_name,
+                registeredCount: cls.registered_count,
+                availableSlots: availableSlots > 0 ? availableSlots : 0
+            };
+        });
+
     } catch (error) {
-        throw new Error(`Failed to get all classes: ${error.message}`);
+        console.error("Error in getAllClasses service:", error); 
+        throw new Error(`Failed to get available classes: ${error.message}`);
     } finally {
         connection.release();
     }
 }
-
 /**
  * עדכון חוג קיים
  * @param {number} classId - מזהה החוג לעדכון

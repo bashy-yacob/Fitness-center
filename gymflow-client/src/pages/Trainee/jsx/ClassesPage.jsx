@@ -1,23 +1,23 @@
+// בקובץ: src/pages/Trainee/jsx/ClassesPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import apiService from '../../../api/apiService';
-import '../css/ClassesPage.css'; // ייבוא קובץ ה-CSS החדש
-
+import '../css/ClassesPage.css';
 
 function ClassesPage() {
     const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [registeringId, setRegisteringId] = useState(null); // ID של החוג שנמצא בתהליך רישום
+    const [registeringId, setRegisteringId] = useState(null);
     const { user } = useAuth();
 
     useEffect(() => {
         const fetchAvailableClasses = async () => {
+            setLoading(true);
             try {
-                const allClasses = await apiService.get('/classes');
-                const now = new Date();
-                const upcomingClasses = allClasses.filter(cls => new Date(cls.date) > now);
-                setClasses(upcomingClasses);
+                const availableClasses = await apiService.get('/classes');
+                setClasses(availableClasses);
             } catch (err) {
                 setError('אירעה שגיאה בטעינת החוגים.');
                 console.error(err);
@@ -25,7 +25,6 @@ function ClassesPage() {
                 setLoading(false);
             }
         };
-
         fetchAvailableClasses();
     }, []);
 
@@ -34,27 +33,23 @@ function ClassesPage() {
             setError('חובה להתחבר כדי להירשם לחוג.');
             return;
         }
-
-        setRegisteringId(classId); // הפעלת מצב טעינה עבור הכפתור הספציפי
-        setError(''); // איפוס שגיאות קודמות
+        setRegisteringId(classId);
+        setError('');
 
         try {
-            // Ensure the endpoint is correct and send an empty object as payload
-            const response = await apiService.post(`/classes/${classId}/register`, {});
-            
-            // במקום alert, נעדכן את הממשק
-            // הסרת החוג מהרשימה כדי לספק פידבק מיידי
-            setClasses(prevClasses => prevClasses.filter(c => c.id !== classId));
-            // אפשר להוסיף כאן הודעת "טוסט" להצלחה
-            console.log(response.message);
-
+            await apiService.post(`/classes/${classId}/register`, {});
+            setClasses(prevClasses => 
+                prevClasses.map(cls => 
+                    cls.id === classId 
+                    ? { ...cls, availableSlots: cls.availableSlots - 1, registeredCount: cls.registeredCount + 1, isRegistered: true } 
+                    : cls
+                )
+            );
         } catch (err) {
-            // הצגת הודעת שגיאה ספציפית מהשרת, אם קיימת
-            const errorMessage = err.message || 'ההרשמה לחוג נכשלה. ייתכן שהוא מלא.';
+            const errorMessage = err.response?.data?.message || 'ההרשמה לחוג נכשלה. ייתכן שהוא מלא או שכבר נרשמת.';
             setError(errorMessage);
-            console.error(err);
         } finally {
-            setRegisteringId(null); // סיום מצב טעינה, בין אם הצליח או נכשל
+            setRegisteringId(null);
         }
     };
 
@@ -74,17 +69,20 @@ function ClassesPage() {
                         <div key={cls.id} className="class-card">
                             <div className="class-details">
                                 <h2>{cls.name}</h2>
-                                <p><strong>מאמן/ה:</strong> {cls.trainer}</p>
-                                <p><strong>קטגוריה:</strong> {cls.category}</p>
-                                <p><strong>תאריך ושעה:</strong> {new Date(cls.date).toLocaleString('he-IL')}</p>
+                                {/* ==== תיקון 1: שימוש ב-trainerName ==== */}
+                                <p><strong>מאמן/ה:</strong> {cls.trainerName}</p>
+                                {/* ==== תיקון 2: שימוש ב-startTime ==== */}
+                                <p><strong>תאריך ושעה:</strong> {new Date(cls.startTime).toLocaleString('he-IL')}</p>
+                                {/* ==== תיקון 3: שימוש ב-availableSlots ו-maxCapacity ==== */}
+                                <p><strong>מקומות פנויים:</strong> {cls.availableSlots} / {cls.maxCapacity}</p>
                             </div>
                             <div className="class-actions">
                                 <button 
                                     onClick={() => handleRegister(cls.id)}
-                                    disabled={registeringId === cls.id} // השבתת הכפתור בזמן רישום
+                                    disabled={registeringId === cls.id || cls.availableSlots <= 0 || cls.isRegistered}
                                     className="register-btn"
                                 >
-                                    {registeringId === cls.id ? 'רושם...' : 'הירשם'}
+                                    {registeringId === cls.id ? 'רושם...' : (cls.isRegistered ? 'נרשמת' : (cls.availableSlots <= 0 ? 'מלא' : 'הירשם'))}
                                 </button>
                             </div>
                         </div>
