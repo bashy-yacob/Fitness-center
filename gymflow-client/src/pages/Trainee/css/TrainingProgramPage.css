@@ -1,0 +1,96 @@
+/* בקובץ: src/pages/Trainee/css/TrainingProgramPage.css */
+
+.training-program-page-container {
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
+}
+
+.training-program-page-container h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #2ecc71; /* Green from your theme */
+}
+
+.program-card, .no-program-card {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.program-name {
+    margin-top: 0;
+    font-size: 2rem;
+    color: #fff;
+    border-bottom: 2px solid #2ecc71;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap; /* for smaller screens */
+    gap: 1rem;
+}
+
+.info-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: #eee;
+    font-weight: 500;
+}
+
+.program-description h3 {
+    color: #ccc;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.program-description p {
+    color: #ddd;
+    line-height: 1.8;
+    background-color: #333;
+    padding: 1rem;
+    border-radius: 8px;
+    white-space: pre-wrap; /* שומר על מעברי שורה ורווחים */
+}
+
+.no-program-card {
+    text-align: center;
+    padding: 3rem;
+}
+
+.no-program-card h2 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.no-program-card p {
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+/* הודעות טעינה ושגיאה (אם אין לך אותן בקובץ CSS גלובלי) */
+.loading-message, .error-message {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+}
+
+.error-message {
+    color: #e74c3c;
+}

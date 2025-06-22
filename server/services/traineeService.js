@@ -1,18 +1,19 @@
+// בקובץ: server/services/traineeService.js
+
 import pool from '../config/db.js';
 
-
+// --- פונקציה קיימת לדשבורד ---
+// היא נשארת בדיוק כפי שהיא, ללא שינוי.
 export async function getTraineeDashboard(traineeId) {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        // שליפת נתוני השתתפות בחוגים
         const [classesResult] = await connection.execute(
             'SELECT COUNT(*) as attended_classes FROM class_registrations WHERE trainee_id = ? AND status = ?',
             [traineeId, 'attended']
         );
 
-        // שליפת נתוני מנוי פעיל
         const [subscriptionResult] = await connection.execute(
             `SELECT s.name, us.start_date, us.end_date 
              FROM user_subscriptions us
@@ -22,14 +23,21 @@ export async function getTraineeDashboard(traineeId) {
             [traineeId]
         );
 
-        // שליפת החוגים הקרובים
+        // === כאן התיקון המלא לשאילתה ===
         const [upcomingClasses] = await connection.execute(
-            `SELECT c.id, c.name, c.start_time, c.end_time, r.name as room_name, 
-                    t.first_name as trainer_name, t.last_name as trainer_lastname
+            `SELECT 
+                c.id, 
+                c.name, 
+                c.start_time, 
+                c.end_time, 
+                r.name as room_name, 
+                -- שרשור שם המאמן לשם מלא
+                CONCAT(t.first_name, ' ', t.last_name) as trainer_name
              FROM class_registrations cr
              JOIN classes c ON cr.class_id = c.id
              JOIN rooms r ON c.room_id = r.id
-             JOIN users t ON c.trainer_id = t.id
+             -- שימי לב: ה-JOIN כאן צריך להיות לטבלה users, לא trainers ישירות
+             JOIN users t ON c.trainer_id = t.id 
              WHERE cr.trainee_id = ? 
              AND cr.status = 'registered'
              AND c.start_time > NOW()
@@ -47,7 +55,45 @@ export async function getTraineeDashboard(traineeId) {
         };
     } catch (error) {
         await connection.rollback();
+        // הוספתי console.error כדי שיהיה קל יותר לדבג בעתיד
+        console.error("Error in getTraineeDashboard service:", error);
         throw error;
+    } finally {
+        connection.release();
+    }
+}
+
+
+// === הוספת הפונקציה החדשה לתוכנית האימונים ===
+/**
+ * מוצא את תוכנית האימונים הפעילה של מתאמן ומחזיר את פרטיה המלאים.
+ * @param {number} traineeId - מזהה המתאמן
+ * @returns {Promise<Object|null>} אובייקט התוכנית או null אם לא נמצאה.
+ */
+export async function findActiveProgramForTrainee(traineeId) {
+    const connection = await pool.getConnection();
+    try {
+        const query = `
+            SELECT 
+                tp.id,
+                tp.name AS program_name,
+                tp.description AS program_description,
+                tp.created_at,
+                CONCAT(u.first_name, ' ', u.last_name) AS trainer_name
+            FROM 
+                trainee_programs AS tep
+            INNER JOIN training_programs AS tp ON tep.program_id = tp.id
+            INNER JOIN trainers AS t ON tp.created_by_trainer_id = t.user_id
+            INNER JOIN users AS u ON t.user_id = u.id
+            WHERE 
+                tep.trainee_id = ? AND tep.is_active = TRUE
+            LIMIT 1;
+        `;
+        const [rows] = await connection.execute(query, [traineeId]);
+        return rows[0] || null;
+    } catch (error) {
+        console.error(`Error finding active training program for trainee ${traineeId}:`, error);
+        throw new Error('Failed to retrieve training program.');
     } finally {
         connection.release();
     }

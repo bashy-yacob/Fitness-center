@@ -10,13 +10,12 @@ export async function createSubscriptionType(subscriptionData) {
     const connection = await pool.getConnection();
     try {
         const [result] = await connection.execute(
-            `INSERT INTO subscriptions (name, description, price, duration_months, is_active)
-             VALUES (?, ?, ?, ?, ?)`,
+           `INSERT INTO subscriptions (name, description, price, duration_days, is_active) VALUES (?, ?, ?, ?, ?)`,
             [
                 subscriptionData.name,
                 subscriptionData.description,
                 subscriptionData.price,
-                subscriptionData.duration_months,
+                subscriptionData.duration_days,
                 subscriptionData.is_active || true
             ]
         );
@@ -74,13 +73,13 @@ export async function updateSubscriptionType(subscriptionId, subscriptionData) {
     const connection = await pool.getConnection();
     try {
         const [result] = await connection.execute(
-            `UPDATE subscriptions SET name = ?, description = ?, price = ?, duration_months = ?, is_active = ?
+             `UPDATE subscriptions SET name = ?, description = ?, price = ?, duration_days = ?, is_active = ? 
              WHERE id = ?`,
             [
                 subscriptionData.name,
                 subscriptionData.description,
                 subscriptionData.price,
-                subscriptionData.duration_months,
+                subscriptionData.duration_days,
                 subscriptionData.is_active,
                 subscriptionId
             ]
@@ -131,18 +130,18 @@ export async function purchaseSubscription(traineeId, subscriptionTypeId, paymen
     try {
         await connection.beginTransaction();
 
-        const [subscriptionType] = await connection.execute(
-            'SELECT price, duration_months FROM subscriptions WHERE id = ?',
+       const [subscriptionType] = await connection.execute(
+       'SELECT price, duration_days FROM subscriptions WHERE id = ?',
             [subscriptionTypeId]
         );
         if (!subscriptionType[0]) {
             throw new Error('Subscription type not found');
         }
 
-        const { price, duration_months } = subscriptionType[0];
+       const { price, duration_days } = subscriptionType[0];
         const startDate = new Date();
         const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + duration_months);
+        endDate.setDate(endDate.getDate() + duration_days);
 
         const [userSubscriptionResult] = await connection.execute(
             `INSERT INTO user_subscriptions (trainee_id, subscription_type_id, start_date, end_date, is_active)
@@ -197,6 +196,41 @@ export async function getUserSubscriptions(traineeId) {
         return subscriptions;
     } catch (error) {
         throw new Error(`Failed to get user subscriptions: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+/**
+ * מוצא את המנוי הפעיל היחיד של מתאמן ספציפי
+ * @param {number} traineeId - מזהה המתאמן
+ * @returns {Promise<Object|null>} אובייקט המנוי הפעיל, או null אם לא נמצא
+ */
+export async function findActiveSubscriptionForUser(traineeId) {
+    const connection = await pool.getConnection();
+    try {
+        // שאילתה זו מאחדת מידע משתי טבלאות כדי להחזיר תשובה מלאה
+        const query = `
+            SELECT 
+                us.id, 
+                s.name, 
+                s.description, 
+                s.price, 
+                us.start_date, 
+                us.end_date, 
+                us.is_active
+            FROM user_subscriptions us
+            INNER JOIN subscriptions s ON us.subscription_id = s.id
+            WHERE us.trainee_id = ? AND us.is_active = TRUE
+            LIMIT 1;
+        `;
+        const [rows] = await connection.execute(query, [traineeId]);
+        
+        // execute מחזיר מערך. אנחנו רוצים את האיבר הראשון או null.
+        return rows[0] || null;
+    } catch (error) {
+        console.error(`Error finding active subscription for user ${traineeId}:`, error);
+        // זרוק את השגיאה הלאה כדי שהקונטרולר יתפוס אותה
+        throw new Error('Failed to retrieve active subscription.');
     } finally {
         connection.release();
     }

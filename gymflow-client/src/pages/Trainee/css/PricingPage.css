@@ -1,0 +1,91 @@
+/* בקובץ: src/pages/Trainee/css/PricingPage.css */
+.pricing-page-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+    text-align: center;
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 2.5rem;
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.package-card {
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: #2a2a2a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.package-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(46, 204, 113, 0.2);
+}
+
+.package-card h3 {
+    color: #2ecc71; /* Green color from your theme */
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+
+.package-price {
+    margin: 1rem 0;
+    color: #fff;
+}
+
+.package-price .amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+}
+
+.package-price .currency, .package-price .period {
+    font-size: 1rem;
+    color: #ccc;
+    margin: 0 0.25rem;
+}
+
+.package-features {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    text-align: right;
+    flex-grow: 1;
+}
+
+.package-features li {
+    margin-bottom: 0.75rem;
+    color: #ddd;
+    font-size: 1rem;
+}
+
+.select-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+}
+
+.select-button:hover {
+    background-color: #2980b9;
+}
