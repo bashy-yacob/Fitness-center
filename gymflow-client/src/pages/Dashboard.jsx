@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import TraineeDashboardPage from './Trainee/jsx/Dashboard.jsx'// Import the new component
 // import TrainerDashboardPage from './Trainer/jsx/Dashboard.jsx'// Import the new component
-// import AdminDashboardPage from './admin/jsx/Dashboard.jsx'// Import the new component
+import AdminDashboardPage from './admin/Dashboard.jsx';
 
 function Dashboard() {
     const { user } = useAuth();
@@ -23,7 +22,7 @@ function Dashboard() {
     const renderDashboard = () => {
         switch (user.user_type) {
             case 'admin':
-                // return <AdminDashboardPage />;
+                return <AdminDashboardPage />;
             case 'trainer':
                 // return <TrainerDashboardPage />;
             case 'trainee':

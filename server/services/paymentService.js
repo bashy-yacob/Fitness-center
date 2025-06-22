@@ -147,3 +147,19 @@ export async function getPaymentsByUser(userId) {
         connection.release();
     }
 }
+
+export async function getMonthlyRevenue() {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute(
+            `SELECT IFNULL(SUM(amount),0) AS revenue
+             FROM payments
+             WHERE status = 'completed'
+             AND MONTH(payment_date) = MONTH(CURDATE())
+             AND YEAR(payment_date) = YEAR(CURDATE())`
+        );
+        return rows[0].revenue;
+    } finally {
+        connection.release();
+    }
+}

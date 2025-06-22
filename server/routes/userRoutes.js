@@ -21,5 +21,7 @@ router.get('/', verifyToken, isAdmin, userController.getAllUsers); // קבלת �
 router.get('/:id', verifyToken, isAdmin, userController.getUserById); // קבלת משתמש ספציפי
 router.put('/:id', verifyToken, isAdmin, userController.updateUser); // עדכון משתמש (נצטרך סכימת ולידציה)
 router.delete('/:id', verifyToken, isAdmin, userController.deleteUser); // מחיקת משתמש
+// סינון משתמשים לפי סוג
+router.get('/filter/by-type', verifyToken, isAdmin, userController.getUsersByType);
 
 export default router;

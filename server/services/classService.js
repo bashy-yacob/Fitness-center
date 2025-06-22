@@ -336,3 +336,15 @@ export async function processRegistrationWithPayment(traineeId, classId) {
         connection.release();
     }
 }
+
+export async function countActiveClasses() {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute(
+            'SELECT COUNT(*) AS count FROM classes WHERE is_active = TRUE'
+        );
+        return rows[0].count;
+    } finally {
+        connection.release();
+    }
+}

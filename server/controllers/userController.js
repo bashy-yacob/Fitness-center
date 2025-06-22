@@ -31,11 +31,22 @@ export async function getActiveSubscription(req, res, next) {
 // לשם הדוגמה, נציג פונקציית CRUD נפרדת.
 export async function createUserByAdmin(req, res, next) {
     try {
-        // שימו לב: כאן אין צורך להצפין סיסמה שוב, זה קורה ב-userService
-        const newUser = await userService.createUserAdmin(req.body); // פונקציה חדשה שתיצור ב-userService
-        res.status(201).json({ message: 'User created successfully by admin', user: newUser });
+        // נשתמש בפונקציה הקיימת createUser (או נבצע לוגיקה מורחבת כאן)
+        const userId = await userService.createUser(req.body);
+        // אם יש סיסמה, נשמור אותה בטבלת user_credentials
+        if (req.body.password) {
+            await userService.saveUserCredentials(userId, req.body.password);
+        }
+        // יצירת פרופיל מתאמן/מאמן אם צריך
+        if (req.body.user_type === 'trainee') {
+            await userService.createTraineeProfile(userId, req.body.date_of_birth, req.body.gender);
+        }
+        if (req.body.user_type === 'trainer') {
+            await userService.createTrainerProfile(userId, req.body.specialization, req.body.bio || '');
+        }
+        res.status(201).json({ message: 'User created successfully by admin', userId });
     } catch (error) {
-        next(error); // העברת השגיאה ל-middleware לטיפול בשגיאות
+        next(error);
     }
 }
 
@@ -142,6 +153,17 @@ export async function uploadProfilePicture(req, res, next) {
             message: 'Profile picture updated successfully',
             profile_picture_url: pictureUrl 
         });
+    } catch (error) {
+        next(error);
+    }
+}
+
+// קבלת משתמשים לפי סוג (user_type)
+export async function getUsersByType(req, res, next) {
+    try {
+        const { type } = req.query;
+        const users = await userService.getUsersByType(type);
+        res.status(200).json(users);
     } catch (error) {
         next(error);
     }

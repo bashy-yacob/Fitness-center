@@ -320,12 +320,24 @@ export async function deleteUser(userId) {
     try {
         await connection.beginTransaction();
 
-        // חשוב למחוק בסדר הנכון עקב תלות במפתחות זרים
-        await connection.execute('DELETE FROM class_registrations WHERE trainee_id = ?', [userId]);
+        // --- שלב 1: מחיקת כל התשלומים שקשורים למנויים של המשתמש ---
+        const [subscriptions] = await connection.execute('SELECT id FROM user_subscriptions WHERE trainee_id = ?', [userId]);
+        if (subscriptions.length > 0) {
+            const subIds = subscriptions.map(sub => sub.id);
+            await connection.execute(
+                `DELETE FROM payments WHERE user_subscription_id IN (${subIds.map(() => '?').join(',')})`,
+                subIds
+            );
+        }
+        // --- שלב 2: מחיקת כל התשלומים שקשורים ל-trainee_id (אם יש עמודה כזו)
+        try {
+            await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
+        } catch (e) {/* יתעלם אם אין עמודה כזו */}
+        // --- שלב 3: מחיקת המנויים ---
         await connection.execute('DELETE FROM user_subscriptions WHERE trainee_id = ?', [userId]);
         await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
         await connection.execute('DELETE FROM trainee_programs WHERE trainee_id = ?', [userId]);
-        await connection.execute('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', [userId, userId]);
+        // await connection.execute('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', [userId, userId]);
         await connection.execute('DELETE FROM trainees WHERE user_id = ?', [userId]);
         // אם המשתמש הוא מאמן, נצטרך לטפל בחוגים שהוא יצר
         // כרגע נניח שאנחנו לא מאפשרים מחיקת מאמן שיש לו חוגים פעילים.
@@ -351,7 +363,7 @@ export async function getUserById(userId) {
     const connection = await pool.getConnection();
     try {
         const [users] = await connection.execute(
-            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, t.date_of_birth, t.gender
+            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url, t.date_of_birth, t.gender
              FROM users u
              LEFT JOIN trainees t ON u.id = t.user_id
              WHERE u.id = ?`,
@@ -454,3 +466,32 @@ export async function updateUserProfilePicture(userId, pictureUrl) {
         connection.release();
     }
 }
+
+export async function countUsers() {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute('SELECT COUNT(*) AS count FROM users');
+        return rows[0].count;
+    } finally {
+        connection.release();
+    }
+}
+
+// קבלת משתמשים לפי סוג (user_type)
+export async function getUsersByType(userType) {
+    const connection = await pool.getConnection();
+    try {
+        const [users] = await connection.execute(
+            `SELECT id, first_name, last_name, email, phone_number, user_type
+             FROM users
+             WHERE user_type = ?`,
+            [userType]
+        );
+        return users;
+    } catch (error) {
+        throw new Error(`Failed to get users by type: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+

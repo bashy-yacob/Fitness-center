@@ -117,9 +117,4 @@ const apiService = {
     delete: (endpoint, options = {}) => request(endpoint, { ...options, method: 'DELETE' }),
 };
 
-// פונקציה לקבלת נתוני לוח המחוונים של המאמן
-// export async function fetchTrainerDashboard(trainerId) {
-//     return await request(`/trainer/${trainerId}/dashboard`);
-// }
-
 export default apiService;

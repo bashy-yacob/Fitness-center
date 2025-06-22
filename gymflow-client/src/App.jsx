@@ -4,8 +4,9 @@ import { useAuth } from './hooks/useAuth.js';
 import '../src/index.css'; // Assuming you have a global CSS file for styles
 
 // Admin Pages
-// import AdminDashboard from './pages/Admin/Dashboard';
-// import UsersManagement from './pages/Admin/UsersManagement';
+import AdminDashboard from './pages/admin/Dashboard.jsx';
+import UsersManagement from './pages/admin/UsersAdminPage.jsx';
+import ClassesAdminPage from './pages/admin/ClassesAdminPage.jsx';
 
 // Trainer Pages
 import Dashboard from './pages/Dashboard';
@@ -61,9 +62,10 @@ function App() {
 
         if (isAuthenticated && user) {
             switch (user.user_type) {
-                // case 'admin':
-                //     links.push(<Link key="users" to="/admin/users">Users Management</Link>);
-                //     break;
+                case 'admin':
+                    links.push(<Link key="users" to="/admin/users">ניהול משתמשים</Link>);
+                    links.push(<Link key="classes" to="/admin/classes">ניהול חוגים</Link>);
+                    break;
                 // case 'trainer':
                 //     links.push(<Link key="classes" to="/trainer/classes">My Classes</Link>);
                 //     break;
@@ -108,7 +110,7 @@ function App() {
                     } />
 
                     {/* Admin Routes */}
-                    {/* <Route path="/admin/dashboard" element={
+                    <Route path="/admin/dashboard" element={
                         <ProtectedRoute allowedRoles={['admin']}>
                             <AdminDashboard />
                         </ProtectedRoute>
@@ -117,7 +119,12 @@ function App() {
                         <ProtectedRoute allowedRoles={['admin']}>
                             <UsersManagement />
                         </ProtectedRoute>
-                    } /> */}
+                    } />
+                    <Route path="/admin/classes" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <ClassesAdminPage />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Trainer Routes */}
                     <Route path="/trainer/dashboard" element={
@@ -139,7 +146,7 @@ function App() {
                     } />
 
                     {/* Trainee Routes */}
-                    {/* <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} /> */}
+                    <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
                     <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
                     <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

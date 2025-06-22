@@ -10,6 +10,7 @@ import subscriptionRoutes from './routes/subscriptionRoutes.js'; // ייבוא s
 import paymentRoutes from './routes/paymentRoutes.js'; // ייבוא paymentRoutes (נבנה בהמשך)
 import traineeRoutes from './routes/traineeRoutes.js';  // הוספת ייבוא של נתיבי מתאמן
 import pricingPackageRoutes from './routes/pricingPackageRoutes.js';
+import adminRoutes from './routes/adminRoutes.js'; // הוספת ייבוא של adminRoutes
 import pool from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -35,6 +36,7 @@ app.use('/api/rooms', roomRoutes); // הוספת roomRoutes
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/pricing-packages', pricingPackageRoutes);
+app.use('/api/admin', adminRoutes); // הוספת הנתיב לניהול
 
 
 app.use(errorHandler);

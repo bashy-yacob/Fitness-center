@@ -1,0 +1,88 @@
+.classes-admin-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  /* background: #fff; */
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #0001;
+  direction: rtl;
+}
+
+.classes-admin-page h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.classes-admin-page .error {
+  color: #b00;
+  background: #fee;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.class-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 2rem;
+  background: #f7f7f7;
+  padding: 1rem;
+  border-radius: 8px;
+}
+.class-form label {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+}
+.class-form input,
+.class-form select {
+  margin-top: 0.3rem;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.class-form button {
+  margin-top: 1.2rem;
+  padding: 0.5rem 1.5rem;
+  background: #1976d2;
+  /* color: #fff; */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.class-form button[type="button"] {
+  background: #aaa;
+  margin-right: 0.5rem;
+}
+
+.classes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  background: #fafbfc;
+}
+.classes-table th,
+.classes-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.7rem 0.5rem;
+  text-align: center;
+}
+.classes-table th {
+  background: #f0f4f8;
+}
+.classes-table button {
+  margin: 0 0.2rem;
+  padding: 0.3rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background: #1976d2;
+  /* color: #fff; */
+  cursor: pointer;
+}
+.classes-table button:last-child {
+  background: #b71c1c;
+}
