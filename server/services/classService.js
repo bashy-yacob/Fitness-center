@@ -58,7 +58,7 @@ export async function getClassById(classId) {
 
 
 // בקובץ: src/services/classService.js
-export async function getAllClasses() {
+export async function getAllClasses(traineeId = null) {
     const connection = await pool.getConnection();
     try {
         const query = `
@@ -66,37 +66,36 @@ export async function getAllClasses() {
                 c.id, c.name, c.description, c.start_time, c.end_time,
                 c.max_capacity, r.name AS room_name,
                 CONCAT(u.first_name, ' ', u.last_name) AS trainer_name,
-                (SELECT COUNT(*) FROM class_registrations cr WHERE cr.class_id = c.id AND cr.status = 'registered') AS registered_count
+                (SELECT COUNT(*) FROM class_registrations cr WHERE cr.class_id = c.id AND cr.status = 'registered') AS registered_count,
+                CASE WHEN reg.id IS NOT NULL THEN TRUE ELSE FALSE END AS isRegistered
             FROM classes c
             JOIN rooms r ON c.room_id = r.id
             JOIN trainers t ON c.trainer_id = t.user_id
             JOIN users u ON t.user_id = u.id
-            WHERE c.start_time > ? AND c.is_active = TRUE
+            LEFT JOIN class_registrations reg ON c.id = reg.class_id AND reg.trainee_id = ? AND reg.status = 'registered'
+            WHERE 1=1
+            ${traineeId ? 'AND c.is_active = TRUE' : ''}
             ORDER BY c.start_time ASC;
         `;
 
-        // הנה התיקון: אנחנו יוצרים תאריך ב-Node.js ושולחים אותו כפרמטר
-        const now = new Date();
-        const [classes] = await connection.execute(query, [now]); // <-- העברת התאריך לשאילתה
+        const [classes] = await connection.execute(query, [traineeId]);
 
-        return classes.map(cls => {
-            const availableSlots = cls.max_capacity - cls.registered_count;
-            return {
-                id: cls.id,
-                name: cls.name,
-                description: cls.description,
-                startTime: cls.start_time,
-                endTime: cls.end_time,
-                maxCapacity: cls.max_capacity,
-                roomName: cls.room_name,
-                trainerName: cls.trainer_name,
-                registeredCount: cls.registered_count,
-                availableSlots: availableSlots > 0 ? availableSlots : 0
-            };
-        });
+        return classes.map(cls => ({
+            id: cls.id,
+            name: cls.name,
+            description: cls.description,
+            startTime: cls.start_time,
+            endTime: cls.end_time,
+            maxCapacity: cls.max_capacity,
+            roomName: cls.room_name,
+            trainerName: cls.trainer_name,
+            registeredCount: parseInt(cls.registered_count, 10),
+            availableSlots: Math.max(0, cls.max_capacity - cls.registered_count),
+            isRegistered: !!cls.isRegistered
+        }));
 
     } catch (error) {
-        console.error("Error in getAllClasses service:", error); 
+        console.error("Error in getAllClasses service:", error);
         throw new Error(`Failed to get available classes: ${error.message}`);
     } finally {
         connection.release();
@@ -170,7 +169,7 @@ export async function registerForClass(traineeId, classId) {
         // 1. בדיקה ראשונה (חדשה): האם המתאמן הספציפי הזה כבר רשום?
         // זו צריכה להיות הבדיקה הראשונה כי היא ספציפית יותר.
         const [existingRegistration] = await connection.execute(
-            'SELECT id FROM class_registrations WHERE trainee_id = ? AND class_id = ?', 
+            'SELECT id FROM class_registrations WHERE trainee_id = ? AND class_id = ?',
             [traineeId, classId]
         );
         if (existingRegistration.length > 0) {
@@ -194,7 +193,7 @@ export async function registerForClass(traineeId, classId) {
             [traineeId, classId]
         );
         return result.insertId;
-        
+
     } catch (error) {
         // שינוי קטן כאן כדי שההודעה מה-throw תעבור הלאה בצורה נקייה יותר
         throw new Error(`Failed to register for class: ${error.message}`);
@@ -269,6 +268,70 @@ export async function getRegisteredClassesForUser(traineeId) {
         return classes;
     } catch (error) {
         throw new Error(`Failed to get registered classes for user: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+export async function processRegistrationWithPayment(traineeId, classId) {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [classInfo] = await connection.execute(
+            'SELECT max_capacity, start_time FROM classes WHERE id = ? FOR UPDATE',
+            [classId]
+        );
+
+        if (!classInfo.length) {
+            throw new Error('Class not found.');
+        }
+
+        const [existingRegistration] = await connection.execute(
+            'SELECT id FROM class_registrations WHERE trainee_id = ? AND class_id = ?',
+            [traineeId, classId]
+        );
+
+        if (existingRegistration.length > 0) {
+            throw new Error('You are already registered for this class.');
+        }
+
+        const [registrations] = await connection.execute(
+            'SELECT COUNT(*) as count FROM class_registrations WHERE class_id = ? AND status = ?',
+            [classId, 'registered']
+        );
+
+        if (registrations[0].count >= classInfo[0].max_capacity) {
+            throw new Error('This class is full.');
+        }
+
+        const [registrationResult] = await connection.execute(
+            'INSERT INTO class_registrations (trainee_id, class_id, status) VALUES (?, ?, ?)',
+            [traineeId, classId, 'registered']
+        );
+        const newRegistrationId = registrationResult.insertId;
+
+        const classPrice = 50.00; // מחיר קבוע לחוג
+        const transactionId = `cl_reg_${newRegistrationId}_${Date.now()}`;
+
+        const [paymentResult] = await connection.execute(
+            `INSERT INTO payments (trainee_id, amount, currency, payment_date, payment_method, transaction_id, status, notes)
+             VALUES (?, ?, ?, NOW(), ?, ?, ?, ?)`,
+            [traineeId, classPrice, 'ILS', 'credit_card', transactionId, 'completed', `Payment for class registration ID: ${newRegistrationId}`]
+        );
+        const newPaymentId = paymentResult.insertId;
+
+        await connection.commit();
+
+        return {
+            registrationId: newRegistrationId,
+            paymentId: newPaymentId,
+            message: "Successfully registered and payment processed."
+        };
+
+    } catch (error) {
+        await connection.rollback();
+        throw error; // זרוק את השגיאה הלאה לקונטרולר
     } finally {
         connection.release();
     }
