@@ -17,10 +17,14 @@ import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
 import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
 import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
-import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
+import PurchaseSubscriptionPage from './pages/Trainee/jsx/PurchaseSubscriptionPage.jsx';
 import MessagesPage from './pages/Trainee/jsx/MessagesPage.jsx';
 import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';
-
+import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
+import PricingPage from './pages/Trainee/jsx/PricingPage.jsx';
+// ניצור את הקובץ הזה בהמשך
+// import ConfirmPurchasePage from './pages/Trainee/jsx/ConfirmPurchasePage.jsx'; 
+// // ...
 // Shared Pages
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
@@ -146,7 +150,11 @@ function App() {
                     <Route path="/trainee/subscription" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
                     <Route path="/trainee/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
                     <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
-
+                    <Route path="/trainee/subscriptions/manage" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
+                    <Route path="/trainee/subscriptions/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
+                    {/* <Route path="/trainee/subscriptions/confirm/:packageId" element={<ProtectedRoute><ConfirmPurchasePage /></ProtectedRoute>} /> */}
+                    <Route path="/trainee/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                    <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
                     {/* Catch-all route - redirect to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

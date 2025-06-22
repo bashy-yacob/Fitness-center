@@ -34,7 +34,7 @@ app.use('/api/trainees', traineeRoutes);  // הוספת הנתיב למתאמנ�
 app.use('/api/rooms', roomRoutes); // הוספת roomRoutes
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/pricing-packages', pricingPackageRoutes);
+// app.use('/api/pricing-packages', pricingPackageRoutes);
 
 
 app.use(errorHandler);

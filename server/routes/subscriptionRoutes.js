@@ -24,6 +24,7 @@ router.get('/user/:userId', verifyToken, isAdmin, subscriptionController.getSubs
 // נתיבים לרכישה וצפייה במנויים של משתמש
 router.post('/purchase', verifyToken, isTrainee, validate(purchaseSubscriptionSchema), subscriptionController.purchaseSubscription); // רכישת מנוי ע"י מתאמן
 router.get('/my-subscriptions', verifyToken, isTrainee, subscriptionController.getUserSubscriptions); // צפייה במנויים של המשתמש המחובר
+router.get( '/my-active-subscription', verifyToken, isTrainee, subscriptionController.getActiveUserSubscription);// נתיב ייעודי ויעיל לקבלת המנוי הפעיל בלבד
 
 // הסרנו את הנתיב הכפול router.post('/', ...) שהיה מיותר
 export default router;

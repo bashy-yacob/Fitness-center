@@ -75,6 +75,23 @@ export async function getUserSubscriptions(req, res, next) {
     }
 }
 
+export async function getActiveUserSubscription(req, res, next) {
+    try {
+        const traineeId = req.user.id;
+        const activeSubscription = await subscriptionService.findActiveSubscriptionForUser(traineeId);
+        
+        // חשוב: אם לא נמצא מנוי, השירות יחזיר null.
+        // אנחנו רוצים להחזיר תגובה מוצלחת (200) עם גוף ריק או null
+        // כדי שצד הלקוח ידע שזו לא שגיאה, אלא פשוט אין מנוי.
+        if (!activeSubscription) {
+            return res.status(200).json(null);
+        }
+
+        res.status(200).json(activeSubscription);
+    } catch (error) {
+        next(error);
+    }
+}
 // פונקציה לאדמין לצפייה במנויים של משתמש ספציפי
 export async function getSubscriptionsForUser(req, res, next) {
     try {
