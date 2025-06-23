@@ -10,7 +10,7 @@ export async function createSubscriptionType(subscriptionData) {
     const connection = await pool.getConnection();
     try {
         const [result] = await connection.execute(
-           `INSERT INTO subscriptions (name, description, price, duration_days, is_active) VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO subscriptions (name, description, price, duration_days, is_active) VALUES (?, ?, ?, ?, ?)`,
             [
                 subscriptionData.name,
                 subscriptionData.description,
@@ -73,7 +73,7 @@ export async function updateSubscriptionType(subscriptionId, subscriptionData) {
     const connection = await pool.getConnection();
     try {
         const [result] = await connection.execute(
-             `UPDATE subscriptions SET name = ?, description = ?, price = ?, duration_days = ?, is_active = ? 
+            `UPDATE subscriptions SET name = ?, description = ?, price = ?, duration_days = ?, is_active = ? 
              WHERE id = ?`,
             [
                 subscriptionData.name,
@@ -118,67 +118,66 @@ export async function deleteSubscriptionType(subscriptionId) {
     }
 }
 
+
 /**
  * רכישת מנוי למתאמן
  * @param {number} traineeId - מזהה המתאמן
  * @param {number} subscriptionTypeId - מזהה סוג המנוי
- * @param {Object} paymentDetails - פרטי תשלום (לדוגמה, amount, transaction_id)
- * @returns {Promise<Object>} אובייקט המנוי של המשתמש שנוצר
+ * @param {Object} paymentDetails - פרטי תשלום
+ * @returns {Promise<Object>} אובייקט עם ID המנוי והתשלום
  */
-export async function purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails) {
+export async function purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails = {}) { // הוספנו ערך ברירת מחדל
+    // בדיקה מקדימה ברורה
+    if (!traineeId || !subscriptionTypeId) {
+        throw new Error('traineeId and subscriptionTypeId are required');
+    }
+
     const connection = await pool.getConnection();
     try {
-        // הוספת בדיקה לשרת: אם traineeId או subscriptionTypeId לא מוגדרים, תיזרק שגיאה ברורה.
-        if (typeof traineeId === 'undefined' || typeof subscriptionTypeId === 'undefined') {
-            throw new Error('traineeId or subscriptionTypeId is undefined');
-        }
-
         await connection.beginTransaction();
 
-       const [subscriptionType] = await connection.execute(
-       'SELECT price, duration_days FROM subscriptions WHERE id = ?',
+        const [subscriptionType] = await connection.execute(
+            'SELECT price, duration_days FROM subscriptions WHERE id = ?',
             [subscriptionTypeId]
         );
-        if (!subscriptionType[0]) {
+        if (!subscriptionType.length) {
             throw new Error('Subscription type not found');
         }
 
-       const { price, duration_days } = subscriptionType[0];
+        const { price, duration_days } = subscriptionType[0];
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + duration_days);
 
         const [userSubscriptionResult] = await connection.execute(
-            `INSERT INTO user_subscriptions (trainee_id, subscription_type_id, start_date, end_date, is_active)
+            `INSERT INTO user_subscriptions (trainee_id, subscription_id, start_date, end_date, is_active)
              VALUES (?, ?, ?, ?, TRUE)`,
             [traineeId, subscriptionTypeId, startDate, endDate]
         );
         const userSubscriptionId = userSubscriptionResult.insertId;
 
-        // יצירת רשומת תשלום
+        // === כאן התיקון המרכזי ===
         const [paymentResult] = await connection.execute(
             `INSERT INTO payments (user_subscription_id, trainee_id, amount, payment_date, transaction_id, status, notes)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, NOW(), ?, ?, ?)`, // שימוש ב-NOW() של SQL הוא עדיף
             [
                 userSubscriptionId,
                 traineeId,
                 price,
-                new Date(),
-                paymentDetails.transaction_id || null, // אם אין ID חיצוני
-                paymentDetails.status || 'completed', // סטטוס תשלום
-                paymentDetails.notes || null
+                // הערכים הבאים נלקחים מ-paymentDetails או מקבלים ערך ברירת מחדל null
+                paymentDetails.transaction_id || null, 
+                paymentDetails.status || 'completed',
+                paymentDetails.notes || null // אם notes לא קיים, ישלח null
             ]
         );
-
-        // הגנה: ודא ש-paymentDetails.notes לא יהיה undefined
-        if (typeof paymentDetails.notes === 'undefined') paymentDetails.notes = null;
 
         await connection.commit();
 
         return { userSubscriptionId, paymentId: paymentResult.insertId };
     } catch (error) {
         await connection.rollback();
-        throw new Error(`Failed to purchase subscription: ${error.message}`);
+        // שגיאה יותר אינפורמטיבית
+        throw new Error(`Failed to purchase subscription. Reason: ${error.message}`);
     } finally {
         connection.release();
     }
@@ -232,7 +231,7 @@ export async function findActiveSubscriptionForUser(traineeId) {
             LIMIT 1;
         `;
         const [rows] = await connection.execute(query, [traineeId]);
-        
+
         // execute מחזיר מערך. אנחנו רוצים את האיבר הראשון או null.
         return rows[0] || null;
     } catch (error) {

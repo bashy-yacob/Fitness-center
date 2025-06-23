@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth';
 import '../css/PricingPage.css'; // קובץ עיצוב חדש
 
 function PricingPage() {
@@ -10,6 +11,7 @@ function PricingPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { isAuthenticated, setRedirectPath } = useAuth();
 
     useEffect(() => {
         const fetchSubscriptionTypes = async () => {
@@ -30,9 +32,19 @@ function PricingPage() {
     }, []);
 
     // פונקציה זו רק מנווטת לעמוד האישור עם ה-ID של החבילה
-   const handleSelectPackage = (packageId) => {
-    navigate(`/trainee/subscriptions/confirm/${packageId}`);
-};
+  const handleSelectPackage = (packageId) => {
+        // בודקים אם המשתמש מחובר
+        if (isAuthenticated) {
+            // אם כן, מנווטים אותו ישירות לעמוד האישור
+            navigate(`/trainee/subscriptions/confirm/${packageId}`);
+        } else {
+            // אם לא, שומרים את נתיב היעד הרצוי ב-AuthContext
+            const targetPath = `/trainee/subscriptions/confirm/${packageId}`;
+            setRedirectPath(targetPath);
+            // ואז שולחים אותו לעמוד הלוגין
+            navigate('/login');
+        }
+    };
     if (loading) return <div className="page-container"><p className="loading-message">טוען חבילות מנויים...</p></div>;
     if (error) return <div className="page-container"><p className="error-message">{error}</p></div>;
 

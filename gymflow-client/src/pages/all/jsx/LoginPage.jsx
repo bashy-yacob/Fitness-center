@@ -10,6 +10,7 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const auth = useAuth();
+    const { login, redirectPath, setRedirectPath } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 

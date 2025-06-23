@@ -54,8 +54,8 @@ export async function deleteSubscriptionType(req, res, next) {
 // ניהול מנויים של משתמשים
 export async function purchaseSubscription(req, res, next) {
     try {
-        
-        const traineeId = req.userId;
+
+         const traineeId = req.user.id; 
         const { subscriptionTypeId, paymentDetails } = req.body;
         const result = await subscriptionService.purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails);
         res.status(201).json({ message: 'Subscription purchased successfully', ...result });
@@ -66,7 +66,7 @@ export async function purchaseSubscription(req, res, next) {
 
 export async function getUserSubscriptions(req, res, next) {
     try {
-       
+
         const traineeId = req.userId;
         const subscriptions = await subscriptionService.getUserSubscriptions(traineeId);
         res.status(200).json(subscriptions);
@@ -79,7 +79,7 @@ export async function getActiveUserSubscription(req, res, next) {
     try {
         const traineeId = req.user.id;
         const activeSubscription = await subscriptionService.findActiveSubscriptionForUser(traineeId);
-        
+
         // חשוב: אם לא נמצא מנוי, השירות יחזיר null.
         // אנחנו רוצים להחזיר תגובה מוצלחת (200) עם גוף ריק או null
         // כדי שצד הלקוח ידע שזו לא שגיאה, אלא פשוט אין מנוי.

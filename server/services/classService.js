@@ -1,5 +1,6 @@
 // services/classService.js
 import pool from '../config/db.js';
+import { AppError } from '../middleware/errorMiddleware.js';
 
 /**
  * יצירת חוג חדש
@@ -244,7 +245,6 @@ export async function getClassRegistrations(classId) {
         connection.release();
     }
 }
-// services/classService.js - הוסף את הפונקציה הבאה לקובץ
 
 /**
  * קבלת כל החוגים שמתאמן ספציפי רשום אליהם
@@ -254,14 +254,21 @@ export async function getClassRegistrations(classId) {
 export async function getRegisteredClassesForUser(traineeId) {
     const connection = await pool.getConnection();
     try {
-        // שאילתה שמצטרפת לטבלת הרישומים כדי למצוא את החוגים של המשתמש
+        // === כאן התיקון בשאילתה ===
         const [classes] = await connection.execute(
-            `SELECT c.*, r.name AS room_name, u.first_name AS trainer_first_name, u.last_name AS trainer_last_name
+            `SELECT 
+                c.id, 
+                c.name, 
+                c.start_time, 
+                c.end_time, 
+                r.name AS room_name, 
+                CONCAT(u.first_name, ' ', u.last_name) AS trainer_name,
+                cr.status -- הוספנו את שדה הסטטוס מההרשמה
              FROM classes c
              INNER JOIN class_registrations cr ON c.id = cr.class_id
              INNER JOIN rooms r ON c.room_id = r.id
              INNER JOIN users u ON c.trainer_id = u.id
-             WHERE cr.trainee_id = ? AND cr.status = 'registered'
+             WHERE cr.trainee_id = ? 
              ORDER BY c.start_time ASC`,
             [traineeId]
         );
@@ -272,7 +279,6 @@ export async function getRegisteredClassesForUser(traineeId) {
         connection.release();
     }
 }
-
 export async function processRegistrationWithPayment(traineeId, classId) {
     const connection = await pool.getConnection();
     try {
@@ -284,7 +290,7 @@ export async function processRegistrationWithPayment(traineeId, classId) {
         );
 
         if (!classInfo.length) {
-            throw new Error('Class not found.');
+            throw new AppError('Class not found.', 404);
         }
 
         const [existingRegistration] = await connection.execute(
@@ -293,7 +299,7 @@ export async function processRegistrationWithPayment(traineeId, classId) {
         );
 
         if (existingRegistration.length > 0) {
-            throw new Error('You are already registered for this class.');
+            throw new AppError('You are already registered for this class.', 409);
         }
 
         const [registrations] = await connection.execute(
@@ -302,7 +308,7 @@ export async function processRegistrationWithPayment(traineeId, classId) {
         );
 
         if (registrations[0].count >= classInfo[0].max_capacity) {
-            throw new Error('This class is full.');
+            throw new AppError('This class is full.', 409);
         }
 
         const [registrationResult] = await connection.execute(

@@ -1,59 +1,51 @@
+// בקובץ: src/components/PricingSection.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { pricingPackageService } from '../api/pricingPackageService'; // ייבוא השירות החדש
+// === 1. שינוי הייבוא: משתמשים ב-apiService הגנרי ===
+import apiService from '../api/apiService';
 import './css/PricingSection.css';
 
 const PricingSection = () => {
-  const [pricingPackages, setPricingPackages] = useState([]);
+  // === 2. שינוי שם המשתנה לבהירות ===
+  const [subscriptionTypes, setSubscriptionTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated, setRedirectPath } = useAuth(); // הוספת setRedirectPath
+  const { isAuthenticated, setRedirectPath } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPricingPackages = async () => {
+    const fetchSubscriptionTypes = async () => {
       try {
         setLoading(true);
-        const packages = await pricingPackageService.getAllPricingPackages();
-        // נסנן רק חבילות פעילות ונמיין לפי מחיר
-        const activePackages = packages
-          .filter(pkg => pkg.is_active)
+        // === 3. שינוי קריאת ה-API לנתיב הנכון ===
+        const types = await apiService.get('/subscriptions/types');
+
+        const activeTypes = types
+          .filter(type => type.is_active)
           .sort((a, b) => a.price - b.price);
-        
-        setPricingPackages(activePackages);
+
+        setSubscriptionTypes(activeTypes);
       } catch (err) {
-        setError('Failed to load pricing packages');
-        console.error('Error fetching pricing packages:', err);
+        setError('Failed to load subscription plans.');
+        console.error('Error fetching subscription types:', err);
       } finally {
         setLoading(false);
       }
     };
-    
-    fetchPricingPackages();
+
+    fetchSubscriptionTypes();
   }, []);
 
-  const handleSubscribe = async (packageId) => {
-    if (!isAuthenticated) {
-      // כאן אנו שומרים את הנתיב שאליו המשתמש רצה להגיע
-      setRedirectPath(window.location.pathname); // או '/pricing' אם תרצה
+  const handleSelectPackage = (packageId) => {
+    if (isAuthenticated) {
+      // אם מחובר, שלח לעמוד האישור (שניצור בהמשך)
+      navigate(`/trainee/subscriptions/confirm/${packageId}`);
+    } else {
+      // אם לא מחובר, שמור את היעד והפנה ללוגין
+      setRedirectPath('/trainee/subscriptions/pricing');
       navigate('/login');
-      return;
-    }
-
-    try {
-      // בעתיד, כאן תהיה אינטגרציה עם ספק תשלומים
-      const paymentDetails = {
-        transaction_id: `txn_${Date.now()}`,
-        status: 'completed' // כרגע נסמן שהצליח לצורך הדגמה
-      };
-
-      await pricingPackageService.purchaseSubscription(packageId, paymentDetails);
-      alert('Subscription purchased successfully!');
-      navigate('/dashboard'); // נשלח את המשתמש לדשבורד לאחר רכישה מוצלחת
-    } catch (error) {
-      console.error('Error subscribing to package:', error);
-      setError('Failed to process subscription');
     }
   };
 
@@ -70,21 +62,19 @@ const PricingSection = () => {
       <h2 className="section-title">תוכניות מחיר</h2>
       <p className="section-subtitle">בחר את החבילה המתאימה לך</p>
       <div className="packages-grid">
-        {pricingPackages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className={`package-card`} // הסרנו את הלוגיקה של 'recommended' זמנית
-          >
-            <h3>{pkg.name}</h3>
+        {/* === 4. שינוי שם המשתנה בלולאה === */}
+        {subscriptionTypes.map((subType) => (
+          <div key={subType.id} className="package-card">
+            <h3>{subType.name}</h3>
             <div className="package-price">
               <span className="currency">₪</span>
-              <span className="amount">{parseFloat(pkg.price).toFixed(0)}</span>
-              {/* מציגים חודשים במקום חודש קבוע */}
-              <span className="period">/ {pkg.duration_months} חודשים</span>
+              <span className="amount">{parseFloat(subType.price).toFixed(0)}</span>
+              {/* === 5. התאמת שם השדה ל-duration_days === */}
+              <span className="period">/ {subType.duration_days} ימים</span>
             </div>
             <ul className="package-features">
-              {/* משתמשים ב-description מה-API */}
-              {pkg.description.split('\n').map((feature, idx) => (
+              {/* ודא שהאובייקט כולל תיאור */}
+              {(subType.description || '').split('\n').map((feature, idx) => (
                 <li key={idx}>
                   <span className="check-icon">✓</span>
                   {feature}
@@ -93,7 +83,7 @@ const PricingSection = () => {
             </ul>
             <button
               className="subscribe-button"
-              onClick={() => handleSubscribe(pkg.id)}
+              onClick={() => handleSelectPackage(subType.id)}
             >
               הצטרף עכשיו
             </button>
