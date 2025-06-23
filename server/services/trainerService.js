@@ -19,7 +19,7 @@ export async function getTrainerDashboardSummary(trainerId) {
     );
     // הודעות אחרונות (ספירה בלבד)
     const [messagesRows] = await conn.execute(
-      `SELECT COUNT(*) as count FROM messages WHERE sender_id = ? OR recipient_id = ?`,
+      `SELECT COUNT(*) as count FROM messages WHERE sender_id = ? OR receiver_id = ?`,
       [trainerId, trainerId]
     );
     return {
@@ -53,9 +53,9 @@ export async function getRecentMessages(trainerId) {
   const conn = await pool.getConnection();
   try {
     const [rows] = await conn.execute(
-      `SELECT id, message_text, sent_at, sender_id, recipient_id
+      `SELECT id, message_text, sent_at, sender_id, receiver_id
        FROM messages
-       WHERE sender_id = ? OR recipient_id = ?
+       WHERE sender_id = ? OR receiver_id = ?
        ORDER BY sent_at DESC
        LIMIT 5`,
       [trainerId, trainerId]
@@ -221,6 +221,25 @@ export async function getStatsPerTrainee(trainerId) {
       [trainerId]
     );
     return { trainees: rows };
+  } finally {
+    conn.release();
+  }
+}
+
+// שליפת מערכת שעות שבועית של מאמן
+export async function getTrainerSchedule(trainerId) {
+  const conn = await pool.getConnection();
+  try {
+    const [rows] = await conn.execute(
+      `SELECT c.id, c.name, c.start_time, c.end_time, r.name as room, 
+              (SELECT COUNT(*) FROM class_registrations cr WHERE cr.class_id = c.id AND cr.status = 'registered') as traineeCount
+       FROM classes c
+       JOIN rooms r ON c.room_id = r.id
+       WHERE c.trainer_id = ? AND c.is_active = 1
+       ORDER BY c.start_time ASC`,
+      [trainerId]
+    );
+    return rows;
   } finally {
     conn.release();
   }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllPayments } from '../../api/paymentService.js';
+import './AdminPaymentsPage.css';
 
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState([]);

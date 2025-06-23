@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { pricingPackageService } from '../../api/pricingPackageService.js';
 import PackageFormModal from '../../components/PackageFormModal.jsx';
+import './AdminPackagesPage.css';
 
 export default function AdminPackagesPage() {
   const [packages, setPackages] = useState([]);

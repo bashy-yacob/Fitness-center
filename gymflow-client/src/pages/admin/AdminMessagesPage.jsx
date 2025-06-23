@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import apiService from '../../api/apiService.js';
 import AdminSendMessageForm from './AdminSendMessageForm.jsx';
 import EditBroadcastMessageModal from './EditBroadcastMessageModal.jsx';
+import './AdminMessagesPage.css';
 
 const tabStyles = {
   display: 'flex',

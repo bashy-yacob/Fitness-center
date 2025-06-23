@@ -124,3 +124,14 @@ export async function getStatsPerTrainee(req, res, next) {
     next(err);
   }
 }
+
+// מערכת שעות מאמן - כל החוגים השבועיים
+export async function getTrainerSchedule(req, res, next) {
+  try {
+    const trainerId = parseInt(req.params.trainerId);
+    const schedule = await trainerService.getTrainerSchedule(trainerId);
+    res.json(schedule);
+  } catch (err) {
+    next(err);
+  }
+}

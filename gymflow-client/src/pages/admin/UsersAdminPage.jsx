@@ -7,6 +7,7 @@ import {
   deleteUser
 } from '../../api/userService';
 import ClassesAdminPage from './ClassesAdminPage';
+import './UsersAdminPage.css';
 
 const USER_TYPES = [
   { value: '', label: 'הכל' },

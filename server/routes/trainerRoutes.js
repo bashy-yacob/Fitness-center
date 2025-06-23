@@ -25,5 +25,7 @@ router.post('/:trainerId/classes', verifyToken, isTrainer, trainerController.cre
 // סטטיסטיקות למאמן
 router.get('/:trainerId/stats/attendance-summary', verifyToken, isTrainer, trainerController.getAttendanceSummary);
 router.get('/:trainerId/stats/by-trainee', verifyToken, isTrainer, trainerController.getStatsPerTrainee);
+// מערכת שעות מאמן
+router.get('/:trainerId/schedule', verifyToken, isTrainer, trainerController.getTrainerSchedule);
 
 export default router;

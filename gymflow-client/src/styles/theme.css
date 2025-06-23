@@ -19,16 +19,139 @@
   --error-color: var(--secondary-color);
 }
 
-select, select option {
-  color: #111 !important;
-  background: #fff !important;
-  font-weight: 900 !important;
-  font-size: 20px !important;
-  border: 2px solid #111 !important;
-  text-shadow: 0 0 2px #fff, 0 0 2px #fff !important;
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Rubik', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
 }
 
-select:focus, select option:checked {
-  color: #111 !important;
-  background: #e0e0e0 !important;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Rubik', 'Segoe UI', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 0.5em;
+  color: var(--h3-primary-color);
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(34,219,71,0.15);
+}
+
+h1 {
+  font-size: 2.8rem;
+}
+h2 {
+  font-size: 2.2rem;
+}
+h3 {
+  font-size: 1.6rem;
+}
+
+p, span, label {
+  color: var(--text-color);
+  font-weight: 400;
+}
+
+button {
+  background: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 16px;
+  padding: 0.75em 2em;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 rgba(34,219,71,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+button:hover, button:focus {
+  background: var(--accent-color);
+  color: #111;
+  box-shadow: 0 4px 24px 0 rgba(90,212,114,0.18);
+}
+
+button.success {
+  background: var(--success-color);
+  color: #111;
+}
+button.error {
+  background: var(--error-color);
+  color: #fff;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.12);
+  padding: 2em 1.5em;
+  margin: 1.5em 0;
+  color: var(--text-color);
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.card:hover {
+  box-shadow: 0 6px 32px 0 rgba(34,219,71,0.10);
+  border-color: var(--accent-color);
+}
+
+/* Custom select styling */
+select {
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  padding: 0.5em 1.2em !important;
+  margin: 0.5em 0;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+select:focus {
+  outline: none;
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* Dashboard graph & widget colors */
+.dashboard-graph {
+  background: var(--section-bg);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(201,24,166,0.10);
+  padding: 1.5em;
+  margin-bottom: 2em;
+}
+.dashboard-graph .bar {
+  background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+  border-radius: 8px;
+  height: 18px;
+  margin: 0.5em 0;
+  transition: width 0.5s;
+}
+.dashboard-widget {
+  background: var(--card-bg);
+  border: 1.5px solid var(--accent-soft);
+  border-radius: 18px;
+  color: var(--text-color);
+  padding: 1.2em 1em;
+  margin: 1em 0;
+  box-shadow: 0 2px 12px 0 rgba(201,24,166,0.08);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.dashboard-widget .value {
+  color: var(--accent-color);
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+.dashboard-widget .label {
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  background: var(--section-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 8px;
 }

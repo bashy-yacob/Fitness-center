@@ -18,6 +18,7 @@ import TrainerDashboard from './pages/Trainer/Dashboard';
 import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
 import TrainerClassesPage from './pages/Trainer/Classes.jsx';
 import TrainerStats from './pages/TrainerStats.jsx';
+import TrainerSchedulePage from './pages/trainer/TrainerSchedulePage.jsx';
 
 // Trainee Pages
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
@@ -40,6 +41,7 @@ import LandingPage from './pages/all/jsx/LandingPage.jsx';
 // Components
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Navbar from './components/Navbar.jsx';
+import MessagesRedirector from './components/MessagesRedirector.jsx';
 
 function App() {
     const { isAuthenticated, logout, user } = useAuth();
@@ -171,12 +173,17 @@ function App() {
                             <TrainerStats />
                         </ProtectedRoute>
                     } />
+                    <Route path="/trainer/schedule" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <TrainerSchedulePage />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Trainee Routes */}
                     <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
                     <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
-                    <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/trainee/profile" element={<Navigate to="/profile" replace />} />
                     <Route path="/trainee/subscription" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
                     <Route path="/trainee/messages" element={<ProtectedRoute><TraineeMessagesPage /></ProtectedRoute>} />
                     <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
@@ -185,6 +192,15 @@ function App() {
                     <Route path="/trainee/subscriptions/confirm/:packageId" element={<ProtectedRoute><ConfirmPurchasePage /></ProtectedRoute>} />
                     <Route path="/trainee/messages" element={<ProtectedRoute><TraineeMessagesPage /></ProtectedRoute>} />
                     <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
+
+                    {/* פרופיל אחיד לכל המשתמשים */}
+                    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/trainer/profile" element={<Navigate to="/profile" replace />} />
+                    <Route path="/admin/profile" element={<Navigate to="/profile" replace />} />
+
+                    {/* הודעות - הפניה אוטומטית לפי סוג המשתמש */}
+                    <Route path="/messages" element={<ProtectedRoute><MessagesRedirector user={user} /></ProtectedRoute>} />
+
                     {/* Catch-all route - redirect to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

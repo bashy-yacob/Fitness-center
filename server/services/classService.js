@@ -232,7 +232,7 @@ export async function getClassRegistrations(classId) {
     const connection = await pool.getConnection();
     try {
         const [registrations] = await connection.execute(
-            `SELECT u.id AS trainee_id, u.first_name, u.last_name, u.email, cr.registered_at
+            `SELECT u.id AS trainee_id, u.first_name, u.last_name, u.email, cr.registration_date
              FROM class_registrations cr
              INNER JOIN users u ON cr.trainee_id = u.id
              WHERE cr.class_id = ?`,

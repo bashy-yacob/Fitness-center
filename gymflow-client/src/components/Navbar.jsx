@@ -27,6 +27,10 @@ export default function Navbar({ onLogout }) {
       <Link key="home" to={getHomePath()} className="nav-link" onClick={() => setMenuOpen(false)}>דף הבית</Link>
     ];
     if (isAuthenticated && user) {
+      // קישור לעמוד ההודעות לכל סוגי המשתמשים
+      links.push(
+        <Link key="messages" to="/messages" className="nav-link" onClick={() => setMenuOpen(false)}>הודעות</Link>
+      );
       switch (user.user_type) {
         case 'admin':
           links.push(
@@ -73,13 +77,14 @@ export default function Navbar({ onLogout }) {
         <div className="nav-actions">
           {isAuthenticated && user && (
             <div className="nav-profile-area">
-              <Link to={`/${user.user_type}/profile`} className="profile-link" onClick={() => setMenuOpen(false)}>
+              <Link to="/profile" className="profile-link" onClick={() => setMenuOpen(false)}>
                 <img
                   src={user.profile_image || "/public/images/default-profile.png"}
                   alt="פרופיל"
                   className="profile-img"
                   height="38"
                   width="38"
+                  style={{ cursor: 'pointer' }}
                 />
               </Link>
             </div>

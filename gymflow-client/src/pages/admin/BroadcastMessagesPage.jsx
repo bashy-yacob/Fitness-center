@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './BroadcastMessagesPage.css';
 import BroadcastMessageForm from './BroadcastMessageForm.jsx';
 import EditBroadcastMessageModal from './EditBroadcastMessageModal.jsx';
 import PrivateMessageForm from '../PrivateMessageForm.jsx';

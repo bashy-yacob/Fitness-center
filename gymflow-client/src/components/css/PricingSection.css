@@ -1,18 +1,24 @@
+@import '../../styles/theme.css';
+
 .pricing-section {
   padding: 80px 20px;
-  background-color: var(--bg-secondary);
+  background: var(--section-bg);
   text-align: center;
 }
 
 .section-title {
   font-size: 2.5rem;
-  color: var(--text-primary);
+  color: var(--h3-primary-color);
   margin-bottom: 1rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(34, 219, 71, 0.15);
 }
 
 .section-subtitle {
   font-size: 1.2rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-bottom: 3rem;
 }
 
@@ -26,19 +32,23 @@
 }
 
 .package-card {
-  background: var(--bg-primary);
-  border-radius: 15px;
+  background: var(--card-bg);
+  border-radius: 18px;
   padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1.5px solid var(--border-color);
+  transition: transform 0.3s, box-shadow 0.2s, border 0.2s;
   position: relative;
   overflow: hidden;
   text-align: right;
   direction: rtl;
+  color: var(--text-color);
 }
 
 .package-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 8px 32px 0 rgba(34, 219, 71, 0.1);
+  border-color: var(--accent-color);
 }
 
 .package-card.recommended {
@@ -58,14 +68,17 @@
 
 .package-card h3 {
   font-size: 1.8rem;
-  color: var(--text-primary);
+  color: var(--h3-primary-color);
+  font-weight: 900;
   margin-bottom: 1.5rem;
+  text-shadow: 0 2px 8px rgba(34, 219, 71, 0.1);
 }
 
 .package-price {
   font-size: 2.5rem;
   color: var(--accent-color);
   margin-bottom: 2rem;
+  font-weight: 900;
 }
 
 .currency {
@@ -75,7 +88,7 @@
 
 .period {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .package-features {
@@ -86,7 +99,7 @@
 
 .package-features li {
   margin-bottom: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -99,18 +112,23 @@
 
 .subscribe-button {
   background: var(--accent-color);
-  color: white;
+  color: #111;
   border: none;
   border-radius: 25px;
   padding: 1rem 2rem;
   font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   width: 100%;
+  box-shadow: 0 2px 12px 0 rgba(90, 212, 114, 0.08);
 }
 
 .subscribe-button:hover {
-  background: var(--accent-hover);
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 4px 24px 0 rgba(90, 212, 114, 0.18);
 }
 
 .pricing-section-loading,
@@ -118,7 +136,7 @@
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .pricing-section-error {

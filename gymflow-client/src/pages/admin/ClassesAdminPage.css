@@ -1,25 +1,33 @@
+@import '../../styles/theme.css';
+
 .classes-admin-page {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  /* background: #fff; */
-  border-radius: 12px;
-  box-shadow: 0 2px 12px #0001;
+  background: var(--section-bg);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
   direction: rtl;
 }
 
 .classes-admin-page h2 {
   text-align: center;
   margin-bottom: 1.5rem;
+  color: var(--h3-primary-color);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(34,219,71,0.10);
 }
 
 .classes-admin-page .error {
-  color: #b00;
-  background: #fee;
+  color: var(--error-color);
+  background: #fee2f8;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 1rem;
   text-align: center;
+  font-weight: 700;
 }
 
 .class-form {
@@ -27,35 +35,58 @@
   flex-wrap: wrap;
   gap: 1rem 2rem;
   margin-bottom: 2rem;
-  background: #f7f7f7;
-  padding: 1rem;
-  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08);
 }
 .class-form label {
   flex: 1 1 200px;
   display: flex;
   flex-direction: column;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--accent-soft);
 }
 .class-form input,
 .class-form select {
   margin-top: 0.3rem;
-  padding: 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.7em 1em;
+  border-radius: 10px;
+  border: 1.5px solid #333;
+  background: #222;
+  color: #fff;
+  font-size: 1em;
+  margin-bottom: 0.7em;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.class-form input:focus,
+.class-form select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+  outline: none;
 }
 .class-form button {
   margin-top: 1.2rem;
   padding: 0.5rem 1.5rem;
-  background: #1976d2;
-  /* color: #fff; */
+  background: var(--primary-color);
+  color: var(--text-color);
   border: none;
-  border-radius: 4px;
+  border-radius: 14px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1em;
+  letter-spacing: 1px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.class-form button:hover, .class-form button:focus {
+  background: var(--accent-color);
+  color: #111;
+  box-shadow: 0 4px 24px 0 rgba(90,212,114,0.18);
 }
 .class-form button[type="button"] {
-  background: #aaa;
+  background: var(--secondary-color);
+  color: #fff;
   margin-right: 0.5rem;
 }
 
@@ -63,26 +94,47 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1.5rem;
-  background: #fafbfc;
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08);
+  color: var(--text-color);
+  overflow: hidden;
+  transition: box-shadow 0.2s, border 0.2s;
 }
 .classes-table th,
 .classes-table td {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   padding: 0.7rem 0.5rem;
   text-align: center;
 }
 .classes-table th {
-  background: #f0f4f8;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.1em;
+}
+.classes-table tr:hover {
+  background: var(--section-bg);
 }
 .classes-table button {
   margin: 0 0.2rem;
   padding: 0.3rem 0.8rem;
   border: none;
-  border-radius: 4px;
-  background: #1976d2;
-  /* color: #fff; */
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: var(--text-color);
+  font-weight: 700;
+  font-size: 1em;
+  letter-spacing: 1px;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.classes-table button:hover {
+  background: var(--accent-color);
+  color: #111;
+  box-shadow: 0 2px 12px 0 rgba(90,212,114,0.18);
 }
 .classes-table button:last-child {
-  background: #b71c1c;
+  background: var(--error-color);
+  color: #fff;
 }

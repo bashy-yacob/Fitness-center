@@ -1,0 +1,80 @@
+@import '../../styles/theme.css';
+
+.package-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(26,26,26,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.package-modal-form {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px 0 rgba(34,219,71,0.10);
+  padding: 2.5em 2em 2em 2em;
+  min-width: 340px;
+  max-width: 95vw;
+  border: 1.5px solid var(--accent-soft);
+  position: relative;
+  animation: modalIn 0.25s cubic-bezier(.4,2,.6,1) both;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.package-modal-form h2 {
+  color: var(--h3-primary-color);
+  font-weight: 900;
+  margin-bottom: 1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(34,219,71,0.15);
+}
+.package-modal-form label {
+  color: var(--accent-soft);
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  display: block;
+}
+.package-modal-form input {
+  width: 100%;
+  padding: 0.7em 1em;
+  border-radius: 10px;
+  border: 1.5px solid #333;
+  background: #222;
+  color: #fff;
+  font-size: 1em;
+  margin-bottom: 0.7em;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.package-modal-form input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+  outline: none;
+}
+.package-modal-form .modal-actions {
+  display: flex;
+  gap: 1em;
+  margin-top: 1.2em;
+  justify-content: flex-end;
+}
+.package-modal-form button {
+  background: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 14px;
+  padding: 0.5em 1.5em;
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin: 0 0.2em;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.package-modal-form button:hover, .package-modal-form button:focus {
+  background: var(--accent-color);
+  color: #111;
+  box-shadow: 0 4px 24px 0 rgba(90,212,114,0.18);
+}

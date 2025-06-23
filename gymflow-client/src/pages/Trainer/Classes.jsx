@@ -33,7 +33,7 @@ const TrainerClassesPage = () => {
 
   const fetchParticipants = async (classId) => {
     try {
-      const data = await apiService.get(`/class/${classId}/registrations`);
+      const data = await apiService.get(`/classes/${classId}/registrations`); // הסר /api כי BASE_URL כבר כולל אותו
       setParticipants(data);
       setShowParticipants(true);
     } catch (err) {
