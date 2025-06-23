@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import apiService from '../api/apiService.js';
-import SendPrivateMessageForm from './SendPrivateMessageForm.jsx';
+import apiService from '../../../api/apiService.js';
+import SendPrivateMessageForm from '../../all/jsx/SendPrivateMessageForm.jsx';
 
 const tabStyles = {
   display: 'flex',

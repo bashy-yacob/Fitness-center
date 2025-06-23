@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import '../../src/index.css'; // Assuming you have a global CSS file for styles
-
+import '../../../../src/index.css'; // Assuming you have a global CSS file for styles
+ 
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

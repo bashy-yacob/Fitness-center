@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import BroadcastMessageForm from './BroadcastMessageForm.jsx';
 import EditBroadcastMessageModal from './EditBroadcastMessageModal.jsx';
-import PrivateMessageForm from './PrivateMessageForm.jsx';
-import apiService from '../api/apiService.js';
+import PrivateMessageForm from '../PrivateMessageForm.jsx';
+import apiService from '../../api/apiService.js';
 
 const BroadcastMessagesPage = () => {
   const [messages, setMessages] = useState([]);

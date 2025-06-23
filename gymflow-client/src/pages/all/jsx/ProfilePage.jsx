@@ -1,8 +1,8 @@
 // src/pages/ProfilePage.js - הקוד המלא והסופי המשלב עדכון פרטים והעלאת תמונה
 
 import React, { useState, useEffect } from 'react';
-import apiService from '../api/apiService';
-import { useAuth } from '../hooks/useAuth'; // נייבא את useAuth כדי לעדכן את המשתמש הגלובלי
+import apiService from '../../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth'; // נייבא את useAuth כדי לעדכן את המשתמש הגלובלי
 
 function ProfilePage() {
     // --- ניהול מצב (State) ---

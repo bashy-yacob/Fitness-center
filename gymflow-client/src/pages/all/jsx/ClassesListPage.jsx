@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import apiService from '../api/apiService';
-import { useAuth } from '../hooks/useAuth';
+import apiService from '../../../api/apiService';
+import { useAuth } from '../../../hooks/useAuth';
 
 function ClassesListPage() {
 //     const [classes, setClasses] = useState([]);

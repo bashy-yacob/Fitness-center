@@ -107,7 +107,7 @@ function MySchedulePage() {
                     </div>
                 )}
             </div>
-        </div>    );
+        </div>);
 }
 
 export default MySchedulePage;

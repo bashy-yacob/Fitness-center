@@ -10,10 +10,10 @@ import ClassesAdminPage from './pages/admin/ClassesAdminPage.jsx';
 import AdminSubscriptionsPaymentsPage from './pages/admin/AdminSubscriptionsPaymentsPage.jsx';
 import AdminPackagesPage from './pages/admin/AdminPackagesPage.jsx';
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx';
-import AdminMessagesPage from './pages/AdminMessagesPage.jsx';
+import AdminMessagesPage from './pages/admin/AdminMessagesPage.jsx';
 
 // Trainer Pages
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/all/jsx/Dashboard.jsx';
 import TrainerDashboard from './pages/Trainer/Dashboard';
 // import TrainerClasses from './pages/Trainer/Classes';
 
@@ -23,17 +23,17 @@ import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
 import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
 import PurchaseSubscriptionPage from './pages/Trainee/jsx/PurchaseSubscriptionPage.jsx';
-import TraineeMessagesPage from './pages/TraineeMessagesPage.jsx';
+import TraineeMessagesPage from './pages/Trainee/jsx/TraineeMessagesPage.jsx';
 import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';
 import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
 import PricingPage from './pages/Trainee/jsx/PricingPage.jsx';
 // ניצור את הקובץ הזה בהמשך
 import ConfirmPurchasePage from './pages/Trainee/jsx/ConfirmPurchasePage.jsx'; 
-// // ...
+
 // Shared Pages
-import LoginPage from './pages/LoginPage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
-import LandingPage from './pages/LandingPage.jsx';
+import LoginPage from './pages/all/jsx/LoginPage.jsx';
+import RegisterPage from './pages/all/jsx/RegisterPage.jsx';
+import LandingPage from './pages/all/jsx/LandingPage.jsx';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute.jsx';

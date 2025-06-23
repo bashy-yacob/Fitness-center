@@ -1,5 +1,3 @@
--- gymflow_seed_data.sql
-
 -- וודא שאנחנו עובדים על מסד הנתונים הנכון
 USE gymflow_db;
 
@@ -22,12 +20,12 @@ INSERT INTO users (id, first_name, last_name, email, phone_number, user_type) VA
 -- בפועל, יש לגבב את הסיסמה בצד השרת לפני השמירה.
 -- -------------------------------------------------------------------------
 INSERT INTO user_credentials (user_id, password_hash) VALUES
-(1, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'), -- bcrypt hash for 'password123' (example)
-(101, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'), -- bcrypt hash for 'password123' (example)
-(102, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'), -- bcrypt hash for 'password123' (example)
-(201, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'), -- bcrypt hash for 'password123' (example)
-(202, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'), -- bcrypt hash for 'password123' (example)
-(203, '$2a$10$abcdefghijklmnopqrstuvwxy1234567890abcdefghijklmno1234567890'); -- bcrypt hash for 'password123' (example)
+(1, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'), -- bcrypt hash for 'password123' (example)
+(101, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'), -- bcrypt hash for 'password123' (example)
+(102, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'), -- bcrypt hash for 'password123' (example)
+(201, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'), -- bcrypt hash for 'password123' (example)
+(202, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'), -- bcrypt hash for 'password123' (example)
+(203, '$2a$10$CwTycUXWue0Thq9StjUM0uJ8i6rQ4pQ1rQ4pQ1rQ4pQ1rQ4pQ1rQ1u'); -- bcrypt hash for 'password123' (example)
 
 
 -- -------------------------------------------------------------------------

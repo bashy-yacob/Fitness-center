@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import apiService from '../api/apiService';
-import { fetchAllOtherUsers } from '../api/userService';
+import apiService from '../../../api/apiService';
+import { fetchAllOtherUsers } from '../../../api/userService';
 
 const SendPrivateMessageForm = ({ onSuccess }) => {
   const [users, setUsers] = useState([]);

@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth.js';
-import TraineeDashboardPage from './Trainee/jsx/Dashboard.jsx'// Import the new component
+import { useAuth } from '../../../hooks/useAuth.js';
+import TraineeDashboardPage from '../../Trainee/jsx/Dashboard.jsx'// Import the new component
 // import TrainerDashboardPage from './Trainer/jsx/Dashboard.jsx'// Import the new component
-import AdminDashboardPage from './admin/Dashboard.jsx';
+import AdminDashboardPage from '../../admin/Dashboard.jsx';
 
 function Dashboard() {
     const { user } = useAuth();

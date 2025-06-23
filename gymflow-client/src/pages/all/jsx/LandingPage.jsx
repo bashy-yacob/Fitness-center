@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import PricingSection from '../components/PricingSection';
-import './LandingPage.css';
-import { classService } from '../api/classService';
-import { useAuth } from '../hooks/useAuth';
+import PricingSection from '../../../components/PricingSection';
+import '../css/LandingPage.css'; // Assuming you have a CSS file for styles
+import { classService } from '../../../api/classService';
+import { useAuth } from '../../../hooks/useAuth';
 
 // todo אני רוצה להוסיף שכל פעם שמישהו רוצה הלתחבר אז אחרי הרישום הוא יחזור לאן שהוא רצה להגיע לפני הרישום
 //todo אולה יש אפשרות בכל פעם שלוחצים על קישור ישלח לפונקציה גלובלית על מה הוא לחץ
