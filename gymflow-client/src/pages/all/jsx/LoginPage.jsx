@@ -3,12 +3,14 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import '../../../../src/index.css'; // Assuming you have a global CSS file for styles
+
  
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const auth = useAuth();
+    const { login, redirectPath, setRedirectPath } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -17,12 +19,17 @@ function LoginPage() {
         e.preventDefault();
         setError('');
         try {
-            const token = await auth.login(email, password);
-            const decodedToken = jwtDecode(token);
-            let targetPath = '/dashboard';
-            navigate(targetPath, { replace: true });
+            await auth.login(email, password);
+            // בודקים אם יש נתיב שמור ב-context
+           if (redirectPath) {
+                const pathToNavigate = redirectPath;
+                setRedirectPath(null); // נקה את הזיכרון מיד
+                navigate(pathToNavigate, { replace: true });
+            } else {
+                navigate('/dashboard', { replace: true });
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+            setError(err.response?.data?.message || err.response?.data?.error || 'Login failed. Please check your credentials.');
             console.error(err);
         }
     }; return (

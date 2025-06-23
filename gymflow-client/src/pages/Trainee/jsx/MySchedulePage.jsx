@@ -39,7 +39,7 @@ function MySchedulePage() {
 
         try {
             await apiService.delete(`/classes/${classId}/unregister`);
-            
+
             // עדכון הממשק מיידית עם הצלחה
             setMyClasses(prevClasses => prevClasses.filter(cls => cls.id !== classId));
             // Optionally, add a success message here, e.g., using a toast notification library
@@ -60,9 +60,9 @@ function MySchedulePage() {
     return (
         <div className="schedule-page-container">
             <h1>מערך השיעורים שלי</h1>
-            
+
             {error && <p className="error-message">{error}</p>}
-            
+
             {myClasses.length === 0 ? (
                 <p className="no-classes-message">עדיין לא נרשמת לאף חוג. זה הזמן להתחיל!</p>
             ) : (
@@ -79,24 +79,40 @@ function MySchedulePage() {
                     <tbody>
                         {myClasses.map(cls => (
                             <tr key={cls.id}>
+                                {/* תיקון 1: הצגת שם החוג */}
                                 <td>{cls.name}</td>
-                                <td>{cls.trainer}</td>
-                                <td>{new Date(cls.date).toLocaleString('he-IL')}</td>
+
+                                {/* תיקון 2: הצגת שם המאמן מהשדה החדש */}
+                                <td>{cls.trainer_name}</td>
+
+                                {/* תיקון 3: שימוש בשדה הנכון 'start_time' ושיפור הפורמט */}
+                                <td>
+                                    {new Date(cls.start_time).toLocaleString('he-IL', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </td>
+
+                                {/* תיקון 4: הצגת הסטטוס מהשדה החדש */}
                                 <td>
                                     <span className={`status-badge status-${(cls.status || '').toLowerCase()}`}>
                                         {cls.status || 'לא ידוע'}
                                     </span>
                                 </td>
+
+                                {/* תיקון 5: עדכון התנאי להצגת כפתור הביטול */}
                                 <td>
-                                    {/* הצג את כפתור הביטול רק אם הסטטוס מאפשר זאת */}
-                                    {/* Assuming 'נרשם' means registered and eligible for unregistration */}
-                                    {cls.status === 'נרשם' && (
-                                        <button 
+                                    {cls.status === 'registered' && (
+                                        <button
                                             onClick={() => handleUnregister(cls.id)}
                                             disabled={unregisteringId === cls.id}
-                                            className="cancel-btn" // Consider renaming class if it's generic for actions
+                                            className="cancel-btn"
                                         >
-                                            {unregisteringId === cls.id ? 'מבטל הרשמה...' : 'בטל הרשמה'}
+                                            {unregisteringId === cls.id ? 'מבטל...' : 'בטל הרשמה'}
                                         </button>
                                     )}
                                 </td>

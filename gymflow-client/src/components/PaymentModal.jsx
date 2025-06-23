@@ -1,18 +1,17 @@
 // בקובץ: src/components/PaymentModal.jsx
 
 import React, { useState } from 'react';
-import apiService from '../api/apiService';
-import './css/PaymentModal.css'; // ניצור את קובץ ה-CSS הזה מיד
+// apiService לא נחוץ כאן יותר
+// import apiService from '../api/apiService'; 
+import './css/PaymentModal.css';
 
-function PaymentModal({ gymClass, onClose, onSuccess }) {
+// === שינוי בחתימת הפונקציה: מקבלים onConfirm במקום onSuccess/onError ===
+function PaymentModal({ gymClass, onClose, onConfirm }) {
+    // isProcessing נשאר כדי להציג "מעבד..." בזמן הלחיצה
     const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState('');
 
-    // פרטי התשלום הם כרגע רק ל-UI, אנחנו לא שולחים אותם לשרת
     const [paymentDetails, setPaymentDetails] = useState({
-        cardNumber: '',
-        expiryDate: '',
-        cvv: ''
+        cardNumber: '', expiryDate: '', cvv: ''
     });
 
     const handleInputChange = (e) => {
@@ -20,28 +19,18 @@ function PaymentModal({ gymClass, onClose, onSuccess }) {
         setPaymentDetails(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    // === פונקציית ה-handleSubmit פשוטה משמעותית ===
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setError('');
         setIsProcessing(true);
-
-        try {
-            // זו הקריאה ל-API האמיתי שבנינו בשרת!
-            // היא תפעיל את הטרנזקציה של רישום ותשלום.
-            await apiService.post(`/classes/${gymClass.id}/pay-and-register`, {});
-
-            // אם הקריאה הצליחה, אנחנו קוראים לפונקציית ה-onSuccess
-            // שהגיעה מהקומפוננטה האבא (ClassesPage)
-            onSuccess(gymClass.id);
-
-        } catch (err) {
-            // הצגת הודעת שגיאה שהגיעה מהשרת
-            const errorMessage = err.response?.data?.error || 'An unexpected error occurred during payment.';
-            setError(errorMessage);
-        } finally {
-            // בכל מקרה, מפסיקים את מצב העיבוד
-            setIsProcessing(false);
+        
+        // פשוט קוראים לפונקציה onConfirm שהגיעה מהאבא
+        // ומעבירים לה את ה-ID של החוג.
+        if (onConfirm) {
+            onConfirm(gymClass.id);
         }
+        
+        // אין צורך ב-try/catch/finally כאן, כי העמוד הראשי מטפל בהכל.
     };
 
     if (!gymClass) {
@@ -74,10 +63,8 @@ function PaymentModal({ gymClass, onClose, onSuccess }) {
                         </div>
                     </div>
 
-                    {error && <p className="error-message">{error}</p>}
-
                     <button type="submit" className="submit-payment-btn" disabled={isProcessing}>
-                        {isProcessing ? 'מעבד תשלום...' : 'שלם עכשיו והירשם'}
+                        {isProcessing ? 'מעבד...' : 'שלם עכשיו והירשם'}
                     </button>
                 </form>
             </div>

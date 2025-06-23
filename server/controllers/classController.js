@@ -75,10 +75,19 @@ export async function registerForClass(req, res, next) {
 
 export async function unregisterFromClass(req, res, next) {
     try {
-        const { classId } = req.params;
-        const unregistered = await classService.unregisterFromClass(req.userId, classId);
+        const classId = parseInt(req.params.classId, 10);
+        // === כאן התיקון: שימוש ב-req.user.id במקום req.userId ===
+        const traineeId = req.user.id; 
+
+        // ודא שקיבלנו את כל המידע הנדרש
+        if (!traineeId || isNaN(classId)) {
+            throw new AppError('Missing user or class information', 400);
+        }
+
+        const unregistered = await classService.unregisterFromClass(traineeId, classId);
         if (!unregistered) {
-            throw new AppError('Failed to unregister from class or not registered', 400);
+            // הודעה קצת יותר ברורה למשתמש
+            throw new AppError('Could not unregister. You might not be registered for this class.', 404);
         }
         res.status(200).json({ message: 'Successfully unregistered from class' });
     } catch (error) {

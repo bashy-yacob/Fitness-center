@@ -260,19 +260,14 @@ const updateSubscriptionSchema = Joi.object({
 });
 
 const purchaseSubscriptionSchema = Joi.object({
-    subscriptionTypeId: Joi.number().integer().positive().required().messages({
-        'number.base': 'מזהה סוג מנוי חייב להיות מספר.',
-        'number.integer': 'מזהה סוג מנוי חייב להיות מספר שלם.',
-        'number.positive': 'מזהה סוג מנוי חייב להיות מספר חיובי.',
-        'any.required': 'מזהה סוג מנוי הוא שדה חובה.'
-    }),
+    subscriptionTypeId: Joi.number().integer().positive().required(),
     paymentDetails: Joi.object({
         transaction_id: Joi.string().trim().max(255).optional(),
         status: Joi.string().valid('completed', 'pending', 'failed', 'refunded').optional().default('completed'),
-        notes: Joi.string().trim().max(1000).optional(),
-    }).optional(),
+        // מאפשרים לשדה להיות חסר, ריק, או null
+        notes: Joi.string().trim().max(1000).optional().allow('', null),
+    }).optional().default({}), // מבטיח שאם paymentDetails לא נשלח, הוא יטופל כאובייקט ריק
 });
-
 
 const updatePaymentStatusSchema = Joi.object({
     status: Joi.string().valid('completed', 'pending', 'failed', 'refunded').required().messages({
