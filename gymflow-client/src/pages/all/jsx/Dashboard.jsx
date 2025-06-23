@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../../hooks/useAuth.js';
 import TraineeDashboardPage from '../../Trainee/jsx/Dashboard.jsx'// Import the new component
-// import TrainerDashboardPage from './Trainer/jsx/Dashboard.jsx'// Import the new component
+import TrainerDashboardPage from '../../Trainer/Dashboard.jsx'// Import the new component
 import AdminDashboardPage from '../../admin/Dashboard.jsx';
 
 function Dashboard() {
@@ -24,7 +24,7 @@ function Dashboard() {
             case 'admin':
                 return <AdminDashboardPage />;
             case 'trainer':
-                // return <TrainerDashboardPage />;
+                return <TrainerDashboardPage />;
             case 'trainee':
                 return <TraineeDashboardPage />;
             default:

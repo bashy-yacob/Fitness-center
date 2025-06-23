@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PackageFormModal from '../../components/PackageFormModal.jsx';
+import apiService from '../../api/apiService';
 
 const TABS = {
   SUBSCRIPTIONS: 'סוגי מנויים',
@@ -15,16 +16,13 @@ export default function AdminSubscriptionsPaymentsPage() {
 
   useEffect(() => {
     if (tab === TABS.SUBSCRIPTIONS) {
-      fetch('/api/pricing-packages')
-        .then(res => res.json())
+      apiService.get('/pricing-packages')
         .then(data => {
-          console.log('packages:', data); // debug
           setPackages(data);
         })
         .catch(() => setPackages([]));
     } else {
-      fetch('/api/payments')
-        .then(res => res.json())
+      apiService.get('/payments')
         .then(setPayments)
         .catch(() => setPayments([]));
     }
@@ -33,17 +31,8 @@ export default function AdminSubscriptionsPaymentsPage() {
   // מחיקת מנוי
   function handleDeletePackage(id) {
     if (!window.confirm('האם אתה בטוח שברצונך למחוק את המנוי?')) return;
-    const token = localStorage.getItem('token');
-    fetch(`/api/pricing-packages/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      credentials: 'include',
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('מחיקה נכשלה');
+    apiService.delete(`/pricing-packages/${id}`)
+      .then(() => {
         setPackages(pkgs => pkgs.filter(pkg => pkg.id !== id));
       })
       .catch(() => alert('שגיאה במחיקת מנוי'));
@@ -68,14 +57,13 @@ export default function AdminSubscriptionsPaymentsPage() {
   }
   // שליחת טופס (חדש או עדכון)
   function handleModalSubmit(form) {
-    const token = localStorage.getItem('token');
     const isEdit = !!modalInitial;
     if (isEdit && !modalInitial.id) {
       alert('שגיאה: לא נמצא מזהה מנוי לעריכה');
       return;
     }
-    const method = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? `/api/pricing-packages/${modalInitial.id}` : '/api/pricing-packages';
+    const method = isEdit ? 'put' : 'post';
+    const url = isEdit ? `/pricing-packages/${modalInitial.id}` : '/pricing-packages';
     // המרת שדות למספרים עם ערכי ברירת מחדל
     const payload = {
       name: form.name || '',
@@ -87,24 +75,11 @@ export default function AdminSubscriptionsPaymentsPage() {
           ? null
           : Number(form.max_classes_per_month)
     };
-    console.log('payload:', payload); // debug
-    fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload)
-    })
-      .then(res => {
-        if (!res.ok) return res.json().then(e => { throw new Error(e.message || 'שמירה נכשלה'); });
-        return res.json();
-      })
+    apiService[method](url, payload)
       .then(data => {
         setModalOpen(false);
         setModalInitial(null);
-        if (method === 'POST') {
+        if (method === 'post') {
           setPackages(pkgs => [...pkgs, { ...payload, id: data.id }]);
         } else {
           setPackages(pkgs => pkgs.map(p => p.id === modalInitial.id ? { ...p, ...payload } : p));

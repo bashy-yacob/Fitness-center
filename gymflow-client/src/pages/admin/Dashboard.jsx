@@ -2,14 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useNavigate } from 'react-router-dom';
+import apiService from '../../api/apiService';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
-
-const fetchSummary = async () => {
-  const res = await fetch('/api/admin/reports/summary');
-  if (!res.ok) throw new Error('Failed to fetch summary');
-  return res.json();
-};
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
@@ -17,13 +12,11 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSummary()
+    apiService.get('/admin/reports/summary')
       .then(data => {
-        console.log('Admin dashboard data:', data);
         setStats(data);
       })
       .catch((err) => {
-        console.error('Dashboard fetch error:', err);
         setError('שגיאה בטעינת נתוני דשבורד');
       });
   }, []);

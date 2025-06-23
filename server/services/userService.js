@@ -131,7 +131,7 @@ export async function getUserWithCredentials(email) {
         if (!users.length) {
             throw new Error('User not found');
         }
-
+console.log(`DEBUG: Retrieved user with email ${email}`, users[0]); // DEBUG: בדוק את המשתמש שנמצא
         return users[0];
     } catch (error) {
         throw new Error(`Failed to get user: ${error.message}`);
@@ -485,6 +485,26 @@ export async function deleteUser(userId) {
     } catch (error) {
         await connection.rollback();
         throw new Error(`Failed to delete user: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+export async function getReceivedMessages(userId) {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute(
+            `SELECT m.id, m.message_text, m.sent_at, m.message_type, m.sender_id, u.first_name AS sender_name, u.email AS sender_email
+             FROM messages m
+             LEFT JOIN users u ON m.sender_id = u.id
+             WHERE m.receiver_id = ?
+             ORDER BY m.sent_at DESC
+             LIMIT 100`,
+            [userId]
+        );
+        return rows;
+    } catch (error) {
+        throw new Error(`Failed to get received messages: ${error.message}`);
     } finally {
         connection.release();
     }

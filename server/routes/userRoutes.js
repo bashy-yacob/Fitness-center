@@ -24,5 +24,6 @@ router.post('/me/profile-picture', verifyToken, upload.single('profilePicture'),
 // סינון משתמשים לפי סוג
 router.get('/filter/by-type', verifyToken, userController.getUsersByType);
 // נתיבים לניהול משתמשים על ידי אדמין
+router.get('/me/messages/received', verifyToken, userController.getReceivedMessages);
 
 export default router;

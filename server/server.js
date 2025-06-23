@@ -12,6 +12,7 @@ import traineeRoutes from './routes/traineeRoutes.js';  // הוספת ייבוא
 import pricingPackageRoutes from './routes/pricingPackageRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; // הוספת ייבוא של adminRoutes
 import messageRoutes from './routes/messageRoutes.js'; // הוספת ייבוא של messageRoutes
+import trainerRoutes from './routes/trainerRoutes.js'; // ייבוא נתיבי מאמן
 import pool from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -39,7 +40,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/pricing-packages', pricingPackageRoutes);
 app.use('/api/admin', adminRoutes); // הוספת הנתיב לניהול
 app.use('/api', messageRoutes); // נתיב כללי להודעות שיווקיות
-
+app.use('/api/trainer', trainerRoutes); // שינוי ליחיד כדי שיתאים לנתיבים בקליינט
 
 app.use(errorHandler);
 

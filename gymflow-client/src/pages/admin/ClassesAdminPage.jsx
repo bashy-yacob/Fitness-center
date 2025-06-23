@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './ClassesAdminPage.css';
+import apiService from '../../api/apiService';
 
 const initialFormState = {
   name: '',
@@ -24,8 +25,6 @@ export default function ClassesAdminPage() {
   const [selectedTrainer, setSelectedTrainer] = useState('');
   // אפשר להוסיף בהמשך: selectedRoom, selectedActive, selectedDate וכו'
 
-  const token = localStorage.getItem('token');
-
   useEffect(() => {
     fetchClasses();
     fetchRooms();
@@ -35,14 +34,7 @@ export default function ClassesAdminPage() {
   const fetchClasses = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/classes', {
-        credentials: 'include',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await apiService.get('/classes');
       setClasses(data);
     } catch (err) {
       setError('שגיאה בטעינת החוגים');
@@ -52,29 +44,14 @@ export default function ClassesAdminPage() {
 
   const fetchRooms = async () => {
     try {
-      const res = await fetch('/api/rooms', {
-        credentials: 'include',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await apiService.get('/rooms');
       setRooms(data);
     } catch {}
   };
 
   const fetchTrainers = async () => {
     try {
-      // יש להשתמש בנתיב הנכון לסינון לפי סוג משתמש
-      const res = await fetch('/api/users/filter/by-type?type=trainer', {
-        credentials: 'include',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await apiService.get('/users/filter/by-type?type=trainer');
       setTrainers(data);
     } catch {}
   };
@@ -88,14 +65,7 @@ export default function ClassesAdminPage() {
   const handleDelete = async (id) => {
     if (!window.confirm('האם למחוק את החוג?')) return;
     try {
-      const res = await fetch(`/api/classes/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
-      if (!res.ok) throw new Error();
+      await apiService.delete(`/classes/${id}`);
       fetchClasses();
     } catch {
       setError('שגיאה במחיקה');
@@ -110,9 +80,7 @@ export default function ClassesAdminPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let res;
       if (editId) {
-        // שלח רק את השדות הרלוונטיים לעדכון
         const {
           name,
           description,
@@ -133,29 +101,11 @@ export default function ClassesAdminPage() {
           max_capacity: max_capacity ?? null,
           is_active: typeof is_active === 'boolean' ? is_active : true
         };
-        res = await fetch(`/api/classes/${editId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          credentials: 'include',
-          body: JSON.stringify(updateData)
-        });
+        await apiService.put(`/classes/${editId}`, updateData);
       } else {
-        // אל תשלח is_active ביצירת חוג חדש
         const { is_active, ...formWithoutIsActive } = form;
-        res = await fetch('/api/classes', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          credentials: 'include',
-          body: JSON.stringify(formWithoutIsActive)
-        });
+        await apiService.post('/classes', formWithoutIsActive);
       }
-      if (!res.ok) throw new Error();
       setShowForm(false);
       setForm(initialFormState);
       setEditId(null);

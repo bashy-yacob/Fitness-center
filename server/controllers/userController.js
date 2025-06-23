@@ -1,6 +1,7 @@
 // controllers/userController.js
 import * as userService from '../services/userService.js';
 import { AppError } from '../middleware/errorMiddleware.js'; // ייבוא AppError לטיפול בשגיאות מותאמות אישית
+import { hashPassword } from '../utils/authUtils.js'; // ייבוא פונקציית הצפנת הסיסמה
 
 
 export async function getAttendedClasses(req, res, next) {
@@ -30,22 +31,26 @@ export async function getActiveSubscription(req, res, next) {
 // או פונקציית יצירה ב-userService ללא קשר ללוגיקת אוטנטיקציה.
 // לשם הדוגמה, נציג פונקציית CRUD נפרדת.
 export async function createUserByAdmin(req, res, next) {
+    console.log('createUserByAdmin called. req.body:', req.body);
     try {
         // נשתמש בפונקציה הקיימת createUser (או נבצע לוגיקה מורחבת כאן)
         const userId = await userService.createUser(req.body);
-        // אם יש סיסמה, נשמור אותה בטבלת user_credentials
+        // אם יש סיסמה, נשמור אותה מוצפנת בטבלת user_credentials
         if (req.body.password) {
-            await userService.saveUserCredentials(userId, req.body.password);
+            const password_hash = await hashPassword(req.body.password);
+            await userService.saveUserCredentials(userId, password_hash);
         }
         // יצירת פרופיל מתאמן/מאמן אם צריך
         if (req.body.user_type === 'trainee') {
             await userService.createTraineeProfile(userId, req.body.date_of_birth, req.body.gender);
         }
         if (req.body.user_type === 'trainer') {
+            console.log('Creating trainer profile:', userId, req.body.specialization, req.body.bio);
             await userService.createTrainerProfile(userId, req.body.specialization, req.body.bio || '');
         }
         res.status(201).json({ message: 'User created successfully by admin', userId });
     } catch (error) {
+        console.error('Error in createUserByAdmin:', error);
         next(error);
     }
 }
@@ -187,6 +192,16 @@ export async function getUsersByType(req, res, next) {
         const { type } = req.query;
         const users = await userService.getUsersByType(type);
         res.status(200).json(users);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function getReceivedMessages(req, res, next) {
+    try {
+        const userId = req.user.id;
+        const messages = await userService.getReceivedMessages(userId);
+        res.json(messages);
     } catch (error) {
         next(error);
     }

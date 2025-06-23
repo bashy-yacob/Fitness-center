@@ -46,7 +46,8 @@ export default function Navbar({ onLogout }) {
         case 'trainer':
           links.push(
             <Link key="my-classes" to="/trainer/classes" className="nav-link" onClick={() => setMenuOpen(false)}>החוגים שלי</Link>,
-            <Link key="schedule" to="/trainer/schedule" className="nav-link" onClick={() => setMenuOpen(false)}>מערכת שעות</Link>
+            <Link key="schedule" to="/trainer/schedule" className="nav-link" onClick={() => setMenuOpen(false)}>מערכת שעות</Link>,
+            <Link key="stats" to="/trainer/stats" className="nav-link" onClick={() => setMenuOpen(false)}>סטטיסטיקות</Link>
           );
           break;
       }

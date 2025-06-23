@@ -12,6 +12,7 @@ export async function register(req, res) {
 
 export async function login(req, res) {
     try {
+        console.log('DEBUG login request body:', req.body); // DEBUG: בדוק את גוף הבקשה
         const { email, password } = req.body;
         const { token, user } = await authService.login(email, password);
         res.status(200).json({ message: 'Login successful', token, user });

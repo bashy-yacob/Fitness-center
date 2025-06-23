@@ -1,92 +1,138 @@
-import React, { useState, useEffect } from 'react';
-// import { useAuth } from '../../hooks/useAuth';
-// import apiService from '../../api/apiService';
-import './Classes.css'; // קובץ CSS ייעודי לעמוד
-import Card from '../../components/Card'; // נשתמש בכרטיס לעיצוב הכללי
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import apiService from '../../api/apiService';
 
-// --- הדמיה ---
-const useAuth = () => ({ user: { id: 'trainer-1' } });
-const apiService = {
-  get: async (url) => {
-    console.log(`Fetching from: ${url}`);
-    await new Promise(res => setTimeout(res, 800));
-    return [
-      { id: 101, name: 'פילאטיס בוקר', date: new Date(Date.now() + 86400000 * 2), participants: 8, maxCapacity: 10, status: 'פעיל' },
-      { id: 102, name: 'HIIT ערב', date: new Date(Date.now() + 86400000 * 3), participants: 12, maxCapacity: 12, status: 'פעיל' },
-      { id: 103, name: 'יוגה למתחילים', date: new Date(Date.now() - 86400000 * 1), participants: 7, maxCapacity: 15, status: 'הושלם' },
-      { id: 104, name: 'ספינינג', date: new Date(Date.now() + 86400000 * 5), participants: 0, maxCapacity: 15, status: 'מבוטל' },
-    ];
-  }
-};
+const TrainerClassesPage = () => {
+  const { user } = useAuth();
+  const trainerId = user?.id;
 
-const formatDate = (dateString) => new Date(dateString).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [form, setForm] = useState({ name: '', description: '', start_time: '', end_time: '', room_id: '', max_capacity: '' });
+  const [message, setMessage] = useState('');
+  const [sendMsgClassId, setSendMsgClassId] = useState(null);
+  const [msgText, setMsgText] = useState('');
 
-const TrainerClasses = () => {
-    // const { user } = useAuth();
-    const [classes, setClasses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  useEffect(() => {
+    if (!trainerId) return;
+    fetchClasses();
+  }, [trainerId]);
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                // קריאת API אמיתית:
-                // const response = await apiService.get(`/trainer/classes/${user.id}`);
-                const response = await apiService.get(`/trainer/classes/trainer-1`);
-                setClasses(response);
-            } catch (err) {
-                setError('טעינת רשימת החוגים נכשלה.');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchClasses();
-    }, []);
+  const fetchClasses = async () => {
+    if (!trainerId) return;
+    try {
+      const data = await apiService.get(`/trainer/${trainerId}/classes/upcoming`);
+      setClasses(data);
+    } catch (err) {
+      console.error('fetchClasses: error', err);
+    }
+  };
 
-    if (loading) return <p className="loading-message">טוען חוגים...</p>;
-    if (error) return <p className="error-message">{error}</p>;
+  const fetchParticipants = async (classId) => {
+    try {
+      const data = await apiService.get(`/class/${classId}/registrations`);
+      setParticipants(data);
+      setShowParticipants(true);
+    } catch (err) {
+      console.error('fetchParticipants: error', err);
+    }
+  };
 
-    return (
-        <div className="trainer-classes-page">
-            <Card title="ניהול החוגים שלי">
-                {classes.length > 0 ? (
-                    <table className="classes-table">
-                        <thead>
-                            <tr>
-                                <th>שם החוג</th>
-                                <th>תאריך ושעה</th>
-                                <th>נרשמים</th>
-                                <th>סטטוס</th>
-                                <th>פעולות</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {classes.map(cls => (
-                                <tr key={cls.id}>
-                                    <td>{cls.name}</td>
-                                    <td>{formatDate(cls.date)}</td>
-                                    <td>{cls.participants} / {cls.maxCapacity}</td>
-                                    <td>
-                                        <span className={`status-badge status-${cls.status}`}>
-                                            {cls.status}
-                                        </span>
-                                    </td>
-                                    <td className="actions-cell">
-                                        <button className="action-btn view">צפה במשתתפים</button>
-                                        <button className="action-btn edit">ערוך</button>
-                                        <button className="action-btn cancel">בטל</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+  const handleCreateClass = async (e) => {
+    e.preventDefault();
+    try {
+      await apiService.post(`/trainer/${trainerId}/classes`, form);
+      setShowCreateForm(false);
+      fetchClasses();
+    } catch (err) {
+      console.error('handleCreateClass: error', err);
+    }
+  };
+
+  const handleSendMessage = async (classId) => {
+    try {
+      await apiService.post(`/trainer/${trainerId}/messages/send-class`, { classId, messageText: msgText });
+      setSendMsgClassId(null);
+      setMsgText('');
+      setMessage('ההודעה נשלחה בהצלחה');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (err) {
+      console.error('handleSendMessage: error', err);
+    }
+  };
+
+  return (
+    <div className="trainer-classes-page">
+      <h2>ניהול חוגים</h2>
+      <button onClick={() => setShowCreateForm(!showCreateForm)}>
+        {showCreateForm ? 'ביטול' : 'צור חוג חדש'}
+      </button>
+      {showCreateForm && (
+        <form onSubmit={handleCreateClass} className="create-class-form">
+          <input placeholder="שם החוג" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+          <input placeholder="תיאור" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} required />
+          <input type="datetime-local" placeholder="התחלה" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} required />
+          <input type="datetime-local" placeholder="סיום" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} required />
+          <input placeholder="מספר חדר" value={form.room_id} onChange={e => setForm({ ...form, room_id: e.target.value })} required />
+          <input placeholder="מקסימום משתתפים" type="number" value={form.max_capacity} onChange={e => setForm({ ...form, max_capacity: e.target.value })} required />
+          <button type="submit">צור</button>
+        </form>
+      )}
+      <table className="classes-table">
+        <thead>
+          <tr>
+            <th>שם</th>
+            <th>תיאור</th>
+            <th>התחלה</th>
+            <th>סיום</th>
+            <th>חדר</th>
+            <th>משתתפים</th>
+            <th>שלח הודעה</th>
+          </tr>
+        </thead>
+        <tbody>
+          {classes.map(c => (
+            <tr key={c.id}>
+              <td>{c.name}</td>
+              <td>{c.description}</td>
+              <td>{c.start_time}</td>
+              <td>{c.end_time}</td>
+              <td>{c.room_id}</td>
+              <td>
+                <button onClick={() => fetchParticipants(c.id)}>צפייה</button>
+              </td>
+              <td>
+                {sendMsgClassId === c.id ? (
+                  <>
+                    <input value={msgText} onChange={e => setMsgText(e.target.value)} placeholder="הודעה" />
+                    <button onClick={() => handleSendMessage(c.id)}>שלח</button>
+                    <button onClick={() => setSendMsgClassId(null)}>ביטול</button>
+                  </>
                 ) : (
-                    <p>לא נמצאו חוגים המשויכים אליך.</p>
+                  <button onClick={() => setSendMsgClassId(c.id)}>שלח הודעה</button>
                 )}
-            </Card>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {message && <div className="success-message">{message}</div>}
+      {showParticipants && (
+        <div className="participants-modal">
+          <h3>משתתפי החוג</h3>
+          <ul>
+            {participants.map(p => (
+              <li key={p.trainee_id}>{p.first_name} {p.last_name} ({p.email})</li>
+            ))}
+          </ul>
+          <button onClick={() => setShowParticipants(false)}>סגור</button>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
-export default TrainerClasses;
+export default TrainerClassesPage;

@@ -31,16 +31,15 @@ export async function getTraineeDashboard(traineeId) {
                 c.start_time, 
                 c.end_time, 
                 r.name as room_name, 
-                -- שרשור שם המאמן לשם מלא
                 CONCAT(t.first_name, ' ', t.last_name) as trainer_name
              FROM class_registrations cr
              JOIN classes c ON cr.class_id = c.id
              JOIN rooms r ON c.room_id = r.id
-             -- שימי לב: ה-JOIN כאן צריך להיות לטבלה users, לא trainers ישירות
-             JOIN users t ON c.trainer_id = t.id 
+             JOIN trainers tr ON c.trainer_id = tr.user_id
+             JOIN users t ON tr.user_id = t.id
              WHERE cr.trainee_id = ? 
              AND cr.status = 'registered'
-             AND c.start_time > NOW()
+             AND c.end_time > NOW()
              ORDER BY c.start_time
              LIMIT 5`,
             [traineeId]

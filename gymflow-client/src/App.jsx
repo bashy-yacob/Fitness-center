@@ -15,7 +15,9 @@ import AdminMessagesPage from './pages/admin/AdminMessagesPage.jsx';
 // Trainer Pages
 import Dashboard from './pages/all/jsx/Dashboard.jsx';
 import TrainerDashboard from './pages/Trainer/Dashboard';
-// import TrainerClasses from './pages/Trainer/Classes';
+import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
+import TrainerClassesPage from './pages/Trainer/Classes.jsx';
+import TrainerStats from './pages/TrainerStats.jsx';
 
 // Trainee Pages
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
@@ -75,9 +77,12 @@ function App() {
                     links.push(<Link key="users" to="/admin/users">ניהול משתמשים</Link>);
                     links.push(<Link key="classes" to="/admin/classes">ניהול חוגים</Link>);
                     break;
-                // case 'trainer':
-                //     links.push(<Link key="classes" to="/trainer/classes">My Classes</Link>);
-                //     break;
+                case 'trainer':
+                    links.push(<Link key="dashboard" to="/trainer/dashboard">דשבורד</Link>);
+                    links.push(<Link key="classes" to="/trainer/classes">ניהול חוגים</Link>);
+                    links.push(<Link key="messages" to="/trainer/messages">הודעות</Link>);
+                    links.push(<Link key="stats" to="/trainer/stats">סטטיסטיקות</Link>);
+                    break;
                 case 'trainee':
                     links.push(
                         <Link key="classes" to="/trainee/classes">Classes</Link>,
@@ -151,11 +156,21 @@ function App() {
                             <TrainerDashboard />
                         </ProtectedRoute>
                     } />
-                    {/*<Route path="/trainer/classes" element={
+                    <Route path="/trainer/messages" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
-                            <TrainerClasses />
+                            <TrainerMessagesPage />
                         </ProtectedRoute>
-                    } /> */}
+                    } />
+                    <Route path="/trainer/classes" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <TrainerClassesPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/trainer/stats" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <TrainerStats />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Trainee Routes */}
                     <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />

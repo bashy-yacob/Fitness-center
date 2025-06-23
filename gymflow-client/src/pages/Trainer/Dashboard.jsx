@@ -1,154 +1,71 @@
-// src/pages/trainer/Dashboard.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Card from '../../components/Card.jsx';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import apiService from '../../api/apiService';
 import { useAuth } from '../../hooks/useAuth';
-import  apiService  from '../../api/apiService';
-import './Dashboard.css';
 
-const TrainerDashboard = () => {
-  const navigate = useNavigate();
+// דשבורד מאמן - מציג סטטיסטיקות, חוגים קרובים, הודעות אחרונות וקיצורי דרך
+function TrainerDashboardPage() {
+  const [summary, setSummary] = useState(null);
+  const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [recentMessages, setRecentMessages] = useState([]);
   const { user } = useAuth();
-  const [dashboardData, setDashboardData] = useState({
-    todayClasses: [],
-    upcomingClasses: [],
-    activeTrainees: 0,
-    notifications: [],
-    stats: {
-      totalTrainees: 0,
-      averageAttendance: 0,
-      completedClasses: 0
-    }
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const trainerId = user?.id;
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!user?.id) {
-        setError('משתמש לא מזוהה');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const [dashboardResponse, statsResponse] = await Promise.all([
-          apiService.get(`/trainer/${user.id}/dashboard`),
-          apiService.get(`/trainer/${user.id}/stats`)
-        ]);
-
-        setDashboardData({
-          todayClasses: dashboardResponse.todayClasses || [],
-          upcomingClasses: dashboardResponse.upcomingClasses || [],
-          activeTrainees: dashboardResponse.activeTrainees || 0,
-          notifications: dashboardResponse.notifications || [],
-          stats: statsResponse || {
-            totalTrainees: 0,
-            averageAttendance: 0,
-            completedClasses: 0
-          }
-        });
-      } catch (err) {
-        setError('אירעה שגיאה בטעינת הנתונים. אנא נסה שנית.');
-        console.error('Dashboard data fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, [user?.id]);
-  if (loading) return (
-    <div className="loading-container">
-      <div className="loading-spinner"></div>
-      <p>טוען את לוח הבקרה...</p>
-    </div>
-  );
-
-  if (error) return (
-    <div className="error-container">
-      <p className="error-message">{error}</p>
-      <button onClick={() => window.location.reload()} className="retry-button">
-        נסה שנית
-      </button>
-    </div>
-  );
-
-  const { todayClasses, upcomingClasses, activeTrainees, notifications, stats } = dashboardData;
+    if (!trainerId) return;
+    // שליפת נתוני סיכום
+    apiService.get(`/trainer/${trainerId}/dashboard/summary`).then(setSummary);
+    // שליפת חוגים קרובים
+    apiService.get(`/trainer/${trainerId}/classes/upcoming`).then(setUpcomingClasses);
+    // שליפת הודעות אחרונות
+    apiService.get(`/trainer/${trainerId}/messages/recent`).then(setRecentMessages);
+  }, [trainerId]);
 
   return (
-    <div className="trainer-dashboard-container">
-      <header className="dashboard-header">
-        <h1>שלום, {user?.name || 'מאמן'}</h1>
-        <p className="current-date">{new Date().toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-      </header>
-
-      <div className="stats-grid">
-        <Card title="מתאמנים פעילים" className="stat-card">
-          <p className="stat-number">{activeTrainees}</p>
-          <p className="stat-label">סה״כ מתאמנים רשומים: {stats.totalTrainees}</p>
-        </Card>
-        
-        <Card title="שיעורים להיום" className="stat-card">
-          <p className="stat-number">{todayClasses.length}</p>
-          <p className="stat-label">מתוך {upcomingClasses.length} שיעורים השבוע</p>
-        </Card>
-
-        <Card title="סטטיסטיקה" className="stat-card">
-          <p className="stat-detail">אחוז נוכחות ממוצע: {stats.averageAttendance}%</p>
-          <p className="stat-detail">שיעורים שהועברו: {stats.completedClasses}</p>
-        </Card>
+    <div className="trainer-dashboard">
+      <h2>🏠 דשבורד מאמן</h2>
+      <div className="stats-cards">
+        <div className="card stat">
+          <div className="stat-title">כמות חוגים</div>
+          <div className="stat-value">{summary?.classesCount ?? '-'}</div>
+        </div>
+        <div className="card stat">
+          <div className="stat-title">מתאמנים פעילים</div>
+          <div className="stat-value">{summary?.activeTrainees ?? '-'}</div>
+        </div>
+        <div className="card stat">
+          <div className="stat-title">הודעות אחרונות</div>
+          <div className="stat-value">{recentMessages.length}</div>
+        </div>
       </div>
 
-      <div className="dashboard-content">
-        <section className="upcoming-classes">
-          <h2>השיעורים הקרובים שלך</h2>
-          <div className="classes-list">
-            {todayClasses.map(classItem => (
-              <Card key={classItem.id} className="class-card">
-                <div className="class-time">{new Date(classItem.startTime).toLocaleTimeString('he-IL')}</div>
-                <h3>{classItem.name}</h3>
-                <p>{classItem.registeredCount} משתתפים</p>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <aside className="notifications-section">
-          <Card title="התראות אחרונות" className="notifications-card">
-            {notifications.length > 0 ? (
-              <ul className="notifications-list">
-                {notifications.map(note => (
-                  <li key={note.id} className="notification-item">
-                    <p>{note.text}</p>
-                    <small>{new Date(note.timestamp).toLocaleString('he-IL')}</small>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="no-notifications">אין התראות חדשות</p>
-            )}
-          </Card>
-        </aside>
+      <div className="section">
+        <h3>לוח חוגים שבועי (מוקטן)</h3>
+        <div className="mini-calendar">
+          {upcomingClasses.length === 0 ? (
+            <div>אין חוגים קרובים</div>
+          ) : (
+            <ul>
+              {upcomingClasses.map(cls => (
+                <li key={cls.id}>
+                  {cls.day} {cls.time} - {cls.title}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
-      <div className="quick-actions">
-        <button onClick={() => navigate('/trainer/classes')} className="action-button">
-          ניהול שיעורים
-        </button>
-        <button onClick={() => navigate('/trainer/messages')} className="action-button">
-          הודעות
-          {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
-        </button>
-        <button onClick={() => navigate('/trainer/trainees')} className="action-button">
-          ניהול מתאמנים
-        </button>
-        <button onClick={() => navigate('/trainer/schedule')} className="action-button">
-          לוח זמנים
-        </button>
+      <div className="section shortcuts">
+        <h3>קיצורי דרך</h3>
+        <div className="shortcut-links">
+          <Link to="/trainer/classes" className="btn btn-secondary">הוסף חוג</Link>
+          <Link to="/trainer/messages" className="btn btn-secondary">הודעות</Link>
+          <Link to="/trainer/trainees" className="btn btn-secondary">רשימת מתאמנים</Link>
+        </div>
       </div>
     </div>
   );
-};
+}
 
-export default TrainerDashboard;
+export default TrainerDashboardPage;

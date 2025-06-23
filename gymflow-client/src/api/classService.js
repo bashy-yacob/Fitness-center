@@ -14,4 +14,17 @@ export const classService = {
       throw error;
     }
   },
+
+  /**
+   * קבלת כל החוגים של מאמן
+   */
+  getTrainerClasses: async (trainerId) => {
+    try {
+      const response = await apiService.get(`/trainer/${trainerId}/classes/upcoming`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching trainer classes:', error);
+      throw error;
+    }
+  },
 };

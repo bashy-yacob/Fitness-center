@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
+// import { useNavigate, Link } from 'react-router-dom';
+import '../../../../src/index.css'; // Assuming you have a global CSS file for styles
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import '../../../../src/index.css'; // Assuming you have a global CSS file for styles
- 
+
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -12,17 +13,32 @@ function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const from = location.state?.from?.pathname || "/dashboard";
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
             const token = await auth.login(email, password);
+            console.log('DEBUG token', token);
             const decodedToken = jwtDecode(token);
+            // ניתוב דינמי לפי סוג המשתמש
             let targetPath = '/dashboard';
+            if (decodedToken.user_type === 'trainer') {
+                targetPath = '/trainer/dashboard';
+            } else if (decodedToken.user_type === 'trainee') {
+                targetPath = '/trainee/dashboard';
+            } else if (decodedToken.user_type === 'admin') {
+                targetPath = '/admin/dashboard';
+            }
             navigate(targetPath, { replace: true });
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+            let msg = 'התחברות נכשלה. ודא/י שהאימייל והסיסמה נכונים.';
+            if (err.response?.data?.message) {
+                msg += `\nפרטי שגיאה: ${err.response.data.message}`;
+            } else if (err.message) {
+                msg += `\n${err.message}`;
+            }
+            setError(msg);
             console.error(err);
         }
     }; return (
