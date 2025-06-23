@@ -66,8 +66,8 @@ export default function AdminDashboardPage() {
       <div style={{ marginTop: 32, display: 'flex', gap: 16 }}>
         <button onClick={() => navigate('/admin/users')}>ניהול משתמשים</button>
         <button onClick={() => navigate('/admin/classes')}>ניהול חוגים</button>
+        <button onClick={() => navigate('/admin/packages')}>ניהול סוגי מנויים</button>
         <button onClick={() => navigate('/admin/payments')}>ניהול תשלומים</button>
-        <button onClick={() => navigate('/admin/packages')}>ניהול מסלולי מנוי</button>
       </div>
     </div>
   );

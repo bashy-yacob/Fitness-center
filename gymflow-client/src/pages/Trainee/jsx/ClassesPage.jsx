@@ -1,11 +1,10 @@
-// בקובץ: src/pages/Trainee/jsx/ClassesPage.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import apiService from '../../../api/apiService';
 import PaymentModal from '../../../components/PaymentModal'; // ייבוא המודאל החדש
 import '../css/ClassesPage.css';
-import '../../../components/PaymentModal.css'; // ייבוא ה-CSS של המודאל
+import '../../../components/css/PaymentModal.css'; // ייבוא ה-CSS של המודאל
 
 function ClassesPage() {
     const [classes, setClasses] = useState([]);
@@ -27,6 +26,18 @@ function ClassesPage() {
                 // הקריאה נשארת זהה, אבל השרת יחזיר עכשיו מידע מותאם אישית
                 const availableClasses = await apiService.get('/classes');
                 setClasses(availableClasses);
+
+                // בדוק אם יש pendingClassId ב-localStorage
+                const pendingClassId = localStorage.getItem('pendingClassId');
+                console.log('pendingClassId from localStorage:', pendingClassId);
+                if (pendingClassId) {
+                    const foundClass = availableClasses.find(cls => String(cls.id) === String(pendingClassId));
+                    console.log('foundClass:', foundClass);
+                    if (foundClass) {
+                        setSelectedClassForPayment(foundClass);
+                    }
+                    localStorage.removeItem('pendingClassId');
+                }
             } catch (err) {
                 setError('אירעה שגיאה בטעינת החוגים.');
                 console.error(err);

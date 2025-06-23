@@ -1,53 +1,5 @@
-// import apiService from './apiService';
 
-// /**
-//  * Service for interacting with pricing package related endpoints
-//  */
-// export const pricingPackageService = {
-//   /**
-//    * Get all available pricing packages
-//    */
-//   async getAllPricingPackages() {
-//     try {
-//       const response = await apiService.get('/subscriptions/types', { skipAuth: true });
-//       return response.data;
-//     } catch (error) {
-//       console.error('Error fetching pricing packages:', error);
-//       throw error;
-//     }
-//   },
-
-//   /**
-//    * Get a specific pricing package by ID
-//    */
-//   async getPricingPackageById(id) {
-//     try {
-//       const response = await apiService.get(`/pricing-packages/${id}`);
-//       return response.data;
-//     } catch (error) {
-//       console.error('Error fetching pricing package:', error);
-//       throw error;
-//     }
-//   },
-
-//   /**
-//    * Purchase a subscription for a pricing package
-//    */
-//   async purchaseSubscription(subscriptionTypeId, paymentDetails) {
-//     try {
-//       const response = await apiService.post('/subscriptions/purchase', {
-//         subscriptionTypeId,
-//         paymentDetails
-//       });
-//       return response.data;
-//     } catch (error) {
-//       console.error('Error purchasing subscription:', error);
-//       throw error;
-//     }
-//   }
-// };
-// src/api/pricingPackageService.js
-import apiService from './apiService'; // נניח שיש לך קובץ apiService מרכזי
+import apiService from './apiService';
 
 export const pricingPackageService = {
   /**
@@ -79,6 +31,62 @@ export const pricingPackageService = {
       return response;
     } catch (error) {
       console.error('Error purchasing subscription:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * קבלת כל חבילות המחיר
+   */
+  fetchAllPackages: async () => {
+    try {
+      const response = await apiService.get('/pricing-packages');
+      return response;
+    } catch (error) {
+      console.error('Error fetching pricing packages:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * מחיקת חבילת מחיר לפי ID
+   * @param {number} id - ה-ID של חבילת המחיר למחיקה
+   */
+  deletePackage: async (id) => {
+    try {
+      const response = await apiService.delete(`/pricing-packages/${id}`);
+      return response;
+    } catch (error) {
+      console.error('Error deleting pricing package:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * יצירת חבילת מחיר חדשה
+   * @param {Object} data - הנתונים של חבילת המחיר החדשה
+   */
+  createPackage: async (data) => {
+    try {
+      const response = await apiService.post('/pricing-packages', data);
+      return response;
+    } catch (error) {
+      console.error('Error creating pricing package:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * עדכון חבילת מחיר קיימת
+   * @param {number} id - ה-ID של חבילת המחיר לעדכון
+   * @param {Object} data - הנתונים המעודכנים של חבילת המחיר
+   */
+  updatePackage: async (id, data) => {
+    try {
+      const response = await apiService.put(`/pricing-packages/${id}`, data);
+      return response;
+    } catch (error) {
+      console.error('Error updating pricing package:', error);
       throw error;
     }
   }

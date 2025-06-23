@@ -3,21 +3,25 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, loading, authError } = useAuth();
 
-    // בדיקת התחברות
+    if (loading) {
+        return <div>טוען הרשאות...</div>;
+    }
+
+    if (authError) {
+        return <div style={{ color: 'red', textAlign: 'center', marginTop: 40 }}>{authError}</div>;
+    }
+
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
 
-    // אם יש תפקידים מורשים, בדוק שלמשתמש יש הרשאה
     if (allowedRoles.length > 0 && !allowedRoles.includes(user?.user_type)) {
-        // אם למשתמש אין הרשאה, נעביר אותו לדף הבית המתאים לו
         const userHomePath = `/${user?.user_type}/dashboard` || '/login';
         return <Navigate to={userHomePath} replace />;
     }
 
-    // אם הכל בסדר, נציג את התוכן
     return children || <Outlet />;
 };
 

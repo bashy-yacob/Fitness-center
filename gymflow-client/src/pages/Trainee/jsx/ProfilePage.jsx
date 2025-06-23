@@ -45,7 +45,7 @@ const ProfilePicture = ({ imageUrl, onImageChange, isUploading }) => {
 };
 
 function ProfilePage() {
-    const { user } = useAuth();
+    const { user, updateUserContext } = useAuth();
     const [profile, setProfile] = useState(null);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -197,6 +197,8 @@ function ProfilePage() {
             setProfile(prev => ({ ...prev, profilePictureUrl: updatedPictureUrl }));
             setFormData(prev => ({ ...prev, profilePictureUrl: updatedPictureUrl }));
             setOriginalData(prev => ({ ...prev, profilePictureUrl: updatedPictureUrl }));
+            // Update AuthContext so Navbar gets the new image
+            updateUserContext({ ...user, profilePictureUrl: updatedPictureUrl });
             setSuccessMessage('תמונת הפרופיל עודכנה בהצלחה!');
             
             setTimeout(() => {

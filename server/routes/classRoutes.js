@@ -7,7 +7,7 @@ import { validate, createClassSchema, updateClassSchema } from '../middleware/va
 const router = express.Router();
 
 router.post('/', verifyToken, isAdmin, validate(createClassSchema), classController.createClass);
-router.get('/', verifyToken, classController.getAllClasses);
+router.get('/', classController.getAllClasses);
 router.get('/my-registrations', verifyToken, isTrainee, classController.getRegisteredClassesForUser);
 router.get('/:id', verifyToken, classController.getClassById);
 router.put('/:id', verifyToken, isAdmin, validate(updateClassSchema), classController.updateClass);

@@ -7,6 +7,10 @@ import '../src/index.css'; // Assuming you have a global CSS file for styles
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import UsersManagement from './pages/admin/UsersAdminPage.jsx';
 import ClassesAdminPage from './pages/admin/ClassesAdminPage.jsx';
+import AdminSubscriptionsPaymentsPage from './pages/admin/AdminSubscriptionsPaymentsPage.jsx';
+import AdminPackagesPage from './pages/admin/AdminPackagesPage.jsx';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx';
+import AdminMessagesPage from './pages/AdminMessagesPage.jsx';
 
 // Trainer Pages
 import Dashboard from './pages/Dashboard';
@@ -19,12 +23,12 @@ import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
 import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
 import PurchaseSubscriptionPage from './pages/Trainee/jsx/PurchaseSubscriptionPage.jsx';
-import MessagesPage from './pages/Trainee/jsx/MessagesPage.jsx';
+import TraineeMessagesPage from './pages/TraineeMessagesPage.jsx';
 import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';
 import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
 import PricingPage from './pages/Trainee/jsx/PricingPage.jsx';
 // ניצור את הקובץ הזה בהמשך
-// import ConfirmPurchasePage from './pages/Trainee/jsx/ConfirmPurchasePage.jsx'; 
+import ConfirmPurchasePage from './pages/Trainee/jsx/ConfirmPurchasePage.jsx'; 
 // // ...
 // Shared Pages
 import LoginPage from './pages/LoginPage.jsx';
@@ -33,6 +37,7 @@ import LandingPage from './pages/LandingPage.jsx';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Navbar from './components/Navbar.jsx';
 
 function App() {
     const { isAuthenticated, logout, user } = useAuth();
@@ -94,10 +99,7 @@ function App() {
 
     return (
         <div className="app">
-            <nav className="nav-bar">
-                {getNavLinks()}
-            </nav>
-
+            <Navbar onLogout={handleLogout} />
             <main>
                 <Routes>
                     {/* Public Routes */}
@@ -105,13 +107,6 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-
-                    {/* Route to redirect to the correct dashboard */}
-                    <Route path="/" element={
-                        <ProtectedRoute>
-                            <Navigate to={getHomePath()} replace />
-                        </ProtectedRoute>
-                    } />
 
                     {/* Admin Routes */}
                     <Route path="/admin/dashboard" element={
@@ -129,6 +124,26 @@ function App() {
                             <ClassesAdminPage />
                         </ProtectedRoute>
                     } />
+                    <Route path="/admin/subscriptions-payments" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminSubscriptionsPaymentsPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/packages" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminPackagesPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/payments" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminPaymentsPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/broadcast-messages" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminMessagesPage />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Trainer Routes */}
                     <Route path="/trainer/dashboard" element={
@@ -142,25 +157,18 @@ function App() {
                         </ProtectedRoute>
                     } /> */}
 
-                    {/* Trainee Routes */}                    {/* Trainer Routes */}
-                    <Route path="/trainer/dashboard" element={
-                        <ProtectedRoute allowedRoles={['trainer']}>
-                            <TrainerDashboard />
-                        </ProtectedRoute>
-                    } />
-
                     {/* Trainee Routes */}
                     <Route path="/trainee/dashboard" element={<ProtectedRoute><TraineeDashboard /></ProtectedRoute>} />
                     <Route path="/trainee/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
                     <Route path="/trainee/schedule" element={<ProtectedRoute><MySchedulePage /></ProtectedRoute>} />
                     <Route path="/trainee/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/trainee/subscription" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
-                    <Route path="/trainee/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                    <Route path="/trainee/messages" element={<ProtectedRoute><TraineeMessagesPage /></ProtectedRoute>} />
                     <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
                     <Route path="/trainee/subscriptions/manage" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
                     <Route path="/trainee/subscriptions/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
-                    {/* <Route path="/trainee/subscriptions/confirm/:packageId" element={<ProtectedRoute><ConfirmPurchasePage /></ProtectedRoute>} /> */}
-                    <Route path="/trainee/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                    <Route path="/trainee/subscriptions/confirm/:packageId" element={<ProtectedRoute><ConfirmPurchasePage /></ProtectedRoute>} />
+                    <Route path="/trainee/messages" element={<ProtectedRoute><TraineeMessagesPage /></ProtectedRoute>} />
                     <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
                     {/* Catch-all route - redirect to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />

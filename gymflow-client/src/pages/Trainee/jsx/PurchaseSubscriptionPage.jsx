@@ -49,7 +49,8 @@ function PurchaseSubscriptionPage() {
         try {
             const paymentDetails = {
                 transaction_id: `txn_sub_${Date.now()}`,
-                status: 'completed'
+                status: 'completed',
+                notes: null // הגנה מהצד של הלקוח
             };
             const body = {
                 subscriptionTypeId: subscriptionId,

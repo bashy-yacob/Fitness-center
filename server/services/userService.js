@@ -1,6 +1,7 @@
 // services/userService.js
 import pool from '../config/db.js';
 import { hashPassword } from '../utils/authUtils.js'; // ייבוא לפעולות עדכון סיסמה
+
 export async function getAttendedClassesCount(userId) {
     const connection = await pool.getConnection();
     try {
@@ -36,150 +37,77 @@ export async function getActiveSubscription(userId) {
         connection.release();
     }
 }
-//#region Database Operations
-/**
- * בדיקה האם משתמש קיים לפי אימייל
- * @param {string} email - כתובת האימייל לחיפוש
- * @returns {Promise<Object|null>} אובייקט המשתמש אם נמצא, או null אם לא נמצא
- */
-export async function findUserByEmail(email) {
-    if (!email) {
-        throw new Error('Email is required');
-    }
 
+/**
+ * קבלת רשימת כל המשתמשים
+ * @returns {Promise<Array>} מערך של אובייקטי משתמשים
+ */
+export async function getAllUsers() {
     const connection = await pool.getConnection();
     try {
         const [users] = await connection.execute(
-            'SELECT id FROM users WHERE email = ?',
-            [email]
+            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url,
+                    t.date_of_birth, t.gender,
+                    tr.specialization, tr.bio
+             FROM users u
+             LEFT JOIN trainees t ON u.id = t.user_id
+             LEFT JOIN trainers tr ON u.id = tr.user_id
+             ORDER BY u.created_at DESC`
         );
-        return users[0];
+        return users;
     } catch (error) {
-        throw new Error(`Failed to find user: ${error.message}`);
+        throw new Error(`Failed to get all users: ${error.message}`);
     } finally {
         connection.release();
     }
 }
-//#endregion
 
-//#region User Creation
-/**
- * יצירת משתמש חדש
- * @param {Object} userData - נתוני המשתמש
- * @param {string} userData.first_name - שם פרטי
- * @param {string} userData.last_name - שם משפחה
- * @param {string} userData.email - כתובת אימייל
- * @param {string} userData.phone_number - מספר טלפון
- * @param {string} userData.user_type - סוג משתמש
- * @returns {Promise<number>} ID של המשתמש החדש
- */
-export async function createUser(userData) {
-    const { first_name, last_name, email, phone_number, user_type } = userData;
-    
-    // בדיקת תקינות השדות
-    if (!first_name) throw new Error('First name is required');
-    if (!last_name) throw new Error('Last name is required');
-    if (!email) throw new Error('Email is required');
-    if (!phone_number) throw new Error('Phone number is required');
-    if (!user_type) throw new Error('User type is required');
-
+// קבלת משתמשים לפי סוג (user_type)
+export async function getUsersByType(userType) {
     const connection = await pool.getConnection();
     try {
-        const [result] = await connection.execute(
-            `INSERT INTO users (first_name, last_name, email, phone_number, user_type) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [first_name, last_name, email, phone_number, user_type]
+        const [users] = await connection.execute(
+            `SELECT id, first_name, last_name, email, phone_number, user_type
+             FROM users
+             WHERE user_type = ?`,
+            [userType]
         );
-        return result.insertId;
+        return users;
     } catch (error) {
-        throw new Error(`Failed to create user: ${error.message}`);
+        throw new Error(`Failed to get users by type: ${error.message}`);
     } finally {
         connection.release();
     }
 }
-//#endregion
 
-//#region User Authentication
-/**
- * שמירת פרטי התחברות
- * @param {number} userId - מזהה המשתמש
- * @param {string} password_hash - הסיסמה המוצפנת
- * @returns {Promise<void>}
- */
-export async function saveUserCredentials(userId, password_hash) {
-    if (!userId) throw new Error('User ID is required');
-    if (!password_hash) throw new Error('Password hash is required');
-
+export async function getUserById(userId) {
     const connection = await pool.getConnection();
     try {
-        await connection.execute(
-            `INSERT INTO user_credentials (user_id, password_hash) 
-             VALUES (?, ?)`,
-            [userId, password_hash]
+        const [users] = await connection.execute(
+            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url, t.date_of_birth, t.gender
+             FROM users u
+             LEFT JOIN trainees t ON u.id = t.user_id
+             WHERE u.id = ?`,
+            [userId]
         );
-    } catch (error) {
-        throw new Error(`Failed to save user credentials: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
-//#endregion
+        // נחזיר null אם המשתמש לא נמצא
+        if (users.length === 0) {
+            return null;
+        }
+        // ננקה את הנתונים לפני החזרה
+        const user = users[0];
+        // נמיר את הסיסמה כדי שלא תישלח בטעות לקליינט
+        delete user.password_hash; 
+        return user;
 
-//#region Profile Management
-/**
- * יצירת פרופיל מתאמן
- * @param {number} userId - מזהה המשתמש
- * @param {string} date_of_birth - תאריך לידה
- * @param {string} gender - מין
- * @returns {Promise<void>}
- */
-export async function createTraineeProfile(userId, date_of_birth, gender) {
-    if (!userId) throw new Error('User ID is required');
-    if (!date_of_birth) throw new Error('Date of birth is required');
-    if (!gender) throw new Error('Gender is required');
-
-    const connection = await pool.getConnection();
-    try {
-        await connection.execute(
-            `INSERT INTO trainees (user_id, date_of_birth, gender) 
-             VALUES (?, ?, ?)`,
-            [userId, date_of_birth, gender]
-        );
     } catch (error) {
-        throw new Error(`Failed to create trainee profile: ${error.message}`);
+        console.error(`Failed to get user by ID: ${error.message}`);
+        throw error;
     } finally {
         connection.release();
     }
 }
 
-/**
- * יצירת פרופיל מאמן
- * @param {number} userId - מזהה המשתמש
- * @param {string} specialization - התמחות
- * @param {string} bio - תיאור אישי
- * @returns {Promise<void>}
- */
-export async function createTrainerProfile(userId, specialization, bio) {
-    if (!userId) throw new Error('User ID is required');
-    if (!specialization) throw new Error('Specialization is required');
-    // bio יכול להיות אופציונלי, אז לא נבדוק אותו
-
-    const connection = await pool.getConnection();
-    try {
-        await connection.execute(
-            `INSERT INTO trainers (user_id, specialization, bio) 
-             VALUES (?, ?, ?)`,
-            [userId, specialization, bio]
-        );
-    } catch (error) {
-        throw new Error(`Failed to create trainer profile: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
-//#endregion
-
-//#region User Retrieval
 /**
  * קבלת פרטי משתמש מלאים
  * @param {string} email - כתובת האימייל של המשתמש
@@ -211,9 +139,7 @@ export async function getUserWithCredentials(email) {
         connection.release();
     }
 }
-//#endregion
 
-//#region Class Schedule
 /**
  * מביא את כל החוגים של המשתמש לפי תאריכים
  * @param {number} userId - מזהה המשתמש
@@ -282,112 +208,158 @@ export async function getUserClassSchedule(userId, startDate = null, endDate = n
         connection.release();
     }
 }
-//#endregion
-
 
 /**
- * קבלת רשימת כל המשתמשים
- * @returns {Promise<Array>} מערך של אובייקטי משתמשים
+ * קבלת רשימת כל המשתמשים עם פרטים מינימליים
+ * @returns {Promise<Array>} מערך של אובייקטי משתמשים עם פרטים מינימליים
  */
-export async function getAllUsers() {
+export async function getAllUsersMinimal() {
     const connection = await pool.getConnection();
     try {
         const [users] = await connection.execute(
-            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url,
-                    t.date_of_birth, t.gender,
-                    tr.specialization, tr.bio
-             FROM users u
-             LEFT JOIN trainees t ON u.id = t.user_id
-             LEFT JOIN trainers tr ON u.id = tr.user_id
-             ORDER BY u.created_at DESC`
+            'SELECT id, first_name, last_name, email, user_type FROM users'
         );
         return users;
-    } catch (error) {
-        throw new Error(`Failed to get all users: ${error.message}`);
     } finally {
         connection.release();
     }
 }
-
 
 /**
- * מחיקת משתמש
- * @param {number} userId - מזהה המשתמש למחיקה
- * @returns {Promise<boolean>} true אם המחיקה בוצעה בהצלחה, false אחרת
+ * בדיקה האם משתמש קיים לפי אימייל
+ * @param {string} email - כתובת האימייל לחיפוש
+ * @returns {Promise<Object|null>} אובייקט המשתמש אם נמצא, או null אם לא נמצא
  */
-export async function deleteUser(userId) {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        // --- שלב 1: מחיקת כל התשלומים שקשורים למנויים של המשתמש ---
-        const [subscriptions] = await connection.execute('SELECT id FROM user_subscriptions WHERE trainee_id = ?', [userId]);
-        if (subscriptions.length > 0) {
-            const subIds = subscriptions.map(sub => sub.id);
-            await connection.execute(
-                `DELETE FROM payments WHERE user_subscription_id IN (${subIds.map(() => '?').join(',')})`,
-                subIds
-            );
-        }
-        // --- שלב 2: מחיקת כל התשלומים שקשורים ל-trainee_id (אם יש עמודה כזו)
-        try {
-            await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
-        } catch (e) {/* יתעלם אם אין עמודה כזו */}
-        // --- שלב 3: מחיקת המנויים ---
-        await connection.execute('DELETE FROM user_subscriptions WHERE trainee_id = ?', [userId]);
-        await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
-        await connection.execute('DELETE FROM trainee_programs WHERE trainee_id = ?', [userId]);
-        // await connection.execute('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', [userId, userId]);
-        await connection.execute('DELETE FROM trainees WHERE user_id = ?', [userId]);
-        // אם המשתמש הוא מאמן, נצטרך לטפל בחוגים שהוא יצר
-        // כרגע נניח שאנחנו לא מאפשרים מחיקת מאמן שיש לו חוגים פעילים.
-        // אם מאמן נמחק, יש לשקול מה קורה לחוגים שלו: האם מוחקים אותם? מעבירים למאמן אחר?
-        // לדוגמה, נוכל להגדיר ON DELETE SET NULL בטבלת classes עבור trainer_id.
-        // כרגע נמחק גם את פרופיל המאמן
-        await connection.execute('DELETE FROM trainers WHERE user_id = ?', [userId]);
-        await connection.execute('DELETE FROM user_credentials WHERE user_id = ?', [userId]);
-        const [result] = await connection.execute('DELETE FROM users WHERE id = ?', [userId]);
-
-        await connection.commit();
-        return result.affectedRows > 0;
-    } catch (error) {
-        await connection.rollback();
-        throw new Error(`Failed to delete user: ${error.message}`);
-    } finally {
-        connection.release();
+export async function findUserByEmail(email) {
+    if (!email) {
+        throw new Error('Email is required');
     }
-}
 
-// פונקציה שכנראה כבר קיימת אצלך ומעודכנת
-export async function getUserById(userId) {
     const connection = await pool.getConnection();
     try {
         const [users] = await connection.execute(
-            `SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.user_type, u.profile_picture_url, t.date_of_birth, t.gender
-             FROM users u
-             LEFT JOIN trainees t ON u.id = t.user_id
-             WHERE u.id = ?`,
-            [userId]
+            'SELECT id FROM users WHERE email = ?',
+            [email]
         );
-        // נחזיר null אם המשתמש לא נמצא
-        if (users.length === 0) {
-            return null;
-        }
-        // ננקה את הנתונים לפני החזרה
-        const user = users[0];
-        // נמיר את הסיסמה כדי שלא תישלח בטעות לקליינט
-        delete user.password_hash; 
-        return user;
-
+        return users[0];
     } catch (error) {
-        console.error(`Failed to get user by ID: ${error.message}`);
-        throw error;
+        throw new Error(`Failed to find user: ${error.message}`);
     } finally {
         connection.release();
     }
 }
 
-// --- פונקציית העדכון המתוקנת והחסינה ---
+/**
+ * יצירת משתמש חדש
+ * @param {Object} userData - נתוני המשתמש
+ * @param {string} userData.first_name - שם פרטי
+ * @param {string} userData.last_name - שם משפחה
+ * @param {string} userData.email - כתובת אימייל
+ * @param {string} userData.phone_number - מספר טלפון
+ * @param {string} userData.user_type - סוג משתמש
+ * @returns {Promise<number>} ID של המשתמש החדש
+ */
+export async function createUser(userData) {
+    const { first_name, last_name, email, phone_number, user_type } = userData;
+    
+    // בדיקת תקינות השדות
+    if (!first_name) throw new Error('First name is required');
+    if (!last_name) throw new Error('Last name is required');
+    if (!email) throw new Error('Email is required');
+    if (!phone_number) throw new Error('Phone number is required');
+    if (!user_type) throw new Error('User type is required');
+
+    const connection = await pool.getConnection();
+    try {
+        const [result] = await connection.execute(
+            `INSERT INTO users (first_name, last_name, email, phone_number, user_type) 
+             VALUES (?, ?, ?, ?, ?)`,
+            [first_name, last_name, email, phone_number, user_type]
+        );
+        return result.insertId;
+    } catch (error) {
+        throw new Error(`Failed to create user: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * שמירת פרטי התחברות
+ * @param {number} userId - מזהה המשתמש
+ * @param {string} password_hash - הסיסמה המוצפנת
+ * @returns {Promise<void>}
+ */
+export async function saveUserCredentials(userId, password_hash) {
+    if (!userId) throw new Error('User ID is required');
+    if (!password_hash) throw new Error('Password hash is required');
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.execute(
+            `INSERT INTO user_credentials (user_id, password_hash) 
+             VALUES (?, ?)`,
+            [userId, password_hash]
+        );
+    } catch (error) {
+        throw new Error(`Failed to save user credentials: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * יצירת פרופיל מתאמן
+ * @param {number} userId - מזהה המשתמש
+ * @param {string} date_of_birth - תאריך לידה
+ * @param {string} gender - מין
+ * @returns {Promise<void>}
+ */
+export async function createTraineeProfile(userId, date_of_birth, gender) {
+    if (!userId) throw new Error('User ID is required');
+    if (!date_of_birth) throw new Error('Date of birth is required');
+    if (!gender) throw new Error('Gender is required');
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.execute(
+            `INSERT INTO trainees (user_id, date_of_birth, gender) 
+             VALUES (?, ?, ?)`,
+            [userId, date_of_birth, gender]
+        );
+    } catch (error) {
+        throw new Error(`Failed to create trainee profile: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * יצירת פרופיל מאמן
+ * @param {number} userId - מזהה המשתמש
+ * @param {string} specialization - התמחות
+ * @param {string} bio - תיאור אישי
+ * @returns {Promise<void>}
+ */
+export async function createTrainerProfile(userId, specialization, bio) {
+    if (!userId) throw new Error('User ID is required');
+    if (!specialization) throw new Error('Specialization is required');
+    // bio יכול להיות אופציונלי, אז לא נבדוק אותו
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.execute(
+            `INSERT INTO trainers (user_id, specialization, bio) 
+             VALUES (?, ?, ?)`,
+            [userId, specialization, bio]
+        );
+    } catch (error) {
+        throw new Error(`Failed to create trainer profile: ${error.message}`);
+    } finally {
+        connection.release();
+    }
+}
+
 export async function updateUser(userId, userData) {
     const connection = await pool.getConnection();
     try {
@@ -450,8 +422,6 @@ export async function updateUser(userId, userData) {
     }
 }
 
-// services/userService.js - הוסף את הפונקציה הבאה
-
 export async function updateUserProfilePicture(userId, pictureUrl) {
     const connection = await pool.getConnection();
     try {
@@ -477,21 +447,45 @@ export async function countUsers() {
     }
 }
 
-// קבלת משתמשים לפי סוג (user_type)
-export async function getUsersByType(userType) {
+/**
+ * מחיקת משתמש
+ * @param {number} userId - מזהה המשתמש למחיקה
+ * @returns {Promise<boolean>} true אם המחיקה בוצעה בהצלחה, false אחרת
+ */
+export async function deleteUser(userId) {
     const connection = await pool.getConnection();
     try {
-        const [users] = await connection.execute(
-            `SELECT id, first_name, last_name, email, phone_number, user_type
-             FROM users
-             WHERE user_type = ?`,
-            [userType]
-        );
-        return users;
+        await connection.beginTransaction();
+
+        // --- שלב 1: מחיקת כל התשלומים שקשורים למנויים של המשתמש ---
+        const [subscriptions] = await connection.execute('SELECT id FROM user_subscriptions WHERE trainee_id = ?', [userId]);
+        if (subscriptions.length > 0) {
+            const subIds = subscriptions.map(sub => sub.id);
+            await connection.execute(
+                `DELETE FROM payments WHERE user_subscription_id IN (${subIds.map(() => '?').join(',')})`,
+                subIds
+            );
+        }
+        // --- שלב 2: מחיקת כל התשלומים שקשורים ל-trainee_id (אם יש עמודה כזו)
+        try {
+            await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
+        } catch (e) {/* יתעלם אם אין עמודה כזו */}
+        // --- שלב 3: מחיקת המנויים ---
+        await connection.execute('DELETE FROM user_subscriptions WHERE trainee_id = ?', [userId]);
+        await connection.execute('DELETE FROM payments WHERE trainee_id = ?', [userId]);
+        await connection.execute('DELETE FROM trainee_programs WHERE trainee_id = ?', [userId]);
+        await connection.execute('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', [userId, userId]);
+        await connection.execute('DELETE FROM trainees WHERE user_id = ?', [userId]);
+        await connection.execute('DELETE FROM trainers WHERE user_id = ?', [userId]);
+        await connection.execute('DELETE FROM user_credentials WHERE user_id = ?', [userId]);
+        const [result] = await connection.execute('DELETE FROM users WHERE id = ?', [userId]);
+
+        await connection.commit();
+        return result.affectedRows > 0;
     } catch (error) {
-        throw new Error(`Failed to get users by type: ${error.message}`);
+        await connection.rollback();
+        throw new Error(`Failed to delete user: ${error.message}`);
     } finally {
         connection.release();
     }
 }
-

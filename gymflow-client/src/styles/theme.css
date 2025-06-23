@@ -18,3 +18,17 @@
   --success-color: var(--accent-color);
   --error-color: var(--secondary-color);
 }
+
+select, select option {
+  color: #111 !important;
+  background: #fff !important;
+  font-weight: 900 !important;
+  font-size: 20px !important;
+  border: 2px solid #111 !important;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff !important;
+}
+
+select:focus, select option:checked {
+  color: #111 !important;
+  background: #e0e0e0 !important;
+}

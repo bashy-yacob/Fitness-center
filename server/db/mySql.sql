@@ -138,12 +138,10 @@ CREATE TABLE trainee_programs (
     FOREIGN KEY (trainee_id) REFERENCES trainees(user_id),
     FOREIGN KEY (program_id) REFERENCES training_programs(id)
 );
-
--- טבלה: messages (הודעות)
 CREATE TABLE messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
-    receiver_id INT, -- NULL עבור הודעות כלליות (broadcast)
+    receiver_id INT,
     message_text TEXT NOT NULL,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN DEFAULT FALSE,

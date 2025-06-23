@@ -21,6 +21,8 @@ export class PricingPackageService {
                 id: pkg.id,
                 name: pkg.name,
                 price: pkg.price,
+                duration_days: pkg.duration_days,
+                max_classes_per_month: pkg.max_classes_per_month,
                 recommended: pkg.price === 299, // הפרימיום מומלץ
                 features: pkg.description.split(',').map(feature => feature.trim()) // מפצל את התיאור לתכונות נפרדות
             }));

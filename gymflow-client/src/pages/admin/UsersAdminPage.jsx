@@ -198,6 +198,16 @@ function UsersAdminPage() {
                 <input placeholder="התמחות" value={form.specialization} onChange={e => setForm(f => ({ ...f, specialization: e.target.value }))} required />
               </div>
             )}
+            {(!editUser) && (
+              <input
+                type="password"
+                placeholder="סיסמה"
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                required
+                autoComplete="new-password"
+              />
+            )}
             <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
               <button type="submit">שמור</button>
               <button type="button" onClick={() => setShowModal(false)}>ביטול</button>

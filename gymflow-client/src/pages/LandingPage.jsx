@@ -144,13 +144,16 @@ const LandingPage = () => {
                     <Link
                       to={isAuthenticated ? '#' : '/register'}
                       className="btn btn-primary"
-                      onClick={() => {
+                      onClick={e => {
                         if (!isAuthenticated) {
                           setRedirectPath('/register');
-                          // שמור מזהה החוג ב-localStorage
                           localStorage.setItem('pendingClassId', classItem.id);
+                          console.log('לא מחובר, שמור pendingClassId:', classItem.id);
                         } else {
-                          // כאן אפשר להפעיל רישום אוטומטי לחוג אם תרצה
+                          e.preventDefault(); // מונע מה-Link לבצע ניווט ברירת מחדל
+                          localStorage.setItem('pendingClassId', classItem.id);
+                          console.log('מחובר, שמור pendingClassId:', classItem.id);
+                          navigate('/trainee/classes');
                         }
                       }}
                     >

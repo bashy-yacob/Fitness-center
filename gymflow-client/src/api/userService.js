@@ -14,3 +14,10 @@ export const updateUser = (id, userData) => api.put(`/users/${id}`, userData);
 
 // מחיקת משתמש
 export const deleteUser = (id) => api.delete(`/users/${id}`);
+
+// קבלת כל המשתמשים פרט לעצמי (לשליחת הודעה פרטית לכל אחד)
+export const fetchAllOtherUsers = async () => {
+  const me = await api.get('/users/me');
+  const all = await api.get('/users/all-minimal');
+  return all.filter(u => u.id !== me.id);
+};

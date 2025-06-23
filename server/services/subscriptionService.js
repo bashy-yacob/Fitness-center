@@ -128,6 +128,11 @@ export async function deleteSubscriptionType(subscriptionId) {
 export async function purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails) {
     const connection = await pool.getConnection();
     try {
+        // הוספת בדיקה לשרת: אם traineeId או subscriptionTypeId לא מוגדרים, תיזרק שגיאה ברורה.
+        if (typeof traineeId === 'undefined' || typeof subscriptionTypeId === 'undefined') {
+            throw new Error('traineeId or subscriptionTypeId is undefined');
+        }
+
         await connection.beginTransaction();
 
        const [subscriptionType] = await connection.execute(
@@ -164,6 +169,9 @@ export async function purchaseSubscription(traineeId, subscriptionTypeId, paymen
                 paymentDetails.notes || null
             ]
         );
+
+        // הגנה: ודא ש-paymentDetails.notes לא יהיה undefined
+        if (typeof paymentDetails.notes === 'undefined') paymentDetails.notes = null;
 
         await connection.commit();
 

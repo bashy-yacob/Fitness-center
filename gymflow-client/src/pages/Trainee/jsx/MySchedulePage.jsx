@@ -83,8 +83,8 @@ function MySchedulePage() {
                                 <td>{cls.trainer}</td>
                                 <td>{new Date(cls.date).toLocaleString('he-IL')}</td>
                                 <td>
-                                    <span className={`status-badge status-${cls.status.toLowerCase()}`}>
-                                        {cls.status}
+                                    <span className={`status-badge status-${(cls.status || '').toLowerCase()}`}>
+                                        {cls.status || 'לא ידוע'}
                                     </span>
                                 </td>
                                 <td>

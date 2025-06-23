@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import apiService from '../api/apiService';
-import './PaymentModal.css'; // ניצור את קובץ ה-CSS הזה מיד
+import './css/PaymentModal.css'; // ניצור את קובץ ה-CSS הזה מיד
 
 function PaymentModal({ gymClass, onClose, onSuccess }) {
     const [isProcessing, setIsProcessing] = useState(false);

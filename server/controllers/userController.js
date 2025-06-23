@@ -60,6 +60,29 @@ export async function getAllUsers(req, res, next) {
     }
 }
 
+export async function getAllUsersMinimal(req, res, next) {
+    console.log('DEBUG: getAllUsersMinimal called by user', req.user);
+    try {
+        const users = await userService.getAllUsersMinimal();
+        const myId = req.user.id;
+        const myType = req.user.user_type;
+        let filtered;
+        if (myType === 'admin') {
+            filtered = users.filter(u => u.id !== myId);
+        } else if (myType === 'trainee') {
+            filtered = users.filter(u => u.id !== myId && (u.user_type === 'admin' || u.user_type === 'trainer'));
+        } else if (myType === 'trainer') {
+            filtered = users.filter(u => u.id !== myId && (u.user_type === 'admin' || u.user_type === 'trainee'));
+        } else {
+            filtered = [];
+        }
+        console.log('DEBUG: filtered users for minimal:', filtered);
+        res.status(200).json(filtered);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function getUserById(req, res, next) {
     try {
         const { id } = req.params;
