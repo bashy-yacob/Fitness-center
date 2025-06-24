@@ -75,7 +75,7 @@ export async function fetchTraineesByTrainerId(trainerId) {
        FROM class_registrations cr
        JOIN classes c ON cr.class_id = c.id
        JOIN users u ON cr.trainee_id = u.id
-       WHERE c.trainer_id = ? AND cr.status = 'registered'`,
+       WHERE c.trainer_id = ?`,
       [trainerId]
     );
     return rows;

@@ -12,4 +12,10 @@ router.get('/my-training-program', verifyToken, isTrainee,traineeController.getA
 
 router.get('/programs/all', verifyToken, traineeController.getAllTrainingPrograms);
 
+// היסטוריית תוכניות אימון למתאמן
+router.get('/:traineeId/programs/history', verifyToken, traineeController.getTrainingProgramHistory);
+
+// ביטול שיוך תוכנית פעילה
+router.post('/:traineeId/programs/unassign', verifyToken, traineeController.unassignActiveTrainingProgram);
+
 export default router;

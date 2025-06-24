@@ -59,3 +59,31 @@ export async function getAllTrainingPrograms(req, res, next) {
         next(err);
     }
 }
+
+// --- היסטוריית תוכניות אימון למתאמן ---
+export async function getTrainingProgramHistory(req, res, next) {
+    try {
+        const traineeId = parseInt(req.params.traineeId);
+        if (!traineeId) {
+            return res.status(400).json({ error: 'חובה לציין מזהה מתאמן' });
+        }
+        const history = await traineeService.getTrainingProgramHistoryForTrainee(traineeId);
+        res.json(history);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// --- ביטול שיוך תוכנית פעילה ---
+export async function unassignActiveTrainingProgram(req, res, next) {
+    try {
+        const traineeId = parseInt(req.params.traineeId);
+        if (!traineeId) {
+            return res.status(400).json({ error: 'חובה לציין מזהה מתאמן' });
+        }
+        await traineeService.unassignActiveTrainingProgram(traineeId);
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+}

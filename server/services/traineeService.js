@@ -139,3 +139,42 @@ export async function getAllTrainingPrograms() {
         connection.release();
     }
 }
+
+// --- היסטוריית תוכניות אימון למתאמן ---
+export async function getTrainingProgramHistoryForTrainee(traineeId) {
+    const connection = await pool.getConnection();
+    try {
+        const query = `
+            SELECT 
+                tp.id,
+                tp.name AS program_name,
+                tp.description AS program_description,
+                tep.assigned_date,
+                tep.is_active,
+                CONCAT(u.first_name, ' ', u.last_name) AS trainer_name
+            FROM trainee_programs AS tep
+            INNER JOIN training_programs AS tp ON tep.program_id = tp.id
+            INNER JOIN users AS u ON tp.created_by_trainer_id = u.id
+            WHERE tep.trainee_id = ?
+            ORDER BY tep.assigned_date DESC
+        `;
+        const [rows] = await connection.execute(query, [traineeId]);
+        return rows;
+    } finally {
+        connection.release();
+    }
+}
+
+// --- ביטול שיוך תוכנית פעילה ---
+export async function unassignActiveTrainingProgram(traineeId) {
+    const connection = await pool.getConnection();
+    try {
+        await connection.execute(
+            'UPDATE trainee_programs SET is_active = FALSE WHERE trainee_id = ? AND is_active = TRUE',
+            [traineeId]
+        );
+        return { success: true };
+    } finally {
+        connection.release();
+    }
+}

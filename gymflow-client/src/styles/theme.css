@@ -8,21 +8,21 @@
   --dark-accent: #18C93B;      /* Medium green */
   
   --background-color: #1a1a1a;  /* Dark background */
-  --section-bg: #242424;       /* Slightly lighter background */
-  --card-bg: #2a2a2a;         /* Card background */
+  --section-bg: #232323;       /* Slightly lighter background */
+  --card-bg: #22282a;         /* Card background */
   
-  --text-color: #ffffff;       /* White text */
-  --text-muted: #888888;      /* Muted text */
+  --text-color: #f5f5f5;       /* White text */
+  --text-muted: #bdbdbd;      /* Muted text */
   --border-color: #333333;    /* Border color */
   
-  --success-color: var(--accent-color);
-  --error-color: var(--secondary-color);
+  --success-color: #22db47;
+  --error-color: #D45A5A;
 }
 
 body {
   background: var(--background-color);
   color: var(--text-color);
-  font-family: 'Rubik', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Heebo', 'Arial', sans-serif;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -147,6 +147,130 @@ select:focus {
   font-weight: 700;
 }
 
+.trainer-messages-container {
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #0005;
+  padding: 32px 24px;
+  max-width: 900px;
+  margin: 40px auto;
+  border: 1.5px solid var(--border-color);
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  background: none;
+  border: 2px solid var(--accent-color);
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  padding: 8px 28px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+.tab-btn.selected, .tab-btn:hover {
+  background: var(--accent-color);
+  color: var(--background-color);
+  box-shadow: 0 2px 8px var(--accent-color);
+}
+
+.table-dark {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--section-bg);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.table-dark th, .table-dark td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+.table-dark th {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: bold;
+}
+.table-dark tr:nth-child(even) {
+  background: #232323;
+}
+.table-dark tr:hover {
+  background: #232e23; /* ירוק כהה עדין במקום ורוד */
+  color: var(--accent-color);
+  transition: all 0.3s;
+}
+
+input[type='text'], select, textarea {
+  background: #181c1f;
+  color: var(--text-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+  transition: border 0.3s;
+}
+input[type='text']:focus, select:focus, textarea:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+.action-btn {
+  background: var(--secondary-color);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 10px 28px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0002;
+  transition: all 0.3s;
+}
+.action-btn:hover {
+  background: var(--accent-soft);
+  color: #fff;
+}
+
+.toast-success {
+  background: var(--success-color);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 24px;
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  box-shadow: 0 2px 12px #0005;
+  animation: fadeInOut 2.5s;
+}
+.toast-error {
+  background: var(--error-color);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 24px;
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  box-shadow: 0 2px 12px #0005;
+  animation: fadeInOut 2.5s;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-20px);}
+  10% { opacity: 1; transform: translateY(0);}
+  90% { opacity: 1;}
+  100% { opacity: 0; transform: translateY(-20px);}
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   background: var(--section-bg);
@@ -154,4 +278,28 @@ select:focus {
 ::-webkit-scrollbar-thumb {
   background: var(--primary-color);
   border-radius: 8px;
+}
+
+.card-section {
+  background: var(--section-bg);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0003;
+  padding: 24px 18px;
+  margin-bottom: 32px;
+  border: 1px solid var(--border-color);
+  transition: box-shadow 0.3s;
+}
+
+.card-section h3 {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+
+label[style*='background: var(--accent-soft)'] {
+  background: #232e23 !important;
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
 }
