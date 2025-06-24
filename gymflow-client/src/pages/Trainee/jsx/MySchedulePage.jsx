@@ -30,28 +30,36 @@ function MySchedulePage() {
         fetchMyClasses();
     }, [user]);
 
-    const handleUnregister = async (classId) => {
-        // שיפור עתידי: להחליף את האישור הבא בחלון מודאל מעוצב
-        if (!window.confirm('האם את/ה בטוח/ה שברצונך לבטל את ההרשמה לחוג?')) return;
+     const handleUnregister = async (classId) => {
+    // 1. הודעת אישור משופרת
+    const confirmMessage = "האם לבטל את ההרשמה לחוג?\nשים/י לב: הנהלת המכון תיצור עמך קשר לגבי ההחזר הכספי.";
+    if (!window.confirm(confirmMessage)) return;
 
-        setUnregisteringId(classId);
-        setError('');
+    setUnregisteringId(classId);
+    setError('');
 
-        try {
-            await apiService.delete(`/classes/${classId}/unregister`);
+    try {
+        await apiService.delete(`/classes/${classId}/unregister`);
+        
+        // 2. עדכון מיידי של ה-UI לסטטוס 'cancelled'
+        setMyClasses(prevClasses =>
+            prevClasses.map(cls =>
+                cls.id === classId ? { ...cls, status: 'cancelled' } : cls
+            )
+        );
+        
+        // 3. הצגת הודעת הצלחה
+        alert('ההרשמה בוטלה בהצלחה.');
 
-            // עדכון הממשק מיידית עם הצלחה
-            setMyClasses(prevClasses => prevClasses.filter(cls => cls.id !== classId));
-            // Optionally, add a success message here, e.g., using a toast notification library
-            // For now, removing from list is the feedback.
-
-        } catch (err) {
-            setError('ביטול ההרשמה נכשל. אנא נסה/י שוב.');
-            console.error(err);
-        } finally {
-            setUnregisteringId(null);
-        }
-    };
+    } catch (err) {
+        const errorMessage = err.response?.data?.message || 'ביטול ההרשמה נכשל. אנא נסה/י שוב.';
+        alert(`שגיאה: ${errorMessage}`);
+        setError(errorMessage);
+    } finally {
+        // 4. לוודא שתמיד מפסיקים את מצב הטעינה
+        setUnregisteringId(null);
+    }
+};
 
     if (loading) {
         return <p className="loading-message">טוען את מערך השיעורים שלך...</p>;
@@ -60,9 +68,9 @@ function MySchedulePage() {
     return (
         <div className="schedule-page-container">
             <h1>מערך השיעורים שלי</h1>
-
+            
             {error && <p className="error-message">{error}</p>}
-
+            
             {myClasses.length === 0 ? (
                 <p className="no-classes-message">עדיין לא נרשמת לאף חוג. זה הזמן להתחיל!</p>
             ) : (
@@ -79,35 +87,22 @@ function MySchedulePage() {
                     <tbody>
                         {myClasses.map(cls => (
                             <tr key={cls.id}>
-                                {/* תיקון 1: הצגת שם החוג */}
                                 <td>{cls.name}</td>
-
-                                {/* תיקון 2: הצגת שם המאמן מהשדה החדש */}
                                 <td>{cls.trainer_name}</td>
-
-                                {/* תיקון 3: שימוש בשדה הנכון 'start_time' ושיפור הפורמט */}
                                 <td>
                                     {new Date(cls.start_time).toLocaleString('he-IL', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
+                                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+                                        hour: '2-digit', minute: '2-digit'
                                     })}
                                 </td>
-
-                                {/* תיקון 4: הצגת הסטטוס מהשדה החדש */}
                                 <td>
                                     <span className={`status-badge status-${(cls.status || '').toLowerCase()}`}>
                                         {cls.status || 'לא ידוע'}
                                     </span>
                                 </td>
-
-                                {/* תיקון 5: עדכון התנאי להצגת כפתור הביטול */}
                                 <td>
                                     {cls.status === 'registered' && (
-                                        <button
+                                        <button 
                                             onClick={() => handleUnregister(cls.id)}
                                             disabled={unregisteringId === cls.id}
                                             className="cancel-btn"

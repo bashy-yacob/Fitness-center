@@ -202,6 +202,8 @@ export async function registerForClass(traineeId, classId) {
         connection.release();
     }
 }
+// בקובץ: server/services/classService.js
+
 /**
  * ביטול רישום מתאמן מחוג
  * @param {number} traineeId - מזהה המתאמן
@@ -211,14 +213,52 @@ export async function registerForClass(traineeId, classId) {
 export async function unregisterFromClass(traineeId, classId) {
     const connection = await pool.getConnection();
     try {
-        const [result] = await connection.execute(
-            `DELETE FROM class_registrations WHERE trainee_id = ? AND class_id = ?`,
-            [traineeId, classId]
+        // התחלת טרנזקציה כדי להבטיח שכל הפעולות יצליחו או ייכשלו יחד
+        await connection.beginTransaction();
+
+        // שלב 1: נמצא את הרישום הקיים כדי לקבל את ה-ID שלו
+        const [existingRegistration] = await connection.execute(
+            'SELECT id FROM class_registrations WHERE trainee_id = ? AND class_id = ? AND status = ?',
+            [traineeId, classId, 'registered']
         );
-        return result.affectedRows > 0;
+
+        // אם לא נמצא רישום פעיל, אין מה לבטל
+        if (existingRegistration.length === 0) {
+            await connection.rollback(); // בטל את הטרנזקציה
+            console.log(`Unregistration failed: No active registration found for trainee ${traineeId} in class ${classId}.`);
+            return false;
+        }
+
+        const registrationId = existingRegistration[0].id;
+
+        // שלב 2: עדכון הסטטוס של הרישום ל-'cancelled'
+        const [updateRegResult] = await connection.execute(
+            `UPDATE class_registrations SET status = 'cancelled' WHERE id = ?`,
+            [registrationId]
+        );
+
+        // שלב 3: עדכון הסטטוס של התשלום המשויך ל-'refund_pending'
+        // אנחנו מניחים שלכל הרשמה יש תשלום.
+        // ה-notes מכיל את ID ההרשמה, מה שעוזר לנו למצוא את התשלום.
+        const notesQuery = `Payment for class registration ID: ${registrationId}`;
+        const [updatePayResult] = await connection.execute(
+            `UPDATE payments SET status = 'pending' WHERE notes = ? AND status = 'completed'`,
+            [notesQuery]
+        );
+
+        // שלב 4: אישור כל השינויים
+        await connection.commit();
+
+        // נחזיר true רק אם עדכון ההרשמה הצליח
+        return updateRegResult.affectedRows > 0;
+
     } catch (error) {
+        // אם קרתה שגיאה כלשהי, בטל את כל השינויים
+        await connection.rollback();
+        console.error("Error in unregisterFromClass service:", error);
         throw new Error(`Failed to unregister from class: ${error.message}`);
     } finally {
+        // שחרר את החיבור למסד הנתונים תמיד
         connection.release();
     }
 }
@@ -284,8 +324,9 @@ export async function processRegistrationWithPayment(traineeId, classId) {
     try {
         await connection.beginTransaction();
 
+        // שלב 1: בדיקת זמינות מקום בחוג (תוך נעילת השורה למניעת התנגשויות)
         const [classInfo] = await connection.execute(
-            'SELECT max_capacity, start_time FROM classes WHERE id = ? FOR UPDATE',
+            'SELECT max_capacity FROM classes WHERE id = ? FOR UPDATE',
             [classId]
         );
 
@@ -293,51 +334,81 @@ export async function processRegistrationWithPayment(traineeId, classId) {
             throw new AppError('Class not found.', 404);
         }
 
+        const maxCapacity = classInfo[0].max_capacity;
+        const [registrations] = await connection.execute(
+            "SELECT COUNT(*) as count FROM class_registrations WHERE class_id = ? AND status = 'registered'",
+            [classId]
+        );
+
+        const currentCapacity = registrations[0].count;
+
+        // שלב 2: בדיקת הרישום הקיים של המתאמן הספציפי
         const [existingRegistration] = await connection.execute(
-            'SELECT id FROM class_registrations WHERE trainee_id = ? AND class_id = ?',
+            'SELECT id, status FROM class_registrations WHERE trainee_id = ? AND class_id = ?',
             [traineeId, classId]
         );
 
+        let registrationId;
+
+        // שלב 3: החלטה - האם ליצור רישום חדש או לעדכן קיים?
         if (existingRegistration.length > 0) {
-            throw new AppError('You are already registered for this class.', 409);
+            // אם נמצא רישום קיים
+            const currentStatus = existingRegistration[0].status;
+            registrationId = existingRegistration[0].id;
+
+            if (currentStatus === 'registered') {
+                // אם הוא כבר רשום, אין מה להמשיך
+                throw new AppError('You are already registered for this class.', 409);
+            }
+
+            // אם הסטטוס הוא 'cancelled' או 'attended', אפשר להירשם מחדש
+            // אבל רק אם יש מקום פנוי!
+            if (currentCapacity >= maxCapacity) {
+                throw new AppError('This class is full.', 409);
+            }
+
+            // עדכון הרישום הקיים לסטטוס 'registered'
+            await connection.execute(
+                "UPDATE class_registrations SET status = 'registered', registration_date = NOW() WHERE id = ?",
+                [registrationId]
+            );
+
+        } else {
+            // אם לא נמצא רישום קיים - זו הרשמה ראשונה
+            // בדוק שוב אם יש מקום (חשוב למקרה שהבדיקה הקודמת לא הספיקה)
+            if (currentCapacity >= maxCapacity) {
+                throw new AppError('This class is full.', 409);
+            }
+
+            // יצירת רישום חדש
+            const [registrationResult] = await connection.execute(
+                "INSERT INTO class_registrations (trainee_id, class_id, status) VALUES (?, ?, 'registered')",
+                [traineeId, classId]
+            );
+            registrationId = registrationResult.insertId;
         }
 
-        const [registrations] = await connection.execute(
-            'SELECT COUNT(*) as count FROM class_registrations WHERE class_id = ? AND status = ?',
-            [classId, 'registered']
-        );
+        // שלב 4: תיעוד התשלום (זהה לקודם)
+        const classPrice = 50.00;
+        const transactionId = `cl_reg_${registrationId}_${Date.now()}`;
 
-        if (registrations[0].count >= classInfo[0].max_capacity) {
-            throw new AppError('This class is full.', 409);
-        }
-
-        const [registrationResult] = await connection.execute(
-            'INSERT INTO class_registrations (trainee_id, class_id, status) VALUES (?, ?, ?)',
-            [traineeId, classId, 'registered']
-        );
-        const newRegistrationId = registrationResult.insertId;
-
-        const classPrice = 50.00; // מחיר קבוע לחוג
-        const transactionId = `cl_reg_${newRegistrationId}_${Date.now()}`;
-
-        const [paymentResult] = await connection.execute(
+        await connection.execute(
             `INSERT INTO payments (trainee_id, amount, currency, payment_date, payment_method, transaction_id, status, notes)
              VALUES (?, ?, ?, NOW(), ?, ?, ?, ?)`,
-            [traineeId, classPrice, 'ILS', 'credit_card', transactionId, 'completed', `Payment for class registration ID: ${newRegistrationId}`]
+            [traineeId, classPrice, 'ILS', 'credit_card', transactionId, 'completed', `Payment for class registration ID: ${registrationId}`]
         );
-        const newPaymentId = paymentResult.insertId;
-
+        
+        // שלב 5: אישור הטרנזקציה
         await connection.commit();
 
         return {
-            registrationId: newRegistrationId,
-            paymentId: newPaymentId,
+            registrationId: registrationId,
             message: "Successfully registered and payment processed."
         };
 
     } catch (error) {
         await connection.rollback();
-        throw error; // זרוק את השגיאה הלאה לקונטרולר
+        throw error;
     } finally {
         connection.release();
     }
