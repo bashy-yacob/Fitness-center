@@ -6,17 +6,10 @@ import * as traineeController from '../controllers/traineeController.js';
 
 const router = express.Router();
 
-// --- נתיב קיים לדשבורד ---
-// הוא נשאר בדיוק כפי שהוא, ללא שינוי.
 router.get('/dashboard/:traineeId', verifyToken, isTrainee, traineeController.getTraineeDashboard);
 
-// === הוספת הראוט החדש לתוכנית האימונים ===
-// הנתיב החדש מתווסף מתחתיו, והוא יטופל על ידי פונקציה נפרדת.
-router.get(
-    '/my-training-program', 
-    verifyToken,
-    isTrainee,
-    traineeController.getActiveTrainingProgram // פונקציה חדשה בקונטרולר
-);
+router.get('/my-training-program', verifyToken, isTrainee,traineeController.getActiveTrainingProgram );
+
+router.get('/programs/all', verifyToken, traineeController.getAllTrainingPrograms);
 
 export default router;

@@ -2,8 +2,6 @@
 
 import pool from '../config/db.js';
 
-// --- פונקציה קיימת לדשבורד ---
-// היא נשארת בדיוק כפי שהיא, ללא שינוי.
 export async function getTraineeDashboard(traineeId) {
     const connection = await pool.getConnection();
     try {
@@ -23,7 +21,7 @@ export async function getTraineeDashboard(traineeId) {
             [traineeId]
         );
 
-        // === כאן התיקון המלא לשאילתה ===
+
         const [upcomingClasses] = await connection.execute(
             `SELECT 
                 c.id, 
@@ -81,13 +79,8 @@ export async function findActiveProgramForTrainee(traineeId) {
                 CONCAT(u.first_name, ' ', u.last_name) AS trainer_name
             FROM 
                 trainee_programs AS tep
-            -- 1. חבר לטבלת תוכניות האימונים כדי לקבל את פרטי התוכנית
             INNER JOIN training_programs AS tp ON tep.program_id = tp.id
-            -- 2. חבר ישירות לטבלת המשתמשים כדי לקבל את שם המאמן
-            --    ה-ID של המאמן ב-training_programs הוא בעצם user_id.
-            INNER JOIN users AS u ON tp.created_by_trainer_id = u.id
-            WHERE 
-                tep.trainee_id = ? AND tep.is_active = TRUE
+            INNER JOIN users AS u ON tp.created_by_trainer_id = u.id   
             LIMIT 1;
         `;
 
@@ -98,6 +91,50 @@ export async function findActiveProgramForTrainee(traineeId) {
     } catch (error) {
         console.error(`Error finding active training program for trainee ${traineeId}:`, error);
         throw new Error('Failed to retrieve training program.');
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * משייך תוכנית אימון למתאמן (ומבטל קודמות)
+ * @param {number} traineeId - מזהה המתאמן
+ * @param {number} programId - מזהה תוכנית האימון
+ * @param {number} assignedByTrainerId - מזהה המאמן המשייך
+ */
+export async function assignTrainingProgramToTrainee(traineeId, programId, assignedByTrainerId) {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        // מבטל תוכניות פעילות קודמות
+        await connection.execute(
+            'UPDATE trainee_programs SET is_active = FALSE WHERE trainee_id = ? AND is_active = TRUE',
+            [traineeId]
+        );
+        // משייך תוכנית חדשה
+        await connection.execute(
+            `INSERT INTO trainee_programs (trainee_id, program_id, assigned_date, is_active) VALUES (?, ?, NOW(), TRUE)` ,
+            [traineeId, programId]
+        );
+        await connection.commit();
+        return { success: true };
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error assigning training program:', error);
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
+/**
+ * שליפת כל תוכניות האימון (לרשימה לבחירה)
+ */
+export async function getAllTrainingPrograms() {
+    const connection = await pool.getConnection();
+    try {
+        const [rows] = await connection.execute('SELECT id, name FROM training_programs');
+        return rows;
     } finally {
         connection.release();
     }

@@ -49,3 +49,13 @@ export async function getActiveTrainingProgram(req, res, next) {
         next(error);
     }
 }
+
+// שליפת כל תוכניות האימון (GET)
+export async function getAllTrainingPrograms(req, res, next) {
+    try {
+        const programs = await traineeService.getAllTrainingPrograms();
+        res.json(programs);
+    } catch (err) {
+        next(err);
+    }
+}
