@@ -1,8 +1,10 @@
-// src/pages/ProfilePage.js - הקוד המלא והסופי המשלב עדכון פרטים והעלאת תמונה
+// src/pages/ProfilePage.js - עמוד פרופיל גנרי
 
 import React, { useState, useEffect } from 'react';
 import apiService from '../../../api/apiService';
-import { useAuth } from '../../../hooks/useAuth'; // נייבא את useAuth כדי לעדכן את המשתמש הגלובלי
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../../components/FormField';
+import Alert from '../../../components/Alert';
 
 function ProfilePage() {
     // --- ניהול מצב (State) ---
@@ -44,7 +46,7 @@ function ProfilePage() {
                     phone_number: data.phone_number || '',
                     date_of_birth: data.date_of_birth ? new Date(data.date_of_birth).toISOString().split('T')[0] : '',
                     gender: data.gender || '',
-                    user_type: data.user_type || '',
+                    user_type: data.user_type || user?.user_type || '',
                     profile_picture_url: data.profile_picture_url || ''
                 };
                 
@@ -57,7 +59,7 @@ function ProfilePage() {
             }
         };
         fetchUserData();
-    }, []);
+    }, [user]);
 
     // --- פונקציות לטיפול באירועים ---
     const handleChange = (e) => {
@@ -144,108 +146,33 @@ function ProfilePage() {
                     <div className="card" style={{ flex: '1 1 350px' }}>
                         <h2>Edit Profile Details</h2>
                         <form onSubmit={handleDetailsSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="first_name">First Name:</label>
-                                <input
-                                    className="form-control"
-                                    type="text"
-                                    id="first_name"
-                                    name="first_name"
-                                    value={formData.first_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="last_name">Last Name:</label>
-                                <input
-                                    className="form-control"
-                                    type="text"
-                                    id="last_name"
-                                    name="last_name"
-                                    value={formData.last_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="email">Email:</label>
-                                <input
-                                    className="form-control"
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="phone">Phone:</label>
-                                <input
-                                    className="form-control"
-                                    type="tel"
-                                    id="phone"
-                                    name="phone_number"
-                                    value={formData.phone_number}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
+                            <FormField label="First Name:" name="first_name" value={formData.first_name} onChange={handleChange} required />
+                            <FormField label="Last Name:" name="last_name" value={formData.last_name} onChange={handleChange} required />
+                            <FormField label="Email:" name="email" value={formData.email} onChange={handleChange} type="email" required />
+                            <FormField label="Phone:" name="phone_number" value={formData.phone_number} onChange={handleChange} type="tel" />
                             {formData.user_type === 'trainee' && (
                                 <>
-                                    <div className="form-group">
-                                        <label htmlFor="date_of_birth">Date of Birth:</label>
-                                        <input
-                                            className="form-control"
-                                            type="date"
-                                            id="date_of_birth"
-                                            name="date_of_birth"
-                                            value={formData.date_of_birth}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="gender">Gender:</label>
-                                        <select
-                                            className="form-control"
-                                            id="gender"
-                                            name="gender"
-                                            value={formData.gender}
-                                            onChange={handleChange}
-                                        >
-                                            <option value="">Select...</option>
-                                            <option value="male">Male</option>
-                                            <option value="female">Female</option>
-                                            <option value="other">Other</option>
-                                        </select>
-                                    </div>
+                                    <FormField label="Date of Birth:" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} type="date" />
+                                    <FormField
+                                        label="Gender:"
+                                        name="gender"
+                                        value={formData.gender}
+                                        onChange={handleChange}
+                                        type="select"
+                                        options={[
+                                            { value: '', label: 'Select...' },
+                                            { value: 'male', label: 'Male' },
+                                            { value: 'female', label: 'Female' },
+                                            { value: 'other', label: 'Other' }
+                                        ]}
+                                    />
                                 </>
                             )}
-
                             <div className="section" style={{ margin: '1.5rem 0' }}>
                                 <h3>Change Password</h3>
-                                <div className="form-group">
-                                    <label htmlFor="password">New Password:</label>
-                                    <input
-                                        className="form-control"
-                                        type="password"
-                                        id="password"
-                                        name="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Leave blank to keep current"
-                                    />
-                                </div>
+                                <FormField label="New Password:" name="password" value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Leave blank to keep current" />
                             </div>
-
-                            <button type="submit" className="btn btn-primary">
-                                Save Details
-                            </button>
+                            <button type="submit" className="btn btn-primary">Save Details</button>
                         </form>
                     </div>
 
@@ -286,7 +213,7 @@ function ProfilePage() {
                                 <input
                                     type="file"
                                     accept="image/png, image/jpeg, image/jpg"
-                                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                                    onChange={e => setSelectedFile(e.target.files[0])}
                                     className="form-control"
                                 />
                             </div>
@@ -303,8 +230,8 @@ function ProfilePage() {
                 </div>
 
                 {/* Messages Section */}
-                {error && <div className="alert alert-error">{error}</div>}
-                {success && <div className="alert alert-success">{success}</div>}
+                {error && <Alert type="error">{error}</Alert>}
+                {success && <Alert type="success">{success}</Alert>}
             </div>
         </div>
     );

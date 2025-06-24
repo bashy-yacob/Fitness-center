@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './css/Navbar.css';
-// import '../styles/theme.css';
+import { FaUserCircle } from 'react-icons/fa';
 
 export default function Navbar({ onLogout }) {
   const { isAuthenticated, user } = useAuth();
@@ -79,14 +79,8 @@ export default function Navbar({ onLogout }) {
           {isAuthenticated && user && (
             <div className="nav-profile-area">
               <Link to="/profile" className="profile-link" onClick={() => setMenuOpen(false)}>
-                <img
-                  src={user.profile_image || "/public/images/default-profile.png"}
-                  alt="פרופיל"
-                  className="profile-img"
-                  height="38"
-                  width="38"
-                  style={{ cursor: 'pointer' }}
-                />
+                {/* במקום תמונת פרופיל, אייקון משתמש בצבע מהנושא */}
+                <FaUserCircle size={38} color="var(--accent-color)" style={{ verticalAlign: 'middle' }} />
               </Link>
             </div>
           )}

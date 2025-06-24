@@ -8,6 +8,7 @@ import {
 } from '../../api/userService';
 import ClassesAdminPage from './ClassesAdminPage';
 import './UsersAdminPage.css';
+import DataTable from '../../components/DataTable';
 
 const USER_TYPES = [
   { value: '', label: 'הכל' },
@@ -132,6 +133,24 @@ function UsersAdminPage() {
     }
   };
 
+  const columns = [
+    { key: 'name', label: 'שם' },
+    { key: 'email', label: 'אימייל' },
+    { key: 'phone', label: 'טלפון' },
+    { key: 'user_type', label: 'סוג משתמש' },
+    { key: 'actions', label: 'פעולות' },
+  ];
+  const data = (Array.isArray(users) ? users : []).map(user => ({
+    name: user.first_name + ' ' + user.last_name,
+    email: user.email,
+    phone: user.phone_number,
+    user_type: user.user_type,
+    actions: <>
+      <button onClick={() => handleEdit(user)}>ערוך</button>
+      <button onClick={() => handleDelete(user.id)} style={{ color: 'red' }}>מחק</button>
+    </>
+  }));
+
   return (
     <div style={{ maxWidth: 900, margin: 'auto', padding: 24 }}>
       <h2>ניהול משתמשים</h2>
@@ -144,31 +163,7 @@ function UsersAdminPage() {
         <button onClick={handleAdd}>הוסף משתמש חדש</button>
       </div>
       {loading ? <div>טוען...</div> : (
-        <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>שם</th>
-              <th>אימייל</th>
-              <th>טלפון</th>
-              <th>סוג משתמש</th>
-              <th>פעולות</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(Array.isArray(users) ? users : []).map(user => (
-              <tr key={user.id}>
-                <td>{user.first_name} {user.last_name}</td>
-                <td>{user.email}</td>
-                <td>{user.phone_number}</td>
-                <td>{user.user_type}</td>
-                <td>
-                  <button onClick={() => handleEdit(user)}>ערוך</button>
-                  <button onClick={() => handleDelete(user.id)} style={{ color: 'red' }}>מחק</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable columns={columns} data={data} />
       )}
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0008', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

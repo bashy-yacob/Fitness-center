@@ -49,6 +49,12 @@ async function request(endpoint, options = {}) {
         if (response.status === 204) {
             return null;
         }
+        if (response.status === 400) {
+            const errorData = await response.json();
+            const error = new Error(errorData.message || 'Bad Request');
+            error.response = { status: 400, data: errorData };
+            throw error;
+        }
 
         return await response.json();
     } catch (error) {

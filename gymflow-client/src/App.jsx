@@ -25,7 +25,7 @@ import AssignProgramPage from './pages/Trainer/AssignProgramPage.jsx';
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
 import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
 import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
-import ProfilePage from './pages/Trainee/jsx/TraineeProfilePage.jsx';
+import ProfilePage from './pages/all/jsx/ProfilePage.jsx';
 import PurchaseSubscriptionPage from './pages/Trainee/jsx/PurchaseSubscriptionPage.jsx';
 import TraineeMessagesPage from './pages/Trainee/jsx/TraineeMessagesPage.jsx';
 import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';

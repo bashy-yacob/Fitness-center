@@ -317,18 +317,34 @@ export async function saveUserCredentials(userId, password_hash) {
  */
 export async function createTraineeProfile(userId, date_of_birth, gender) {
     if (!userId) throw new Error('User ID is required');
-    if (!date_of_birth) throw new Error('Date of birth is required');
-    if (!gender) throw new Error('Gender is required');
-
+    // אפשר לעדכן גם אם date_of_birth או gender הם null (כל עוד לפחות אחד מהם סופק)
+    if (date_of_birth === undefined && gender === undefined) {
+        throw new Error('At least one of date_of_birth or gender is required');
+    }
     const connection = await pool.getConnection();
     try {
+        // נשתמש ב-INSERT ... ON DUPLICATE KEY UPDATE כדי לאפשר גם עדכון וגם יצירה
+        const fields = [];
+        const values = [userId];
+        const updates = [];
+        if (date_of_birth !== undefined) {
+            fields.push('date_of_birth');
+            values.push(date_of_birth);
+            updates.push('date_of_birth = VALUES(date_of_birth)');
+        }
+        if (gender !== undefined) {
+            fields.push('gender');
+            values.push(gender);
+            updates.push('gender = VALUES(gender)');
+        }
+        if (fields.length === 0) throw new Error('No fields to update');
         await connection.execute(
-            `INSERT INTO trainees (user_id, date_of_birth, gender) 
-             VALUES (?, ?, ?)`,
-            [userId, date_of_birth, gender]
+            `INSERT INTO trainees (user_id, ${fields.join(', ')}) VALUES (?, ${fields.map(() => '?').join(', ')})
+             ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
+            values
         );
     } catch (error) {
-        throw new Error(`Failed to create trainee profile: ${error.message}`);
+        throw new Error(`Failed to create/update trainee profile: ${error.message}`);
     } finally {
         connection.release();
     }
@@ -343,18 +359,26 @@ export async function createTraineeProfile(userId, date_of_birth, gender) {
  */
 export async function createTrainerProfile(userId, specialization, bio) {
     if (!userId) throw new Error('User ID is required');
-    if (!specialization) throw new Error('Specialization is required');
-    // bio יכול להיות אופציונלי, אז לא נבדוק אותו
-
+    if (specialization === undefined) throw new Error('Specialization is required');
+    // bio יכול להיות null או undefined
     const connection = await pool.getConnection();
     try {
+        // תמיכה גם בעדכון וגם ביצירה
+        const fields = ['specialization'];
+        const values = [userId, specialization];
+        const updates = ['specialization = VALUES(specialization)'];
+        if (bio !== undefined) {
+            fields.push('bio');
+            values.push(bio);
+            updates.push('bio = VALUES(bio)');
+        }
         await connection.execute(
-            `INSERT INTO trainers (user_id, specialization, bio) 
-             VALUES (?, ?, ?)`,
-            [userId, specialization, bio]
+            `INSERT INTO trainers (user_id, ${fields.join(', ')}) VALUES (?, ${fields.map(() => '?').join(', ')})
+             ON DUPLICATE KEY UPDATE ${updates.join(', ')}`,
+            values
         );
     } catch (error) {
-        throw new Error(`Failed to create trainer profile: ${error.message}`);
+        throw new Error(`Failed to create/update trainer profile: ${error.message}`);
     } finally {
         connection.release();
     }
@@ -364,57 +388,43 @@ export async function updateUser(userId, userData) {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-
         // --- שלב 1: עדכון טבלת 'users' ---
         const userFieldsToUpdate = {};
         if (userData.first_name !== undefined) userFieldsToUpdate.first_name = userData.first_name;
         if (userData.last_name !== undefined) userFieldsToUpdate.last_name = userData.last_name;
         if (userData.email !== undefined) userFieldsToUpdate.email = userData.email;
-        // נמיר מחרוזת ריקה ל-null כדי שזה יתאים למסד הנתונים
         if (userData.phone_number !== undefined) userFieldsToUpdate.phone_number = userData.phone_number || null;
-        
-        // עדכון סיסמה רק אם סופקה
         if (userData.password) {
             userFieldsToUpdate.password_hash = await bcrypt.hash(userData.password, 10);
         }
-
-        // אם יש מה לעדכן בטבלת users, נבצע את העדכון
         if (Object.keys(userFieldsToUpdate).length > 0) {
             const userSetClause = Object.keys(userFieldsToUpdate).map(key => `${key} = ?`).join(', ');
             const userValues = Object.values(userFieldsToUpdate);
-            
             await connection.execute(
                 `UPDATE users SET ${userSetClause} WHERE id = ?`,
                 [...userValues, userId]
             );
         }
-
-        // --- שלב 2: עדכון טבלת 'trainees' (אם רלוונטי) ---
-        const traineeFieldsToUpdate = {};
-        if (userData.date_of_birth !== undefined) traineeFieldsToUpdate.date_of_birth = userData.date_of_birth || null;
-        if (userData.gender !== undefined) traineeFieldsToUpdate.gender = userData.gender || null;
-        
-        // אם יש מה לעדכן בטבלת trainees
-        if (Object.keys(traineeFieldsToUpdate).length > 0) {
-             const traineeSetClause = Object.keys(traineeFieldsToUpdate).map(key => `${key} = ?`).join(', ');
-             const traineeValues = Object.values(traineeFieldsToUpdate);
-
-             // נשתמש ב-INSERT ... ON DUPLICATE KEY UPDATE.
-             // זה יצור רשומה אם היא לא קיימת (למשל, למשתמש חדש) או יעדכן אותה אם היא קיימת.
-             await connection.execute(
-                `INSERT INTO trainees (user_id, ${Object.keys(traineeFieldsToUpdate).join(', ')})
-                 VALUES (?, ${'?'.repeat(traineeValues.length).split('').join(', ')})
-                 ON DUPLICATE KEY UPDATE ${traineeSetClause}`,
-                 [userId, ...traineeValues, ...traineeValues]
-             );
+        // --- שלב 2: עדכון פרופיל מתאמן (אם רלוונטי) ---
+        if (userData.date_of_birth !== undefined || userData.gender !== undefined) {
+            await createTraineeProfile(
+                userId,
+                userData.date_of_birth !== undefined ? userData.date_of_birth || null : undefined,
+                userData.gender !== undefined ? userData.gender || null : undefined
+            );
         }
-
+        // --- שלב 3: עדכון פרופיל מאמן (אם רלוונטי) ---
+        if (userData.specialization !== undefined || userData.bio !== undefined) {
+            await createTrainerProfile(
+                userId,
+                userData.specialization !== undefined ? userData.specialization : undefined,
+                userData.bio !== undefined ? userData.bio : undefined
+            );
+        }
         await connection.commit();
-        return true; // העדכון הצליח
-
+        return true;
     } catch (error) {
         await connection.rollback();
-        // נספק הודעת שגיאה ברורה יותר
         console.error(`Failed to update user in service: ${error.message}`);
         throw new Error(`Failed to update user: ${error.message}`);
     } finally {

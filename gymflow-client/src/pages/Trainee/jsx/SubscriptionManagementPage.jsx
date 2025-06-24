@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import '../css/SubscriptionManagementPage.css';
 import { useAuth } from '../../../hooks/useAuth';
 import apiService from '../../../api/apiService';
+import Alert from '../../../components/Alert';
 
 // --- פונקציות עזר ---
 const formatDate = (isoString) => {
@@ -86,9 +87,8 @@ function SubscriptionManagementPage() {
     if (loading) {
         return <div className="page-container"><p className="loading-message">טוען מידע על המנוי...</p></div>;
     }
-
     if (error) {
-        return <div className="page-container"><p className="error-message">{error}</p></div>;
+        return <div className="page-container"><Alert type="error">{error}</Alert></div>;
     }
     
     return (
