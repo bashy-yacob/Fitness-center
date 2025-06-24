@@ -1,3 +1,17 @@
+/* עיצוב עמוד חוגים - Dark Mode מודרני */
+:root {
+    --card-bg: #181818;
+    --border-color: #2a2a2a;
+    --text-color: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --h3-primary-color: #ffffff;
+    --accent-color: #28a745;
+    --secondary-color: #218838;
+    --error-color: #d9534f;
+    --accent-soft: #34d058;
+}
+
+/* עיצוב עמוד חוגים - Dark Mode מודרני */
 .classes-page-container {
     padding: 20px;
     max-width: 800px;
@@ -12,62 +26,98 @@
 }
 
 .class-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px 20px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: box-shadow 0.3s ease;
+    text-align: center;
+    font-size: 1.18rem;
+    box-shadow: 0 2px 16px 0 rgba(34, 219, 71, 0.08);
+    color: var(--text-color);
+    transition: box-shadow 0.3s, border 0.3s;
 }
 
 .class-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: var(--accent-soft);
+    box-shadow: 0 4px 24px 0 rgba(201, 24, 166, 0.12);
 }
 
 .class-details h2 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: var(--h3-primary-color);
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-align: center;
 }
 
 .class-details p {
     margin: 4px 0;
-    color: #555;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.18rem;
 }
 
 .register-btn {
-    padding: 10px 20px;
-    background-color: #28a745; /* ירוק */
-    color: white;
+    padding: 12px 28px;
+    background: var(--accent-color);
+    color: #181818;
     border: none;
-    border-radius: 5px;
+    border-radius: 14px;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+    font-size: 1.18rem;
+    font-weight: 700;
+    box-shadow: 0 2px 12px 0 rgba(34, 219, 71, 0.08);
+    transition: all 0.3s ease;
+    outline: none;
 }
 
 .register-btn:hover:not(:disabled) {
-    background-color: #218838; /* ירוק כהה יותר */
+    background: var(--secondary-color);
+    color: #fff;
+    box-shadow: 0 4px 18px 0 rgba(212, 90, 188, 0.18);
 }
 
 .register-btn:disabled {
-    background-color: #cccccc;
+    background: #444;
+    color: #aaa;
     cursor: not-allowed;
 }
 
 /* הודעות עזר */
-.loading-message, .error-message {
+.loading-message,
+.error-message {
     text-align: center;
     padding: 20px;
     font-size: 1.2em;
+    border-radius: 10px;
+    margin: 1em 0;
+}
+
+.loading-message {
+    color: var(--accent-color);
+    background: #232323;
 }
 
 .error-message {
-    color: #d9534f; /* אדום */
-    background-color: #f2dede;
-    border: 1px solid #ebccd1;
-    border-radius: 5px;
+    color: var(--error-color);
+    background: #2a181a;
+    border: 1.5px solid var(--error-color);
+}
+
+@media (max-width: 600px) {
+    .class-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 18px 10px;
+    }
+
+    .classes-page-container {
+        padding: 8px;
+    }
 }
