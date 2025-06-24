@@ -3,6 +3,7 @@ import apiService from '../../api/apiService';
 import { assignTrainingProgram } from '../../api/assignProgramService';
 import { getTraineeProgramHistory, unassignTraineeActiveProgram } from '../../api/traineeProgramService';
 import { useAuth } from '../../hooks/useAuth';
+import '../../styles/theme.css';
 
 export default function AssignProgramPage() {
     const [trainees, setTrainees] = useState([]);
@@ -21,13 +22,10 @@ export default function AssignProgramPage() {
     const trainerId = user?.id;
 
     useEffect(() => {
-        // שליפת מתאמנים של המאמן
         apiService.get(`/trainer/${trainerId}/trainees`).then(setTrainees).catch(() => setTrainees([]));
-        // שליפת כל תוכניות האימון
         apiService.get('/trainees/programs/all').then(setPrograms).catch(() => setPrograms([]));
     }, [trainerId]);
 
-    // שליפת היסטוריה ותוכנית נוכחית בעת בחירת מתאמן
     useEffect(() => {
         if (!selectedTrainee) {
             setTraineeHistory([]);
@@ -45,16 +43,13 @@ export default function AssignProgramPage() {
             });
     }, [selectedTrainee]);
 
-    // חיפוש מתאמנים
     const filteredTrainees = trainees.filter(t =>
         (t.first_name + ' ' + t.last_name).toLowerCase().includes(traineeSearch.toLowerCase())
     );
-    // חיפוש תוכניות
     const filteredPrograms = programs.filter(p =>
         p.name.toLowerCase().includes(programSearch.toLowerCase())
     );
 
-    // טיפול בשיוך עם אישור אם יש כבר תוכנית פעילה
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -70,7 +65,6 @@ export default function AssignProgramPage() {
             await assignTrainingProgram(trainerId, selectedTrainee, selectedProgram);
             setSuccess(true);
             setShowConfirm(false);
-            // רענון היסטוריה
             getTraineeProgramHistory(selectedTrainee).then(history => {
                 setTraineeHistory(history);
                 setCurrentProgram(history.find(h => h.is_active));
@@ -79,13 +73,11 @@ export default function AssignProgramPage() {
             setError(err.message || "שגיאה בשיוך תוכנית");
         }
     };
-    // ביטול שיוך
     const handleUnassign = async () => {
         try {
             await unassignTraineeActiveProgram(selectedTrainee);
             setCurrentProgram(null);
             setSuccess(false);
-            // רענון היסטוריה
             getTraineeProgramHistory(selectedTrainee).then(setTraineeHistory);
         } catch (err) {
             setError(err.message || "שגיאה בביטול שיוך");

@@ -50,55 +50,55 @@ const Schedule = ({ trainerId }) => {
 
   return (
     <div className="trainer-schedule-container">
-      <h2>Trainer Weekly Schedule</h2>
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
-      ) : (
-        <div className="week-grid">
-          {weekSchedule.map(({ day, classes }) => (
-            <div key={day} className="day-column">
-              <div className="day-header">{day}</div>
-              {classes.length === 0 ? (
-                <div className="no-classes">No classes</div>
-              ) : (
-                classes.map(cls => (
-                  <div
-                    key={cls.id}
-                    className="class-block"
-                    onClick={() => setSelectedClass(cls)}
-                  >
-                    <div className="class-name">{cls.name}</div>
-                    <div className="class-time">
-                      {formatTime(cls.start_time)} - {formatTime(cls.end_time)}
+            <h2>מערכת שעות שבועית של המאמן</h2>
+            {loading ? (
+                <div style={{textAlign:'center',marginTop:40}}>טוען נתונים...</div>
+            ) : error ? (
+                <div className="toast-error">{error}</div>
+            ) : (
+                <div className="week-grid">
+                    {weekSchedule.map(({ day, classes }) => (
+                        <div key={day} className="day-column">
+                            <div className="day-header">{day}</div>
+                            {classes.length === 0 ? (
+                                <div className="no-classes">אין חוגים</div>
+                            ) : (
+                                classes.map(cls => (
+                                    <div
+                                        key={cls.id}
+                                        className="class-block"
+                                        onClick={() => setSelectedClass(cls)}
+                                    >
+                                        <div className="class-name">{cls.name}</div>
+                                        <div className="class-time">
+                                            {formatTime(cls.start_time)} - {formatTime(cls.end_time)}
+                                        </div>
+                                        <div className="class-room">חדר: {cls.room}</div>
+                                        <div className="class-trainees">מתאמנים: {cls.traineeCount}</div>
+                                        <button className="details-btn">פרטים</button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+            {/* Modal for class details */}
+            {selectedClass && (
+                <div className="modal-overlay" onClick={() => setSelectedClass(null)}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <h3>{selectedClass.name}</h3>
+                        <p>
+                            <b>שעה:</b> {formatTime(selectedClass.start_time)} - {formatTime(selectedClass.end_time)}
+                        </p>
+                        <p><b>חדר:</b> {selectedClass.room}</p>
+                        <p><b>מתאמנים:</b> {selectedClass.traineeCount}</p>
+                        {/* אפשר להוסיף כאן עוד פרטים */}
+                        <button onClick={() => setSelectedClass(null)}>סגור</button>
                     </div>
-                    <div className="class-room">Room: {cls.room}</div>
-                    <div className="class-trainees">Trainees: {cls.traineeCount}</div>
-                    <button className="details-btn">View Details</button>
-                  </div>
-                ))
-              )}
-            </div>
-          ))}
+                </div>
+            )}
         </div>
-      )}
-      {/* Modal for class details */}
-      {selectedClass && (
-        <div className="modal-overlay" onClick={() => setSelectedClass(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3>{selectedClass.name}</h3>
-            <p>
-              <b>Time:</b> {formatTime(selectedClass.start_time)} - {formatTime(selectedClass.end_time)}
-            </p>
-            <p><b>Room:</b> {selectedClass.room}</p>
-            <p><b>Trainees:</b> {selectedClass.traineeCount}</p>
-            {/* You can add more details here, e.g., list of trainees */}
-            <button onClick={() => setSelectedClass(null)}>Close</button>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };
 
