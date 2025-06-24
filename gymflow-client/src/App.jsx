@@ -19,6 +19,7 @@ import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
 import TrainerClassesPage from './pages/Trainer/Classes.jsx';
 import TrainerStats from './pages/TrainerStats.jsx';
 import TrainerSchedulePage from './pages/trainer/TrainerSchedulePage.jsx';
+import AssignProgramPage from './pages/Trainer/AssignProgramPage.jsx';
 
 // Trainee Pages
 import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
@@ -84,6 +85,7 @@ function App() {
                     links.push(<Link key="classes" to="/trainer/classes">ניהול חוגים</Link>);
                     links.push(<Link key="messages" to="/trainer/messages">הודעות</Link>);
                     links.push(<Link key="stats" to="/trainer/stats">סטטיסטיקות</Link>);
+                    links.push(<Link key="assign-program" to="/trainer/assign-program">שיוך תוכנית למתאמן</Link>);
                     break;
                 case 'trainee':
                     links.push(
@@ -176,6 +178,11 @@ function App() {
                     <Route path="/trainer/schedule" element={
                         <ProtectedRoute allowedRoles={['trainer']}>
                             <TrainerSchedulePage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/trainer/assign-program" element={
+                        <ProtectedRoute allowedRoles={['trainer']}>
+                            <AssignProgramPage />
                         </ProtectedRoute>
                     } />
 
