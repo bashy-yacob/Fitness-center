@@ -1,4 +1,11 @@
 {
+  "name": "fitness-center-client",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "chart.js": "^4.5.0",
     "dotenv": "^16.5.0",

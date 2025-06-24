@@ -11,12 +11,12 @@ export async function getTraineeDashboard(req, res, next) {
             throw new AppError('אין הרשאה לצפות במידע זה', 403);
         }
         const dashboardData = await traineeService.getTraineeDashboard(req.params.traineeId);
-        
+
         // === כאן התיקון ===
         // אנחנו לוקחים את כל המידע מ-dashboardData ומוסיפים לו מפתח 'user'
         // שמכיל את כל המידע מהטוקן.
-        const responseData = { 
-            ...dashboardData, 
+        const responseData = {
+            ...dashboardData,
             user: req.user // שימוש ישיר ב-req.user
         };
 
@@ -35,9 +35,10 @@ export async function getActiveTrainingProgram(req, res, next) {
     try {
         // מזהה המתאמן נלקח מהטוקן, שהוצמד ל-req.user על ידי ה-middleware
         const traineeId = req.user.id;
-        
+        console.log(`[Controller] Fetching program for traineeId: ${traineeId}`);
+
         const program = await traineeService.findActiveProgramForTrainee(traineeId);
-        
+        console.log('[Controller] Service returned:', program);
         // אם לא נמצאה תוכנית, נחזיר null. זו לא שגיאה.
         if (!program) {
             return res.status(200).json(null);

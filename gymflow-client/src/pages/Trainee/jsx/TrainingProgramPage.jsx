@@ -1,6 +1,7 @@
 // בקובץ: src/pages/Trainee/jsx/TrainingProgramPage.jsx
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth'; // נשתמש בזה כדי לוודא שהמשתמש מחובר
 import apiService from '../../../api/apiService';
 import '../css/TrainingProgramPage.css'; // ניצור קובץ CSS חדש לעיצוב
@@ -85,6 +86,9 @@ function TrainingProgramPage() {
                 <div className="no-program-card">
                     <h2>לא הוקצתה לך תוכנית</h2>
                     <p>עדיין לא הוקצתה לך תוכנית אימונים אישית. פנה/י למאמן/ת שלך לקבלת תוכנית.</p>
+                    <Link to="/trainee/messages" className="action-btn">
+                        שלח/י הודעה למאמן/ת
+                    </Link>
                 </div>
             )}
         </div>

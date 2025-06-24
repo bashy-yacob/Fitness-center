@@ -63,7 +63,6 @@ export async function getTraineeDashboard(traineeId) {
 }
 
 
-// === הוספת הפונקציה החדשה לתוכנית האימונים ===
 /**
  * מוצא את תוכנית האימונים הפעילה של מתאמן ומחזיר את פרטיה המלאים.
  * @param {number} traineeId - מזהה המתאמן
@@ -72,6 +71,7 @@ export async function getTraineeDashboard(traineeId) {
 export async function findActiveProgramForTrainee(traineeId) {
     const connection = await pool.getConnection();
     try {
+        // === כאן השאילתה המתוקנת והמפושטת ===
         const query = `
             SELECT 
                 tp.id,
@@ -81,15 +81,20 @@ export async function findActiveProgramForTrainee(traineeId) {
                 CONCAT(u.first_name, ' ', u.last_name) AS trainer_name
             FROM 
                 trainee_programs AS tep
+            -- 1. חבר לטבלת תוכניות האימונים כדי לקבל את פרטי התוכנית
             INNER JOIN training_programs AS tp ON tep.program_id = tp.id
-            INNER JOIN trainers AS t ON tp.created_by_trainer_id = t.user_id
-            INNER JOIN users AS u ON t.user_id = u.id
+            -- 2. חבר ישירות לטבלת המשתמשים כדי לקבל את שם המאמן
+            --    ה-ID של המאמן ב-training_programs הוא בעצם user_id.
+            INNER JOIN users AS u ON tp.created_by_trainer_id = u.id
             WHERE 
                 tep.trainee_id = ? AND tep.is_active = TRUE
             LIMIT 1;
         `;
+
         const [rows] = await connection.execute(query, [traineeId]);
+        console.log('[Service] SQL query result (rows):', rows);
         return rows[0] || null;
+
     } catch (error) {
         console.error(`Error finding active training program for trainee ${traineeId}:`, error);
         throw new Error('Failed to retrieve training program.');
