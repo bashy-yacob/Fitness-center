@@ -1,4 +1,4 @@
-import { pricingPackageService } from '../services/pricingPackageService.js';
+import pricingPackageService from '../services/pricingPackageService.js';
 import { AppError } from '../middleware/errorMiddleware.js';
 
 /**
@@ -6,7 +6,7 @@ import { AppError } from '../middleware/errorMiddleware.js';
  */
 export async function getAllPricingPackages(req, res, next) {
     try {
-        const packages = await pricingPackageService.getAllPricingPackages();
+        const packages = await pricingPackageService.getAll();
         res.status(200).json(packages);
     } catch (error) {
         next(error);
@@ -18,7 +18,8 @@ export async function getAllPricingPackages(req, res, next) {
  */
 export async function getPricingPackageById(req, res, next) {
     try {
-        const { id } = req.params;        const pricingPackage = await pricingPackageService.getPricingPackageById(id);
+        const { id } = req.params;
+        const pricingPackage = await pricingPackageService.getById(id);
         if (!pricingPackage) {
             throw new AppError('Pricing package not found', 404);
         }
@@ -33,7 +34,7 @@ export async function getPricingPackageById(req, res, next) {
  */
 export async function createPricingPackage(req, res, next) {
     try {
-        const result = await pricingPackageService.createPricingPackage(req.body);
+        const result = await pricingPackageService.create(req.body);
         res.status(201).json({
             message: 'Pricing package created successfully',
             id: result.id
@@ -49,7 +50,7 @@ export async function createPricingPackage(req, res, next) {
 export async function updatePricingPackage(req, res, next) {
     try {
         const { id } = req.params;
-        const updated = await pricingPackageService.updatePricingPackage(id, req.body);
+        const updated = await pricingPackageService.update(id, req.body);
         if (!updated) {
             throw new AppError('Failed to update pricing package or package not found', 400);
         }
@@ -65,7 +66,7 @@ export async function updatePricingPackage(req, res, next) {
 export async function deletePricingPackage(req, res, next) {
     try {
         const { id } = req.params;
-        const deleted = await pricingPackageService.deletePricingPackage(id);
+        const deleted = await pricingPackageService.delete(id);
         if (!deleted) {
             throw new AppError('Failed to delete pricing package or package not found', 400);
         }

@@ -1,12 +1,11 @@
 // controllers/subscriptionController.js
-import * as subscriptionService from '../services/subscriptionService.js';
+import subscriptionService from '../services/subscriptionService.js';
 import { AppError } from '../middleware/errorMiddleware.js';
-
 
 export async function getSubscriptionTypeById(req, res, next) {
     try {
         const { id } = req.params;
-        const subscriptionType = await subscriptionService.getSubscriptionTypeById(id);
+        const subscriptionType = await subscriptionService.getById(id);
         if (!subscriptionType) {
             throw new AppError('Subscription type not found', 404);
         }
@@ -18,7 +17,7 @@ export async function getSubscriptionTypeById(req, res, next) {
 
 export async function getAllSubscriptionTypes(req, res, next) {
     try {
-        const subscriptionTypes = await subscriptionService.getAllSubscriptionTypes();
+        const subscriptionTypes = await subscriptionService.getAll();
         res.status(200).json(subscriptionTypes);
     } catch (error) {
         next(error);
@@ -28,7 +27,7 @@ export async function getAllSubscriptionTypes(req, res, next) {
 export async function updateSubscriptionType(req, res, next) {
     try {
         const { id } = req.params;
-        const updated = await subscriptionService.updateSubscriptionType(id, req.body);
+        const updated = await subscriptionService.update(id, req.body);
         if (!updated) {
             throw new AppError('Failed to update subscription type or not found', 400);
         }
@@ -41,7 +40,7 @@ export async function updateSubscriptionType(req, res, next) {
 export async function deleteSubscriptionType(req, res, next) {
     try {
         const { id } = req.params;
-        const deleted = await subscriptionService.deleteSubscriptionType(id);
+        const deleted = await subscriptionService.delete(id);
         if (!deleted) {
             throw new AppError('Failed to delete subscription type or not found', 400);
         }
@@ -52,74 +51,57 @@ export async function deleteSubscriptionType(req, res, next) {
 }
 
 // ניהול מנויים של משתמשים
-export async function purchaseSubscription(req, res, next) {
+export const purchaseSubscriptionHandler = async (req, res, next) => {
     try {
-
-         const traineeId = req.user.id; 
+        const traineeId = req.user.id;
         const { subscriptionTypeId, paymentDetails } = req.body;
         const result = await subscriptionService.purchaseSubscription(traineeId, subscriptionTypeId, paymentDetails);
         res.status(201).json({ message: 'Subscription purchased successfully', ...result });
     } catch (error) {
         next(error);
     }
-}
+};
 
-export async function getUserSubscriptions(req, res, next) {
+export const getUserSubscriptionsHandler = async (req, res, next) => {
     try {
-
         const traineeId = req.userId;
         const subscriptions = await subscriptionService.getUserSubscriptions(traineeId);
         res.status(200).json(subscriptions);
     } catch (error) {
         next(error);
     }
-}
+};
 
-export async function getActiveUserSubscription(req, res, next) {
+export const getActiveUserSubscriptionHandler = async (req, res, next) => {
     try {
         const traineeId = req.user.id;
         const activeSubscription = await subscriptionService.findActiveSubscriptionForUser(traineeId);
-
-        // חשוב: אם לא נמצא מנוי, השירות יחזיר null.
-        // אנחנו רוצים להחזיר תגובה מוצלחת (200) עם גוף ריק או null
-        // כדי שצד הלקוח ידע שזו לא שגיאה, אלא פשוט אין מנוי.
         if (!activeSubscription) {
             return res.status(200).json(null);
         }
-
         res.status(200).json(activeSubscription);
     } catch (error) {
         next(error);
     }
-}
-// פונקציה לאדמין לצפייה במנויים של משתמש ספציפי
-export async function getSubscriptionsForUser(req, res, next) {
+};
+
+export const getSubscriptionsForUserHandler = async (req, res, next) => {
     try {
-        const { userId } = req.params; // userId מגיע מה-URL, זהו ה-ID של המשתמש שאנו רוצים לראות את המנויים שלו
+        const { userId } = req.params;
         const subscriptions = await subscriptionService.getUserSubscriptions(userId);
         res.status(200).json(subscriptions);
     } catch (error) {
         next(error);
     }
-}
+};
+
 // ניהול סוגי מנויים (רק לאדמין)
 export async function createSubscriptionType(req, res, next) {
     try {
-        const subscriptionId = await subscriptionService.createSubscriptionType(req.body);
+        // שימוש ב-BaseService ליצירת סוג מנוי חדש
+        const subscriptionId = await subscriptionService.create(req.body);
         res.status(201).json({ message: 'Subscription type created successfully', subscriptionId });
     } catch (error) {
         next(error);
     }
 }
-// export async function createSubscriptionType(req, res, next) {
-//     try {
-//         const subscriptionData = req.body;
-//         const newSubscriptionId = await subscriptionService.createSubscriptionType(subscriptionData);
-//         res.status(201).json({
-//             message: 'Subscription type created successfully',
-//             subscriptionId: newSubscriptionId
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// }

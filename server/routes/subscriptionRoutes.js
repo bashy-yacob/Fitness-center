@@ -20,11 +20,11 @@ router.put('/types/:id', verifyToken, isAdmin, validate(updateSubscriptionSchema
 router.delete('/types/:id', verifyToken, isAdmin, subscriptionController.deleteSubscriptionType);
 
 // נתיב לאדמין לצפייה במנויים של משתמש ספציפי (לפי userId ב-URL)
-router.get('/user/:userId', verifyToken, isAdmin, subscriptionController.getSubscriptionsForUser);
+router.get('/user/:userId', verifyToken, isAdmin, subscriptionController.getSubscriptionsForUserHandler);
 // נתיבים לרכישה וצפייה במנויים של משתמש
-router.post('/purchase', verifyToken, isTrainee, validate(purchaseSubscriptionSchema), subscriptionController.purchaseSubscription); // רכישת מנוי ע"י מתאמן
-router.get('/my-subscriptions', verifyToken, isTrainee, subscriptionController.getUserSubscriptions); // צפייה במנויים של המשתמש המחובר
-router.get( '/my-active-subscription', verifyToken, isTrainee, subscriptionController.getActiveUserSubscription);// נתיב ייעודי ויעיל לקבלת המנוי הפעיל בלבד
+router.post('/purchase', verifyToken, isTrainee, validate(purchaseSubscriptionSchema), subscriptionController.purchaseSubscriptionHandler); // רכישת מנוי ע"י מתאמן
+router.get('/my-subscriptions', verifyToken, isTrainee, subscriptionController.getUserSubscriptionsHandler); // צפייה במנויים של המשתמש המחובר
+router.get('/my-active-subscription', verifyToken, isTrainee, subscriptionController.getActiveUserSubscriptionHandler);// נתיב ייעודי ויעיל לקבלת המנוי הפעיל בלבד
 
 // הסרנו את הנתיב הכפול router.post('/', ...) שהיה מיותר
 export default router;
