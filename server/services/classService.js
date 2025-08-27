@@ -1,65 +1,18 @@
 // services/classService.js
 import pool from '../config/db.js';
-import { AppError } from '../middleware/errorMiddleware.js';
+import BaseService from './BaseService.js';
 
-/**
- * יצירת חוג חדש
- * @param {Object} classData - נתוני החוג
- * @returns {Promise<number>} ID של החוג החדש
- */
-export async function createClass(classData) {
-    const connection = await pool.getConnection();
-    try {
-        const [result] = await connection.execute(
-            `INSERT INTO classes (name, description, start_time, end_time, room_id, trainer_id, max_capacity)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                classData.name,
-                classData.description,
-                classData.start_time,
-                classData.end_time,
-                classData.room_id,
-                classData.trainer_id,
-                classData.max_capacity
-            ]
-        );
-        return result.insertId;
-    } catch (error) {
-        throw new Error(`Failed to create class: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
+class ClassService extends BaseService {
+  constructor() {
+    super('classes', pool);
+  }
 
-/**
- * קבלת חוג לפי ID
- * @param {number} classId - מזהה החוג
- * @returns {Promise<Object|null>} אובייקט החוג אם נמצא, או null
- */
-export async function getClassById(classId) {
-    const connection = await pool.getConnection();
-    try {
-        const [classes] = await connection.execute(
-            `SELECT c.*, r.name AS room_name, r.capacity AS room_capacity,
-                    u.first_name AS trainer_first_name, u.last_name AS trainer_last_name
-             FROM classes c
-             INNER JOIN rooms r ON c.room_id = r.id
-             INNER JOIN users u ON c.trainer_id = u.id
-             WHERE c.id = ?`,
-            [classId]
-        );
-        return classes[0] || null;
-    } catch (error) {
-        throw new Error(`Failed to get class by ID: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
-
-
-
-// בקובץ: src/services/classService.js
-export async function getAllClasses(traineeId = null) {
+  /**
+   * קבלת כל החוגים עם מידע מורחב (כולל הרשמה למשתמש)
+   * @param {number} traineeId - מזהה המתאמן (אופציונלי)
+   * @returns {Promise<Array>} מערך של אובייקטי חוגים
+   */
+  async getAllClasses(traineeId = null) {
     const connection = await pool.getConnection();
     try {
         const query = `
@@ -101,70 +54,15 @@ export async function getAllClasses(traineeId = null) {
     } finally {
         connection.release();
     }
-}
-/**
- * עדכון חוג קיים
- * @param {number} classId - מזהה החוג לעדכון
- * @param {Object} classData - נתוני החוג לעדכון
- * @returns {Promise<boolean>} true אם העדכון בוצע, false אחרת
- */
-export async function updateClass(classId, classData) {
-    const connection = await pool.getConnection();
-    try {
-        const [result] = await connection.execute(
-            `UPDATE classes SET name = ?, description = ?, start_time = ?, end_time = ?, room_id = ?, trainer_id = ?, max_capacity = ?, is_active = ?
-             WHERE id = ?`,
-            [
-                classData.name,
-                classData.description,
-                classData.start_time,
-                classData.end_time,
-                classData.room_id,
-                classData.trainer_id,
-                classData.max_capacity,
-                classData.is_active,
-                classId
-            ]
-        );
-        return result.affectedRows > 0;
-    } catch (error) {
-        throw new Error(`Failed to update class: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
+  }
 
-/**
- * מחיקת חוג
- * @param {number} classId - מזהה החוג למחיקה
- * @returns {Promise<boolean>} true אם המחיקה בוצעה, false אחרת
- */
-export async function deleteClass(classId) {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        // יש למחוק רישומים לחוג לפני מחיקת החוג עצמו
-        await connection.execute('DELETE FROM class_registrations WHERE class_id = ?', [classId]);
-        const [result] = await connection.execute('DELETE FROM classes WHERE id = ?', [classId]);
-        await connection.commit();
-        return result.affectedRows > 0;
-    } catch (error) {
-        await connection.rollback();
-        throw new Error(`Failed to delete class: ${error.message}`);
-    } finally {
-        connection.release();
-    }
-}
-
-/**
- * רישום מתאמן לחוג
- * @param {number} traineeId - מזהה המתאמן
- * @param {number} classId - מזהה החוג
- * @returns {Promise<number>} ID של הרישום החדש
- */
-// services/classService.js
-
-export async function registerForClass(traineeId, classId) {
+  /**
+   * רישום מתאמן לחוג
+   * @param {number} traineeId - מזהה המתאמן
+   * @param {number} classId - מזהה החוג
+   * @returns {Promise<number>} ID של הרישום החדש
+   */
+  async registerForClass(traineeId, classId) {
     const connection = await pool.getConnection();
     try {
         // 1. בדיקה ראשונה (חדשה): האם המתאמן הספציפי הזה כבר רשום?
@@ -201,16 +99,15 @@ export async function registerForClass(traineeId, classId) {
     } finally {
         connection.release();
     }
-}
-// בקובץ: server/services/classService.js
+  }
 
-/**
- * ביטול רישום מתאמן מחוג
- * @param {number} traineeId - מזהה המתאמן
- * @param {number} classId - מזהה החוג
- * @returns {Promise<boolean>} true אם הביטול בוצע, false אחרת
- */
-export async function unregisterFromClass(traineeId, classId) {
+  /**
+   * ביטול רישום מתאמן מחוג
+   * @param {number} traineeId - מזהה המתאמן
+   * @param {number} classId - מזהה החוג
+   * @returns {Promise<boolean>} true אם הביטול בוצע, false אחרת
+   */
+  async unregisterFromClass(traineeId, classId) {
     const connection = await pool.getConnection();
     try {
         // התחלת טרנזקציה כדי להבטיח שכל הפעולות יצליחו או ייכשלו יחד
@@ -261,14 +158,14 @@ export async function unregisterFromClass(traineeId, classId) {
         // שחרר את החיבור למסד הנתונים תמיד
         connection.release();
     }
-}
+  }
 
-/**
- * קבלת רשימת מתאמנים בחוג
- * @param {number} classId - מזהה החוג
- * @returns {Promise<Array>} מערך של אובייקטי מתאמנים
- */
-export async function getClassRegistrations(classId) {
+  /**
+   * קבלת רשימת מתאמנים בחוג
+   * @param {number} classId - מזהה החוג
+   * @returns {Promise<Array>} מערך של אובייקטי מתאמנים
+   */
+  async getClassRegistrations(classId) {
     const connection = await pool.getConnection();
     try {
         const [registrations] = await connection.execute(
@@ -284,14 +181,14 @@ export async function getClassRegistrations(classId) {
     } finally {
         connection.release();
     }
-}
+  }
 
-/**
- * קבלת כל החוגים שמתאמן ספציפי רשום אליהם
- * @param {number} traineeId - מזהה המתאמן
- * @returns {Promise<Array>} מערך של אובייקטי חוגים
- */
-export async function getRegisteredClassesForUser(traineeId) {
+  /**
+   * קבלת כל החוגים שמתאמן ספציפי רשום אליהם
+   * @param {number} traineeId - מזהה המתאמן
+   * @returns {Promise<Array>} מערך של אובייקטי חוגים
+   */
+  async getRegisteredClassesForUser(traineeId) {
     const connection = await pool.getConnection();
     try {
         // === כאן התיקון בשאילתה ===
@@ -318,8 +215,15 @@ export async function getRegisteredClassesForUser(traineeId) {
     } finally {
         connection.release();
     }
-}
-export async function processRegistrationWithPayment(traineeId, classId) {
+  }
+
+  /**
+   * רישום ותשלום לחוג
+   * @param {number} traineeId - מזהה המתאמן
+   * @param {number} classId - מזהה החוג
+   * @returns {Promise<Object>} תוצאות הרישום והתשלום
+   */
+  async processRegistrationWithPayment(traineeId, classId) {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -412,9 +316,13 @@ export async function processRegistrationWithPayment(traineeId, classId) {
     } finally {
         connection.release();
     }
-}
+  }
 
-export async function countActiveClasses() {
+  /**
+   * ספירת חוגים פעילים
+   * @returns {Promise<number>} מספר החוגים הפעילים
+   */
+  async countActiveClasses() {
     const connection = await pool.getConnection();
     try {
         const [rows] = await connection.execute(
@@ -424,4 +332,8 @@ export async function countActiveClasses() {
     } finally {
         connection.release();
     }
+  }
 }
+
+const classService = new ClassService();
+export default classService;

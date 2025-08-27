@@ -13,7 +13,7 @@ router.get('/:id', verifyToken, classController.getClassById);
 router.put('/:id', verifyToken, isAdmin, validate(updateClassSchema), classController.updateClass);
 router.delete('/:id', verifyToken, isAdmin, classController.deleteClass);
 router.post('/:classId/pay-and-register', verifyToken, isTrainee, classController.payAndRegisterForClass);
-router.post('/:classId/register', verifyToken, isTrainee, classController.registerUserForClass);
+router.post('/:classId/register', verifyToken, isTrainee, classController.registerForClass);
 router.delete('/:classId/unregister', verifyToken, isTrainee, classController.unregisterFromClass);
 router.get('/:classId/registrations', verifyToken, isTrainer, classController.getClassRegistrations);
 
