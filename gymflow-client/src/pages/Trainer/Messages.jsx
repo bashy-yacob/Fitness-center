@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import apiService from '../../api/apiService';
 import { classService } from '../../api/classService';
 import { useAuth } from '../../hooks/useAuth';
-import '../../styles/theme.css';
+import { Box, Container, Heading, Button, Flex, Table, Input, Textarea, Text, Tabs, Badge, Checkbox, NativeSelect, Spinner, Card } from '@chakra-ui/react';
+import { createToaster } from '@chakra-ui/react';
+
+const toaster = createToaster({
+  placement: 'top',
+  duration: 5000,
+});
 
 export default function TrainerMessagesPage() {
-  const [tab, setTab] = useState('inbox'); // inbox | send
-  const [inboxTab, setInboxTab] = useState('private'); // private | general
-  const [sendTab, setSendTab] = useState('private'); // private | class
   const [trainees, setTrainees] = useState([]);
   const [classes, setClasses] = useState([]);
   const [selectedTrainees, setSelectedTrainees] = useState([]);
@@ -18,8 +21,6 @@ export default function TrainerMessagesPage() {
   const [broadcastMessages, setBroadcastMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const { user } = useAuth();
   const trainerId = user?.id;
@@ -39,7 +40,8 @@ export default function TrainerMessagesPage() {
       setSentMessages(sent);
       setReceivedMessages(received);
       setBroadcastMessages(broadcast);
-    }).catch(() => setError('שגיאה בטעינת נתונים')).finally(() => setLoadingData(false));
+    }).catch(() => toaster.error({ title: 'שגיאה בטעינת נתונים' }))
+      .finally(() => setLoadingData(false));
   }, [trainerId]);
 
   const handleSelectTrainee = (id) => {
@@ -48,19 +50,17 @@ export default function TrainerMessagesPage() {
     );
   };
 
-  const handleSend = async () => {
+  const handleSend = async (sendType) => {
     if (!messageText) return;
     setLoading(true);
-    setError('');
-    setSuccess('');
     try {
-      if (sendTab === 'private') {
+      if (sendType === 'private') {
         if (selectedTrainees.length === 0) return;
         await apiService.post(`/trainer/${trainerId}/messages/send-batch`, {
           traineeIds: selectedTrainees,
           messageText,
         });
-      } else if (sendTab === 'class') {
+      } else if (sendType === 'class') {
         if (!selectedClass) return;
         await apiService.post(`/trainer/${trainerId}/messages/send-class`, {
           classId: selectedClass,
@@ -70,217 +70,245 @@ export default function TrainerMessagesPage() {
       setMessageText('');
       setSelectedTrainees([]);
       setSelectedClass('');
-      setSuccess('ההודעה נשלחה בהצלחה!');
+      toaster.success({ title: 'ההודעה נשלחה בהצלחה!' });
       const msgs = await apiService.get(`/trainer/${trainerId}/messages/sent`).catch(() => []);
       setSentMessages(msgs);
     } catch {
-      setError('שגיאה בשליחת הודעה');
+      toaster.error({ title: 'שגיאה בשליחת הודעה' });
     }
     setLoading(false);
   };
 
-  // פילטר הודעות שהתקבלו
   const privateInbox = receivedMessages.filter(m => m.message_type === 'private');
-  const generalInbox = receivedMessages.filter(m => m.message_type !== 'private');
-
-  // חיפוש מתאמנים
   const filteredTrainees = trainees.filter(t =>
     (t.first_name + ' ' + t.last_name + ' ' + t.email).toLowerCase().includes(search.toLowerCase())
   );
 
   if (!trainerId) {
-    return <div style={{textAlign:'center',marginTop:40}}>יש להתחבר כמאמן כדי לצפות בעמוד זה.</div>;
+    return (
+      <Flex justify="center" mt={10}>
+        <Text color="red.500">יש להתחבר כמאמן כדי לצפות בעמוד זה.</Text>
+      </Flex>
+    );
   }
 
   if (loadingData) {
-    return <div style={{textAlign:'center',marginTop:40}}>טוען נתונים...</div>;
+    return (
+      <Flex justify="center" align="center" minH="50vh">
+        <Spinner size="xl" color="brand.500" />
+        <Text ml={4} color="white">טוען נתונים...</Text>
+      </Flex>
+    );
   }
 
   return (
-    <div className="trainer-messages-container">
-      <h2>הודעות מאמן</h2>
-      <div className="tabs">
-        <button onClick={() => setTab('inbox')} className={`tab-btn${tab==='inbox' ? ' selected' : ''}`}>הודעות שהתקבלו</button>
-        <button onClick={() => setTab('send')} className={`tab-btn${tab==='send' ? ' selected' : ''}`}>שליחת הודעה</button>
-      </div>
-      {error && <div className="toast-error">{error}</div>}
-      {success && <div className="toast-success">{success}</div>}
-      {tab === 'inbox' && (
-        <div className="card-section">
-          <h3>הודעות שהתקבלו</h3>
-          <div className="tabs" style={{marginBottom: 16}}>
-            <button onClick={() => setInboxTab('private')} className={`tab-btn${inboxTab==='private' ? ' selected' : ''}`}>הודעות פרטיות</button>
-            <button onClick={() => setInboxTab('general')} className={`tab-btn${inboxTab==='general' ? ' selected' : ''}`}>הודעות כלליות</button>
-          </div>
-          {inboxTab === 'private' ? (
-            privateInbox.length === 0 ? (
-              <div style={{textAlign:'center',color:'var(--text-muted)'}}>לא נמצאו הודעות.</div>
-            ) : (
-              <table className="table-dark">
-                <thead>
-                  <tr>
-                    <th>שולח</th>
-                    <th>תוכן</th>
-                    <th>נשלח בתאריך</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {privateInbox.map((msg) => (
-                    <tr key={msg.id}>
-                      <td>{msg.sender_name || msg.sender_email || msg.sender_id}</td>
-                      <td>{msg.message_text}</td>
-                      <td>{new Date(msg.sent_at).toLocaleString('he-IL')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )
-          ) : (
-            broadcastMessages.length === 0 ? (
-              <div style={{textAlign:'center',color:'var(--text-muted)'}}>לא נמצאו הודעות כלליות.</div>
-            ) : (
-              <table className="table-dark">
-                <thead>
-                  <tr>
-                    <th>נושא</th>
-                    {broadcastMessages.some(msg => (msg.message_text.split('\n').slice(1).join(' ').trim() !== '')) && <th>תוכן</th>}
-                    <th>נשלח בתאריך</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {broadcastMessages.map((msg) => {
-                    const subject = msg.message_text.split('\n')[0];
-                    const content = msg.message_text.split('\n').slice(1).join(' ').trim();
-                    return (
-                      <tr key={msg.id}>
-                        <td>{subject}</td>
-                        {broadcastMessages.some(m => (m.message_text.split('\n').slice(1).join(' ').trim() !== '')) && <td>{content}</td>}
-                        <td>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )
-          )}
-        </div>
-      )}
-      {tab === 'send' && (
-        <div className="card-section">
-          <h3>הודעות שנשלחו</h3>
-          <div className="tabs" style={{marginBottom: 16}}>
-            <button onClick={() => setSendTab('private')} className={`tab-btn${sendTab==='private' ? ' selected' : ''}`}>הודעה פרטית</button>
-            <button onClick={() => setSendTab('class')} className={`tab-btn${sendTab==='class' ? ' selected' : ''}`}>הודעה לחוג</button>
-          </div>
-          {sendTab === 'private' && (
-            <div>
-              <h3>בחר מתאמנים:</h3>
-              <input
-                type="text"
-                placeholder="חפש מתאמן..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{marginBottom:8,padding:4,minWidth:200}}
-                className="trainee-search-input"
-              />
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                maxHeight: 260,
-                overflowY: 'auto',
-                background: 'var(--section-bg)',
-                borderRadius: 10,
-                padding: 12,
-                border: '1px solid var(--border-color)'
-              }}>
-                {filteredTrainees.length === 0 ? (
-                  <div style={{color:'var(--text-muted)'}}>לא נמצאו מתאמנים.</div>
-                ) : filteredTrainees.map((t) => (
-                  <label key={t.id} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    background: selectedTrainees.includes(t.id) ? 'var(--accent-soft)' : 'transparent',
-                    borderRadius: 8,
-                    padding: '6px 10px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    color: selectedTrainees.includes(t.id) ? '#fff' : 'var(--text-color)',
-                    border: selectedTrainees.includes(t.id) ? '1.5px solid var(--accent-color)' : '1.5px solid transparent',
-                    transition: 'all 0.2s'
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedTrainees.includes(t.id)}
-                      onChange={() => handleSelectTrainee(t.id)}
-                      style={{ accentColor: 'var(--accent-color)', width: 18, height: 18 }}
-                    />
-                    <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                      {t.first_name} {t.last_name} <span style={{color:'var(--text-muted)',fontSize:'0.95em'}}>({t.email})</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-          {sendTab === 'class' && (
-            <div>
-              <h3>בחר חוג:</h3>
-              <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-                <option value="">בחר חוג</option>
-                {classes.length === 0 ? (
-                  <option disabled>לא נמצאו חוגים</option>
-                ) : classes.map(cls => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.name} ({new Date(cls.start_time || cls.startTime).toLocaleString('he-IL')})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          <textarea
-            style={{ width: '100%', marginTop: 16 }}
-            rows={4}
-            placeholder="הקלד כאן את תוכן ההודעה..."
-            value={messageText}
-            onChange={e => setMessageText(e.target.value)}
-            disabled={loading}
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !messageText || (sendTab === 'private' && selectedTrainees.length === 0) || (sendTab === 'class' && !selectedClass)}
-            style={{marginTop:8,minWidth:120}}
-          >
-            {loading ? 'שולח...' : 'שלח הודעה'}
-          </button>
-          <h4 style={{ marginTop: 32 }}>הודעות שנשלחו</h4>
-          {sentMessages.length === 0 ? (
-            <div style={{textAlign:'center',color:'#888'}}>לא נשלחו הודעות.</div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th>נמען</th>
-                  <th>אימייל</th>
-                  <th>תוכן</th>
-                  <th>נשלח בתאריך</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sentMessages.map((msg) => (
-                  <tr key={msg.id}>
-                    <td>{msg.first_name} {msg.last_name}</td>
-                    <td>{msg.email}</td>
-                    <td>{msg.message_text}</td>
-                    <td>{new Date(msg.sent_at).toLocaleString('he-IL')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-    </div>
+    <Box bg="dark.bg" minH="100vh" py={10}>
+      <Container maxW="container.xl">
+        <Heading mb={8} color="brand.500">הודעות מאמן</Heading>
+
+        <Tabs.Root defaultValue="inbox" variant="enclosed">
+          <Tabs.List bg="dark.card" borderColor="dark.border">
+            <Tabs.Trigger value="inbox" _selected={{ color: 'brand.400', borderColor: 'brand.400' }}>הודעות שהתקבלו</Tabs.Trigger>
+            <Tabs.Trigger value="send" _selected={{ color: 'brand.400', borderColor: 'brand.400' }}>שליחת הודעה</Tabs.Trigger>
+          </Tabs.List>
+
+          <Tabs.Content value="inbox" p={4} bg="dark.card" borderBottomRadius="md" borderWidth="1px" borderTopWidth="0" borderColor="dark.border">
+            <Tabs.Root defaultValue="private" variant="subtle">
+              <Tabs.List mb={4}>
+                <Tabs.Trigger value="private">הודעות פרטיות</Tabs.Trigger>
+                <Tabs.Trigger value="general">הודעות כלליות</Tabs.Trigger>
+              </Tabs.List>
+
+              <Tabs.Content value="private">
+                {privateInbox.length === 0 ? (
+                  <Text color="gray.500" textAlign="center">לא נמצאו הודעות.</Text>
+                ) : (
+                  <Table.Root variant="outline">
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader color="brand.400">שולח</Table.ColumnHeader>
+                        <Table.ColumnHeader color="brand.400">תוכן</Table.ColumnHeader>
+                        <Table.ColumnHeader color="brand.400">נשלח בתאריך</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {privateInbox.map((msg) => (
+                        <Table.Row key={msg.id}>
+                          <Table.Cell color="white">{msg.sender_name || msg.sender_email || msg.sender_id}</Table.Cell>
+                          <Table.Cell color="white">{msg.message_text}</Table.Cell>
+                          <Table.Cell color="white">{new Date(msg.sent_at).toLocaleString('he-IL')}</Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Root>
+                )}
+              </Tabs.Content>
+
+              <Tabs.Content value="general">
+                {broadcastMessages.length === 0 ? (
+                  <Text color="gray.500" textAlign="center">לא נמצאו הודעות כלליות.</Text>
+                ) : (
+                  <Table.Root variant="outline">
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader color="brand.400">נושא</Table.ColumnHeader>
+                        <Table.ColumnHeader color="brand.400">תוכן</Table.ColumnHeader>
+                        <Table.ColumnHeader color="brand.400">נשלח בתאריך</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {broadcastMessages.map((msg) => {
+                        const subject = msg.message_text.split('\n')[0];
+                        const content = msg.message_text.split('\n').slice(1).join(' ').trim();
+                        return (
+                          <Table.Row key={msg.id}>
+                            <Table.Cell color="white">{subject}</Table.Cell>
+                            <Table.Cell color="white">{content}</Table.Cell>
+                            <Table.Cell color="white">{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</Table.Cell>
+                          </Table.Row>
+                        );
+                      })}
+                    </Table.Body>
+                  </Table.Root>
+                )}
+              </Tabs.Content>
+            </Tabs.Root>
+          </Tabs.Content>
+
+          <Tabs.Content value="send" p={4} bg="dark.card" borderBottomRadius="md" borderWidth="1px" borderTopWidth="0" borderColor="dark.border">
+            <Tabs.Root defaultValue="private" variant="subtle">
+              <Tabs.List mb={4}>
+                <Tabs.Trigger value="private">הודעה פרטית</Tabs.Trigger>
+                <Tabs.Trigger value="class">הודעה לחוג</Tabs.Trigger>
+              </Tabs.List>
+
+              <Tabs.Content value="private">
+                <Heading size="sm" mb={2} color="brand.400">בחר מתאמנים:</Heading>
+                <Input
+                  placeholder="חפש מתאמן..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  mb={4}
+                  bg="dark.bg"
+                  color="white"
+                  borderColor="dark.border"
+                />
+
+                <Box maxH="260px" overflowY="auto" bg="dark.bg" p={4} borderRadius="md" borderWidth="1px" borderColor="dark.border" mb={4}>
+                  {filteredTrainees.length === 0 ? (
+                    <Text color="gray.500">לא נמצאו מתאמנים.</Text>
+                  ) : (
+                    <Flex direction="column" gap={2}>
+                      {filteredTrainees.map((t) => (
+                        <Checkbox.Root
+                          key={t.id}
+                          checked={selectedTrainees.includes(t.id)}
+                          onCheckedChange={() => handleSelectTrainee(t.id)}
+                          colorPalette="brand"
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control />
+                          <Checkbox.Label color="white">
+                            {t.first_name} {t.last_name} <Text as="span" color="gray.500" fontSize="sm">({t.email})</Text>
+                          </Checkbox.Label>
+                        </Checkbox.Root>
+                      ))}
+                    </Flex>
+                  )}
+                </Box>
+
+                <Textarea
+                  placeholder="הקלד כאן את תוכן ההודעה..."
+                  value={messageText}
+                  onChange={e => setMessageText(e.target.value)}
+                  rows={4}
+                  mb={4}
+                  bg="dark.bg"
+                  color="white"
+                  borderColor="dark.border"
+                />
+
+                <Button
+                  onClick={() => handleSend('private')}
+                  loading={loading}
+                  disabled={!messageText || selectedTrainees.length === 0}
+                  colorPalette="brand"
+                >
+                  שלח הודעה
+                </Button>
+              </Tabs.Content>
+
+              <Tabs.Content value="class">
+                <Heading size="sm" mb={2} color="brand.400">בחר חוג:</Heading>
+                <NativeSelect.Root mb={4}>
+                  <NativeSelect.Field
+                    value={selectedClass}
+                    onChange={e => setSelectedClass(e.target.value)}
+                    bg="dark.bg"
+                    color="white"
+                    borderColor="dark.border"
+                  >
+                    <option value="">בחר חוג</option>
+                    {classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name} ({new Date(cls.start_time || cls.startTime).toLocaleString('he-IL')})
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                </NativeSelect.Root>
+
+                <Textarea
+                  placeholder="הקלד כאן את תוכן ההודעה..."
+                  value={messageText}
+                  onChange={e => setMessageText(e.target.value)}
+                  rows={4}
+                  mb={4}
+                  bg="dark.bg"
+                  color="white"
+                  borderColor="dark.border"
+                />
+
+                <Button
+                  onClick={() => handleSend('class')}
+                  loading={loading}
+                  disabled={!messageText || !selectedClass}
+                  colorPalette="brand"
+                >
+                  שלח הודעה
+                </Button>
+              </Tabs.Content>
+            </Tabs.Root>
+
+            <Box mt={8}>
+              <Heading size="sm" mb={4} color="brand.400">הודעות שנשלחו</Heading>
+              {sentMessages.length === 0 ? (
+                <Text color="gray.500" textAlign="center">לא נשלחו הודעות.</Text>
+              ) : (
+                <Table.Root variant="outline">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader color="brand.400">נמען</Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.400">אימייל</Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.400">תוכן</Table.ColumnHeader>
+                      <Table.ColumnHeader color="brand.400">נשלח בתאריך</Table.ColumnHeader>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {sentMessages.map((msg) => (
+                      <Table.Row key={msg.id}>
+                        <Table.Cell color="white">{msg.first_name} {msg.last_name}</Table.Cell>
+                        <Table.Cell color="white">{msg.email}</Table.Cell>
+                        <Table.Cell color="white">{msg.message_text}</Table.Cell>
+                        <Table.Cell color="white">{new Date(msg.sent_at).toLocaleString('he-IL')}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              )}
+            </Box>
+          </Tabs.Content>
+        </Tabs.Root>
+      </Container>
+    </Box>
   );
 }

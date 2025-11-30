@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import apiService from '../../../api/apiService';
-import { useAuth } from '../../../hooks/useAuth'; // נייבא את useAuth כדי לעדכן את המשתמש הגלובלי
+import apiService from '../../api/apiService';
+import { useAuth } from '../../hooks/useAuth'; // נייבא את useAuth כדי לעדכן את המשתמש הגלובלי
 
 function ProfilePage() {
 
-    const { user, updateUserContext } = useAuth(); 
+    const { user, updateUserContext } = useAuth();
 
     // סטייט לטופס הפרטים האישיים
     const [formData, setFormData] = useState({
@@ -18,7 +18,7 @@ function ProfilePage() {
         user_type: '',
         profile_picture_url: '' // חשוב להוסיף את זה
     });
-    
+
     // סטייטים נפרדים לפעולות ספציפיות
     const [password, setPassword] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -35,7 +35,7 @@ function ProfilePage() {
             try {
                 setLoading(true);
                 const data = await apiService.get('/users/me');
-                
+
                 const initialData = {
                     first_name: data.first_name || '',
                     last_name: data.last_name || '',
@@ -46,7 +46,7 @@ function ProfilePage() {
                     user_type: data.user_type || '',
                     profile_picture_url: data.profile_picture_url || ''
                 };
-                
+
                 setFormData(initialData);
             } catch (err) {
                 setError('Failed to load profile data.');
@@ -106,8 +106,8 @@ function ProfilePage() {
         setSuccess('');
 
         try {
-            const response = await apiService.post('/users/me/profile-picture', uploadData, );
-            
+            const response = await apiService.post('/users/me/profile-picture', uploadData,);
+
             setFormData(prev => ({ ...prev, profile_picture_url: response.profile_picture_url }));
             updateUserContext({ ...user, profile_picture_url: response.profile_picture_url });
             setSuccess('Picture uploaded successfully!');

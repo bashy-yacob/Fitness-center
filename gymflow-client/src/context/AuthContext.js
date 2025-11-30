@@ -28,20 +28,28 @@ export const AuthProvider = ({ children }) => {
                         .catch(() => {
                             setUser({ id: decodedToken.id, user_type: decodedToken.user_type, email: decodedToken.email });
                             setAuthError(null);
+                        })
+                        .finally(() => {
+                            setLoading(false);
                         });
                 } else {
                     localStorage.removeItem('token');
+                    setUser(null);
                     setAuthError('ההתחברות פגה, יש להתחבר מחדש.');
+                    setLoading(false);
                 }
             } catch (error) {
                 console.error("Invalid token:", error);
                 localStorage.removeItem('token');
+                setUser(null);
                 setAuthError('ההתחברות לא תקינה, יש להתחבר מחדש.');
+                setLoading(false);
             }
         } else {
+            setUser(null);
             setAuthError(null);
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const login = async (email, password) => {

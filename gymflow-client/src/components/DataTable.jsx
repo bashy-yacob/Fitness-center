@@ -1,26 +1,27 @@
 import React from 'react';
+import { Table, Box } from '@chakra-ui/react';
 
 const DataTable = ({ columns, data }) => (
-  <div style={{ overflowX: 'auto' }}>
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead>
-        <tr>
+  <Box overflowX="auto">
+    <Table.Root variant="outline" bg="dark.card">
+      <Table.Header>
+        <Table.Row>
           {columns.map(col => (
-            <th key={col.key}>{col.label}</th>
+            <Table.ColumnHeader key={col.key} color="brand.400">{col.label}</Table.ColumnHeader>
           ))}
-        </tr>
-      </thead>
-      <tbody>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
         {data.map((row, i) => (
-          <tr key={i}>
+          <Table.Row key={i}>
             {columns.map(col => (
-              <td key={col.key}>{row[col.key]}</td>
+              <Table.Cell key={col.key} color="white">{row[col.key]}</Table.Cell>
             ))}
-          </tr>
+          </Table.Row>
         ))}
-      </tbody>
-    </table>
-  </div>
+      </Table.Body>
+    </Table.Root>
+  </Box>
 );
 
 export default DataTable;

@@ -3,15 +3,19 @@ import apiService from '../../api/apiService';
 import { assignTrainingProgram } from '../../api/assignProgramService';
 import { getTraineeProgramHistory, unassignTraineeActiveProgram } from '../../api/traineeProgramService';
 import { useAuth } from '../../hooks/useAuth';
-import '../../styles/theme.css';
+import { Box, Container, Heading, Button, Flex, Input, NativeSelect, Text, SimpleGrid, Card, Alert, Dialog, List } from '@chakra-ui/react';
+import { createToaster } from '@chakra-ui/react';
+
+const toaster = createToaster({
+    placement: 'top',
+    duration: 5000,
+});
 
 export default function AssignProgramPage() {
     const [trainees, setTrainees] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [selectedTrainee, setSelectedTrainee] = useState('');
     const [selectedProgram, setSelectedProgram] = useState('');
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState('');
     const [traineeSearch, setTraineeSearch] = useState("");
     const [programSearch, setProgramSearch] = useState("");
     const [traineeHistory, setTraineeHistory] = useState([]);
@@ -52,120 +56,203 @@ export default function AssignProgramPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
-        setSuccess(false);
         if (currentProgram) {
             setShowConfirm(true);
             return;
         }
         await doAssign();
     };
+
     const doAssign = async () => {
         try {
             await assignTrainingProgram(trainerId, selectedTrainee, selectedProgram);
-            setSuccess(true);
+            toaster.success({ title: 'התוכנית שויכה בהצלחה' });
             setShowConfirm(false);
             getTraineeProgramHistory(selectedTrainee).then(history => {
                 setTraineeHistory(history);
                 setCurrentProgram(history.find(h => h.is_active));
             });
         } catch (err) {
-            setError(err.message || "שגיאה בשיוך תוכנית");
+            toaster.error({ title: err.message || "שגיאה בשיוך תוכנית" });
         }
     };
+
     const handleUnassign = async () => {
         try {
             await unassignTraineeActiveProgram(selectedTrainee);
             setCurrentProgram(null);
-            setSuccess(false);
+            toaster.success({ title: 'שיוך התוכנית בוטל בהצלחה' });
             getTraineeProgramHistory(selectedTrainee).then(setTraineeHistory);
         } catch (err) {
-            setError(err.message || "שגיאה בביטול שיוך");
+            toaster.error({ title: err.message || "שגיאה בביטול שיוך" });
         }
     };
 
+    const selectedTraineeObj = trainees.find(t => String(t.id) === String(selectedTrainee));
+
     return (
-        <div className="trainer-messages-container">
-            <h2>שיוך תוכנית למתאמן</h2>
-            <div className="tabs">
-                <button className="tab-btn selected">שיוך</button>
-            </div>
-            {error && <div className="toast-error">{error}</div>}
-            {success && <div className="toast-success">{success}</div>}
-            <div className="card-section">
-                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: 220 }}>
-                        <label>חפש מתאמן:</label>
-                        <input value={traineeSearch} onChange={e => setTraineeSearch(e.target.value)} placeholder="הקלד שם..." />
-                        <select value={selectedTrainee} onChange={e => setSelectedTrainee(e.target.value)} required style={{ width: '100%', marginTop: 8 }}>
-                            <option value="">--בחר--</option>
-                            {filteredTrainees.map(t => (
-                                <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
-                            ))}
-                        </select>
-                        {selectedTrainee && (
-                            <button type="button" className="action-btn" style={{ marginTop: 8 }} onClick={() => setShowTraineeDetails(true)}>פרטי מתאמן</button>
-                        )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 220 }}>
-                        <label>חפש תוכנית:</label>
-                        <input value={programSearch} onChange={e => setProgramSearch(e.target.value)} placeholder="הקלד שם תוכנית..." />
-                        <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} required style={{ width: '100%', marginTop: 8 }}>
-                            <option value="">--בחר--</option>
-                            {filteredPrograms.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-                <form onSubmit={handleSubmit} style={{ marginTop: 24, display: 'flex', gap: 16 }}>
-                    <button type="submit" className="action-btn">שמור</button>
-                    {currentProgram && (
-                        <button type="button" className="action-btn" style={{ background: 'var(--error-color)' }} onClick={handleUnassign}>בטל שיוך</button>
-                    )}
-                </form>
+        <Box bg="dark.bg" minH="100vh" py={10}>
+            <Container maxW="container.xl">
+                <Heading mb={8} color="brand.500">שיוך תוכנית למתאמן</Heading>
+
+                <Card.Root bg="dark.card" borderColor="dark.border" borderWidth="1px" mb={8}>
+                    <Card.Body>
+                        <form onSubmit={handleSubmit}>
+                            <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} mb={6}>
+                                <Box>
+                                    <Text mb={2} color="gray.300">חפש מתאמן:</Text>
+                                    <Input
+                                        value={traineeSearch}
+                                        onChange={e => setTraineeSearch(e.target.value)}
+                                        placeholder="הקלד שם..."
+                                        mb={2}
+                                        bg="dark.bg"
+                                        color="white"
+                                        borderColor="dark.border"
+                                    />
+                                    <NativeSelect.Root>
+                                        <NativeSelect.Field
+                                            value={selectedTrainee}
+                                            onChange={e => setSelectedTrainee(e.target.value)}
+                                            required
+                                            bg="dark.bg"
+                                            color="white"
+                                            borderColor="dark.border"
+                                        >
+                                            <option value="">--בחר--</option>
+                                            {filteredTrainees.map(t => (
+                                                <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+                                            ))}
+                                        </NativeSelect.Field>
+                                    </NativeSelect.Root>
+                                    {selectedTrainee && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            mt={2}
+                                            onClick={() => setShowTraineeDetails(true)}
+                                        >
+                                            פרטי מתאמן
+                                        </Button>
+                                    )}
+                                </Box>
+
+                                <Box>
+                                    <Text mb={2} color="gray.300">חפש תוכנית:</Text>
+                                    <Input
+                                        value={programSearch}
+                                        onChange={e => setProgramSearch(e.target.value)}
+                                        placeholder="הקלד שם תוכנית..."
+                                        mb={2}
+                                        bg="dark.bg"
+                                        color="white"
+                                        borderColor="dark.border"
+                                    />
+                                    <NativeSelect.Root>
+                                        <NativeSelect.Field
+                                            value={selectedProgram}
+                                            onChange={e => setSelectedProgram(e.target.value)}
+                                            required
+                                            bg="dark.bg"
+                                            color="white"
+                                            borderColor="dark.border"
+                                        >
+                                            <option value="">--בחר--</option>
+                                            {filteredPrograms.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </NativeSelect.Field>
+                                    </NativeSelect.Root>
+                                </Box>
+                            </SimpleGrid>
+
+                            <Flex gap={4}>
+                                <Button type="submit" colorPalette="brand">שמור</Button>
+                                {currentProgram && (
+                                    <Button type="button" colorPalette="red" variant="outline" onClick={handleUnassign}>בטל שיוך</Button>
+                                )}
+                            </Flex>
+                        </form>
+                    </Card.Body>
+                </Card.Root>
+
                 {currentProgram && (
-                    <div className="card" style={{ marginTop: 16, background: '#232e23', borderColor: 'var(--accent-color)' }}>
-                        <strong>תוכנית נוכחית:</strong> {currentProgram.program_name} (הוקצתה ב-{new Date(currentProgram.assigned_date).toLocaleDateString('he-IL')})
-                    </div>
+                    <Alert.Root status="info" mb={6} variant="subtle" colorPalette="blue">
+                        <Alert.Title>תוכנית נוכחית:</Alert.Title>
+                        <Alert.Description>
+                            {currentProgram.program_name} (הוקצתה ב-{new Date(currentProgram.assigned_date).toLocaleDateString('he-IL')})
+                        </Alert.Description>
+                    </Alert.Root>
                 )}
+
                 {traineeHistory.length > 0 && (
-                    <div className="card-section" style={{ marginTop: 16, background: '#181c1f' }}>
-                        <strong>היסטוריית תוכניות:</strong>
-                        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                            {traineeHistory.map((h, i) => (
-                                <li key={i} style={{ color: h.is_active ? 'var(--accent-color)' : '#fff', fontWeight: h.is_active ? 700 : 400, marginBottom: 4 }}>
-                                    {h.program_name} ({h.trainer_name}) - {new Date(h.assigned_date).toLocaleDateString('he-IL')} {h.is_active ? '(פעילה)' : ''}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card.Root bg="dark.card" borderColor="dark.border" borderWidth="1px">
+                        <Card.Body>
+                            <Heading size="md" mb={4} color="brand.400">היסטוריית תוכניות</Heading>
+                            <List.Root spacing={2}>
+                                {traineeHistory.map((h, i) => (
+                                    <List.Item key={i} color={h.is_active ? 'brand.400' : 'gray.400'} fontWeight={h.is_active ? 'bold' : 'normal'}>
+                                        <List.Indicator color={h.is_active ? 'brand.500' : 'gray.500'}>•</List.Indicator>
+                                        {h.program_name} ({h.trainer_name}) - {new Date(h.assigned_date).toLocaleDateString('he-IL')} {h.is_active ? '(פעילה)' : ''}
+                                    </List.Item>
+                                ))}
+                            </List.Root>
+                        </Card.Body>
+                    </Card.Root>
                 )}
-                {showConfirm && (
-                    <div className="card-section" style={{ background: '#333', color: '#fff', marginTop: 16 }}>
-                        <p>למתאמן כבר משויכת תוכנית פעילה. האם להחליף אותה?</p>
-                        <button className="action-btn" onClick={doAssign}>כן, החלף</button>
-                        <button className="action-btn" style={{ background: 'var(--error-color)', marginRight: 8 }} onClick={() => setShowConfirm(false)}>ביטול</button>
-                    </div>
-                )}
-                {showTraineeDetails && selectedTrainee && (
-                    <div className="card-section" style={{ background: '#232e23', color: '#fff', marginTop: 16 }}>
-                        <h4 style={{ color: 'var(--accent-color)' }}>פרטי מתאמן</h4>
-                        {(() => {
-                            const t = trainees.find(t => t.id == selectedTrainee);
-                            if (!t) return null;
-                            return (
-                                <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                                    <li>שם: {t.first_name} {t.last_name}</li>
-                                    <li>אימייל: {t.email}</li>
-                                    <li>טלפון: {t.phone}</li>
-                                </ul>
-                            );
-                        })()}
-                        <button className="action-btn" onClick={() => setShowTraineeDetails(false)} style={{ marginTop: 8 }}>סגור</button>
-                    </div>
-                )}
-            </div>
-        </div>
+
+                {/* Confirm Dialog */}
+                <Dialog.Root open={showConfirm} onOpenChange={() => setShowConfirm(false)}>
+                    <Dialog.Backdrop />
+                    <Dialog.Positioner>
+                        <Dialog.Content bg="dark.card" borderColor="dark.border">
+                            <Dialog.CloseTrigger color="gray.400" />
+                            <Dialog.Header>
+                                <Dialog.Title color="brand.400">אישור החלפת תוכנית</Dialog.Title>
+                            </Dialog.Header>
+                            <Dialog.Body>
+                                <Text color="white">למתאמן כבר משויכת תוכנית פעילה. האם להחליף אותה?</Text>
+                            </Dialog.Body>
+                            <Dialog.Footer>
+                                <Button variant="outline" onClick={() => setShowConfirm(false)}>ביטול</Button>
+                                <Button colorPalette="brand" onClick={doAssign}>כן, החלף</Button>
+                            </Dialog.Footer>
+                        </Dialog.Content>
+                    </Dialog.Positioner>
+                </Dialog.Root>
+
+                {/* Trainee Details Dialog */}
+                <Dialog.Root open={showTraineeDetails} onOpenChange={() => setShowTraineeDetails(false)}>
+                    <Dialog.Backdrop />
+                    <Dialog.Positioner>
+                        <Dialog.Content bg="dark.card" borderColor="dark.border">
+                            <Dialog.CloseTrigger color="gray.400" />
+                            <Dialog.Header>
+                                <Dialog.Title color="brand.400">פרטי מתאמן</Dialog.Title>
+                            </Dialog.Header>
+                            <Dialog.Body>
+                                {selectedTraineeObj && (
+                                    <List.Root spacing={2} color="white">
+                                        <List.Item>
+                                            <Text as="span" fontWeight="bold" color="brand.400">שם:</Text> {selectedTraineeObj.first_name} {selectedTraineeObj.last_name}
+                                        </List.Item>
+                                        <List.Item>
+                                            <Text as="span" fontWeight="bold" color="brand.400">אימייל:</Text> {selectedTraineeObj.email}
+                                        </List.Item>
+                                        <List.Item>
+                                            <Text as="span" fontWeight="bold" color="brand.400">טלפון:</Text> {selectedTraineeObj.phone}
+                                        </List.Item>
+                                    </List.Root>
+                                )}
+                            </Dialog.Body>
+                            <Dialog.Footer>
+                                <Button onClick={() => setShowTraineeDetails(false)} colorPalette="brand">סגור</Button>
+                            </Dialog.Footer>
+                        </Dialog.Content>
+                    </Dialog.Positioner>
+                </Dialog.Root>
+
+            </Container>
+        </Box>
     );
 }

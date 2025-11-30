@@ -1,15 +1,8 @@
-// בקובץ: src/components/PaymentModal.jsx
-
 import React, { useState } from 'react';
-// apiService לא נחוץ כאן יותר
-// import apiService from '../api/apiService'; 
-import './css/PaymentModal.css';
+import { Box, Button, Input, Flex, Text, Dialog, Field, SimpleGrid } from '@chakra-ui/react';
 
-// === שינוי בחתימת הפונקציה: מקבלים onConfirm במקום onSuccess/onError ===
 function PaymentModal({ gymClass, onClose, onConfirm }) {
-    // isProcessing נשאר כדי להציג "מעבד..." בזמן הלחיצה
     const [isProcessing, setIsProcessing] = useState(false);
-
     const [paymentDetails, setPaymentDetails] = useState({
         cardNumber: '', expiryDate: '', cvv: ''
     });
@@ -19,18 +12,13 @@ function PaymentModal({ gymClass, onClose, onConfirm }) {
         setPaymentDetails(prev => ({ ...prev, [name]: value }));
     };
 
-    // === פונקציית ה-handleSubmit פשוטה משמעותית ===
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsProcessing(true);
-        
-        // פשוט קוראים לפונקציה onConfirm שהגיעה מהאבא
-        // ומעבירים לה את ה-ID של החוג.
+
         if (onConfirm) {
             onConfirm(gymClass.id);
         }
-        
-        // אין צורך ב-try/catch/finally כאן, כי העמוד הראשי מטפל בהכל.
     };
 
     if (!gymClass) {
@@ -38,37 +26,93 @@ function PaymentModal({ gymClass, onClose, onConfirm }) {
     }
 
     return (
-        <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close-btn" onClick={onClose}>×</button>
-                <h2>הרשמה לחוג: {gymClass.name}</h2>
-                <p><strong>מאמן/ה:</strong> {gymClass.trainerName}</p>
-                <p className="payment-price"><strong>מחיר:</strong> 50.00 ₪</p>
-                <hr />
-                
-                <form onSubmit={handleSubmit}>
-                    <h4>פרטי תשלום</h4>
-                    <div className="form-group">
-                        <label htmlFor="cardNumber">מספר כרטיס</label>
-                        <input type="text" id="cardNumber" name="cardNumber" value={paymentDetails.cardNumber} onChange={handleInputChange} placeholder="1234 5678 1234 5678" required />
-                    </div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="expiryDate">תוקף</label>
-                            <input type="text" id="expiryDate" name="expiryDate" value={paymentDetails.expiryDate} onChange={handleInputChange} placeholder="MM/YY" required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="cvv">CVV</label>
-                            <input type="text" id="cvv" name="cvv" value={paymentDetails.cvv} onChange={handleInputChange} placeholder="123" required />
-                        </div>
-                    </div>
+        <Dialog.Root open={!!gymClass} onOpenChange={onClose}>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+                <Dialog.Content bg="dark.card" borderColor="dark.border">
+                    <Dialog.CloseTrigger color="gray.400" />
+                    <Dialog.Header>
+                        <Dialog.Title color="brand.400">הרשמה לחוג: {gymClass.name}</Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body>
+                        <Flex direction="column" gap={4}>
+                            <Box>
+                                <Text color="gray.300">
+                                    <Text as="span" fontWeight="bold" color="brand.400">מאמן/ה:</Text> {gymClass.trainerName}
+                                </Text>
+                                <Text color="white" fontWeight="bold" fontSize="lg" mt={2}>
+                                    מחיר: 50.00 ₪
+                                </Text>
+                            </Box>
 
-                    <button type="submit" className="submit-payment-btn" disabled={isProcessing}>
-                        {isProcessing ? 'מעבד...' : 'שלם עכשיו והירשם'}
-                    </button>
-                </form>
-            </div>
-        </div>
+                            <Box as="hr" borderColor="gray.700" my={2} />
+
+                            <form onSubmit={handleSubmit}>
+                                <Flex direction="column" gap={4}>
+                                    <Text fontWeight="bold" color="brand.400">פרטי תשלום</Text>
+
+                                    <Field.Root>
+                                        <Field.Label color="gray.300">מספר כרטיס</Field.Label>
+                                        <Input
+                                            name="cardNumber"
+                                            value={paymentDetails.cardNumber}
+                                            onChange={handleInputChange}
+                                            placeholder="1234 5678 1234 5678"
+                                            bg="dark.bg"
+                                            borderColor="dark.border"
+                                            color="white"
+                                            _focus={{ borderColor: 'brand.400' }}
+                                            required
+                                        />
+                                    </Field.Root>
+
+                                    <SimpleGrid columns={2} gap={4}>
+                                        <Field.Root>
+                                            <Field.Label color="gray.300">תוקף</Field.Label>
+                                            <Input
+                                                name="expiryDate"
+                                                value={paymentDetails.expiryDate}
+                                                onChange={handleInputChange}
+                                                placeholder="MM/YY"
+                                                bg="dark.bg"
+                                                borderColor="dark.border"
+                                                color="white"
+                                                _focus={{ borderColor: 'brand.400' }}
+                                                required
+                                            />
+                                        </Field.Root>
+                                        <Field.Root>
+                                            <Field.Label color="gray.300">CVV</Field.Label>
+                                            <Input
+                                                name="cvv"
+                                                value={paymentDetails.cvv}
+                                                onChange={handleInputChange}
+                                                placeholder="123"
+                                                bg="dark.bg"
+                                                borderColor="dark.border"
+                                                color="white"
+                                                _focus={{ borderColor: 'brand.400' }}
+                                                required
+                                            />
+                                        </Field.Root>
+                                    </SimpleGrid>
+
+                                    <Button
+                                        type="submit"
+                                        colorPalette="brand"
+                                        w="full"
+                                        loading={isProcessing}
+                                        mt={4}
+                                    >
+                                        {isProcessing ? 'מעבד...' : 'שלם עכשיו והירשם'}
+                                    </Button>
+                                </Flex>
+                            </form>
+                        </Flex>
+                    </Dialog.Body>
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Dialog.Root>
     );
 }
 

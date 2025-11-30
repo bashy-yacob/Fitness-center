@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import apiService from '../../api/apiService';
-import '../../../src/pages/trainer/Schedule.css';
+import { Box, Container, Heading, Text, SimpleGrid, Flex, Spinner, Card, Button, Dialog, Badge } from '@chakra-ui/react';
 
 const daysOfWeek = [
   'Sunday',
@@ -17,7 +17,6 @@ function formatTime(dateStr) {
 }
 
 function getDayIndex(dateStr) {
-  // JS: Sunday=0, Monday=1, ...
   return new Date(dateStr).getDay();
 }
 
@@ -42,63 +41,105 @@ const Schedule = ({ trainerId }) => {
     if (trainerId) fetchSchedule();
   }, [trainerId]);
 
-  // Group classes by day
   const weekSchedule = daysOfWeek.map((day, idx) => ({
     day,
     classes: schedule.filter(cls => getDayIndex(cls.start_time) === idx),
   }));
 
+  if (loading) {
+    return (
+      <Flex justify="center" align="center" minH="50vh">
+        <Spinner size="xl" color="brand.500" />
+        <Text ml={4} color="white">טוען נתונים...</Text>
+      </Flex>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box textAlign="center" mt={10}>
+        <Text color="red.500">{error}</Text>
+      </Box>
+    );
+  }
+
   return (
-    <div className="trainer-schedule-container">
-            <h2>מערכת שעות שבועית של המאמן</h2>
-            {loading ? (
-                <div style={{textAlign:'center',marginTop:40}}>טוען נתונים...</div>
-            ) : error ? (
-                <div className="toast-error">{error}</div>
-            ) : (
-                <div className="week-grid">
-                    {weekSchedule.map(({ day, classes }) => (
-                        <div key={day} className="day-column">
-                            <div className="day-header">{day}</div>
-                            {classes.length === 0 ? (
-                                <div className="no-classes">אין חוגים</div>
-                            ) : (
-                                classes.map(cls => (
-                                    <div
-                                        key={cls.id}
-                                        className="class-block"
-                                        onClick={() => setSelectedClass(cls)}
-                                    >
-                                        <div className="class-name">{cls.name}</div>
-                                        <div className="class-time">
-                                            {formatTime(cls.start_time)} - {formatTime(cls.end_time)}
-                                        </div>
-                                        <div className="class-room">חדר: {cls.room}</div>
-                                        <div className="class-trainees">מתאמנים: {cls.traineeCount}</div>
-                                        <button className="details-btn">פרטים</button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
-            {/* Modal for class details */}
-            {selectedClass && (
-                <div className="modal-overlay" onClick={() => setSelectedClass(null)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <h3>{selectedClass.name}</h3>
-                        <p>
-                            <b>שעה:</b> {formatTime(selectedClass.start_time)} - {formatTime(selectedClass.end_time)}
-                        </p>
-                        <p><b>חדר:</b> {selectedClass.room}</p>
-                        <p><b>מתאמנים:</b> {selectedClass.traineeCount}</p>
-                        {/* אפשר להוסיף כאן עוד פרטים */}
-                        <button onClick={() => setSelectedClass(null)}>סגור</button>
-                    </div>
-                </div>
-            )}
-        </div>
+    <Box bg="dark.bg" py={10}>
+      <Container maxW="container.xl">
+        <Heading mb={8} color="brand.500" textAlign="center">מערכת שעות שבועית של המאמן</Heading>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 6 }} gap={4}>
+          {weekSchedule.map(({ day, classes }) => (
+            <Box key={day} bg="dark.card" p={4} borderRadius="md" borderWidth="1px" borderColor="dark.border">
+              <Heading size="sm" mb={4} color="brand.400" textAlign="center" borderBottomWidth="1px" borderColor="gray.700" pb={2}>
+                {day}
+              </Heading>
+
+              {classes.length === 0 ? (
+                <Text color="gray.500" textAlign="center" fontSize="sm">אין חוגים</Text>
+              ) : (
+                <Flex direction="column" gap={3}>
+                  {classes.map(cls => (
+                    <Card.Root
+                      key={cls.id}
+                      bg="dark.bg"
+                      borderColor="gray.700"
+                      borderWidth="1px"
+                      cursor="pointer"
+                      onClick={() => setSelectedClass(cls)}
+                      _hover={{ borderColor: 'brand.500', transform: 'translateY(-2px)', transition: 'all 0.2s' }}
+                    >
+                      <Card.Body p={3}>
+                        <Text fontWeight="bold" color="white" fontSize="sm">{cls.name}</Text>
+                        <Text color="brand.300" fontSize="xs">
+                          {formatTime(cls.start_time)} - {formatTime(cls.end_time)}
+                        </Text>
+                        <Text color="gray.400" fontSize="xs">חדר: {cls.room}</Text>
+                        <Badge colorPalette="blue" size="sm" mt={2}>
+                          {cls.traineeCount} מתאמנים
+                        </Badge>
+                      </Card.Body>
+                    </Card.Root>
+                  ))}
+                </Flex>
+              )}
+            </Box>
+          ))}
+        </SimpleGrid>
+
+        {/* Class Details Dialog */}
+        <Dialog.Root open={!!selectedClass} onOpenChange={() => setSelectedClass(null)}>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content bg="dark.card" borderColor="dark.border">
+              <Dialog.CloseTrigger color="gray.400" />
+              <Dialog.Header>
+                <Dialog.Title color="brand.400">{selectedClass?.name}</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                {selectedClass && (
+                  <Flex direction="column" gap={3}>
+                    <Text color="white">
+                      <Text as="span" fontWeight="bold" color="brand.400">שעה:</Text> {formatTime(selectedClass.start_time)} - {formatTime(selectedClass.end_time)}
+                    </Text>
+                    <Text color="white">
+                      <Text as="span" fontWeight="bold" color="brand.400">חדר:</Text> {selectedClass.room}
+                    </Text>
+                    <Text color="white">
+                      <Text as="span" fontWeight="bold" color="brand.400">מתאמנים רשומים:</Text> {selectedClass.traineeCount}
+                    </Text>
+                  </Flex>
+                )}
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button onClick={() => setSelectedClass(null)} colorPalette="brand">סגור</Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Dialog.Root>
+
+      </Container>
+    </Box>
   );
 };
 

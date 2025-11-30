@@ -2,9 +2,24 @@ import React, { useEffect, useState } from 'react';
 import apiService from '../../api/apiService.js';
 import AdminSendMessageForm from './AdminSendMessageForm.jsx';
 import EditBroadcastMessageModal from './EditBroadcastMessageModal.jsx';
-import '../../styles/theme.css';
-import './AdminMessagesPage.css';
-
+// import '../../styles/theme.css';
+// import './AdminMessagesPage.css';
+import {
+    Box,
+    Container,
+    Heading,
+    SimpleGrid,
+    Card,
+    Text,
+    Button,
+    Badge,
+    Stack,
+    Flex,
+    Spinner,
+    Alert,
+    Icon,
+    createToaster,
+} from '@chakra-ui/react';
 const AdminMessagesPage = () => {
   const [broadcastMessages, setBroadcastMessages] = useState([]);
   const [sentPrivateMessages, setSentPrivateMessages] = useState([]);
@@ -77,21 +92,21 @@ const AdminMessagesPage = () => {
   };
 
   return (
-    <div className="trainer-messages-container">
+    <Box className="trainer-messages-container">
       <h2>הודעות מנהל</h2>
-      <div className="tabs">
-        <button className={`tab-btn${selectedTab === 'broadcast' ? ' selected' : ''}`} onClick={() => setSelectedTab('broadcast')}>הודעות כלליות</button>
-        <button className={`tab-btn${selectedTab === 'private' ? ' selected' : ''}`} onClick={() => setSelectedTab('private')}>הודעות פרטיות שנשלחו</button>
-        <button className={`tab-btn${selectedTab === 'received' ? ' selected' : ''}`} onClick={() => setSelectedTab('received')}>הודעות שהתקבלו</button>
-      </div>
-      <div className="card-section">
-        <div style={{ margin: '24px 0' }}>
+      <Box className="tabs">
+        <Button variant={selectedTab === 'broadcast' ? 'solid' : 'outline'} onClick={() => setSelectedTab('broadcast')}>הודעות כלליות</Button>
+        <Button variant={selectedTab === 'private' ? 'solid' : 'outline'} onClick={() => setSelectedTab('private')}>הודעות פרטיות שנשלחו</Button>
+        <Button variant={selectedTab === 'received' ? 'solid' : 'outline'} onClick={() => setSelectedTab('received')}>הודעות שהתקבלו</Button>
+      </Box>
+      <Box className="card-section">
+        <Box style={{ margin: '24px 0' }}>
           <AdminSendMessageForm onSuccess={fetchAll} />
-        </div>
-        {loading && <div style={{textAlign:'center',marginTop:40}}>טוען...</div>}
-        {error && <div className="toast-error">{error}</div>}
+        </Box>
+        {loading && <Box style={{textAlign:'center',marginTop:40}}>טוען...</Box>}
+        {error && <Box className="toast-error">{error}</Box>}
         {selectedTab === 'broadcast' && (
-          <div style={{ marginBottom: 32 }}>
+          <Box style={{ marginBottom: 32 }}>
             <h3 className="section-title">הודעות שנשלחו - כלליות</h3>
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {broadcastMessages.map((msg, idx) => (
@@ -104,13 +119,13 @@ const AdminMessagesPage = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </Box>
         )}
         {selectedTab === 'private' && (
-          <div style={{ marginBottom: 32 }}>
-            <h3 className="section-title">הודעות שנשלחו - פרטיות</h3>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <input
+          <Box style={{ marginBottom: 32 }}>
+            <Text className="section-title">הודעות שנשלחו - פרטיות</Text>
+            <Box style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <Input
                 type="text"
                 placeholder="סנן לפי שם/אימייל נמען..."
                 value={sentFilter}
@@ -118,10 +133,10 @@ const AdminMessagesPage = () => {
                 className="input-dark"
                 style={{ flex: 1 }}
               />
-              <button onClick={() => setSentSortAsc(v => !v)} className="action-btn" style={{ padding: '6px 12px', fontSize: '1rem' }}>
+              <Button onClick={() => setSentSortAsc(v => !v)} className="action-btn" style={{ padding: '6px 12px', fontSize: '1rem' }}>
                 מיין לפי נמען {sentSortAsc ? '▲' : '▼'}
-              </button>
-            </div>
+              </Button>
+            </Box>
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {sentPrivateMessages
                 .filter(msg => {
@@ -137,18 +152,18 @@ const AdminMessagesPage = () => {
                 })
                 .map((msg, idx) => (
                   <li key={msg.id || idx} className="card" style={{ marginBottom: 18 }}>
-                    <div className="class-name">ל: {msg.receiver_name || msg.receiver_email || msg.receiver_id}</div>
-                    <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</div>
-                    <div style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</div>
+                    <Box className="class-name">ל: {msg.receiver_name || msg.receiver_email || msg.receiver_id}</Box>
+                    <Box style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</Box>
+                    <Box style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</Box>
                   </li>
                 ))}
             </ul>
-          </div>
+          </Box>
         )}
         {selectedTab === 'received' && (
-          <div>
-            <h3 className="section-title">הודעות שהתקבלו</h3>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <Box>
+            <Text className="section-title">הודעות שהתקבלו</Text>
+            <Box style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <input
                 type="text"
                 placeholder="סנן לפי שם/אימייל שולח..."
@@ -157,10 +172,10 @@ const AdminMessagesPage = () => {
                 className="input-dark"
                 style={{ flex: 1 }}
               />
-              <button onClick={() => setReceivedSortAsc(v => !v)} className="action-btn" style={{ padding: '6px 12px', fontSize: '1rem' }}>
+              < Button onClick={() => setReceivedSortAsc(v => !v)} className="action-btn" style={{ padding: '6px 12px', fontSize: '1rem' }}>
                 מיין לפי שולח {receivedSortAsc ? '▲' : '▼'}
-              </button>
-            </div>
+              </Button>
+            </Box>
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {receivedMessages
                 .filter(msg => {
@@ -176,13 +191,13 @@ const AdminMessagesPage = () => {
                 })
                 .map((msg, idx) => (
                   <li key={msg.id || idx} className="card" style={{ marginBottom: 18 }}>
-                    <div className="class-name">{msg.sender_name || 'משתמש'}</div>
-                    <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</div>
-                    <div style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</div>
+                    <Text className="class-name">{msg.sender_name || 'משתמש'}</Text>
+                    <Text style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</Text>
+                    <Text style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</Text>
                   </li>
                 ))}
             </ul>
-          </div>
+          </Box>
         )}
         <EditBroadcastMessageModal
           open={!!editId}
@@ -191,8 +206,8 @@ const AdminMessagesPage = () => {
           initialSubject={editSubject}
           initialText={editText}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

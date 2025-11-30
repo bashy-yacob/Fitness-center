@@ -6,9 +6,14 @@ import {
   updateUser,
   deleteUser
 } from '../../api/userService';
-import ClassesAdminPage from './ClassesAdminPage';
-import './UsersAdminPage.css';
 import DataTable from '../../components/DataTable';
+import { Box, Container, Heading, Button, Flex, Input, NativeSelect, Dialog, Field, SimpleGrid, Text } from '@chakra-ui/react';
+import { createToaster } from '@chakra-ui/react';
+
+const toaster = createToaster({
+  placement: 'top',
+  duration: 5000,
+});
 
 const USER_TYPES = [
   { value: '', label: 'הכל' },
@@ -41,19 +46,17 @@ function UsersAdminPage() {
   }, [filter]);
 
   const loadUsers = async () => {
-    
     setLoading(true);
     try {
       let data;
       if (filter) {
-        const data = await fetchUsersByType(filter);
-        setUsers(data);
+        data = await fetchUsersByType(filter);
       } else {
-        const data = await fetchAllUsers();
-        setUsers(data);
+        data = await fetchAllUsers();
       }
+      setUsers(data);
     } catch (e) {
-      alert('שגיאה בטעינת משתמשים');
+      toaster.error({ title: 'שגיאה בטעינת משתמשים' });
     }
     setLoading(false);
   };
@@ -67,7 +70,7 @@ function UsersAdminPage() {
       phone_number: user.phone_number,
       user_type: user.user_type,
       password: '',
-      date_of_birth: user.date_of_birth || '',
+      date_of_birth: user.date_of_birth ? user.date_of_birth.split('T')[0] : '',
       gender: user.gender || '',
       specialization: user.specialization || ''
     });
@@ -76,8 +79,13 @@ function UsersAdminPage() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('האם למחוק משתמש זה?')) return;
-    await deleteUser(id);
-    loadUsers();
+    try {
+      await deleteUser(id);
+      toaster.success({ title: 'המשתמש נמחק בהצלחה' });
+      loadUsers();
+    } catch (err) {
+      toaster.error({ title: 'שגיאה במחיקת המשתמש' });
+    }
   };
 
   const handleAdd = () => {
@@ -88,7 +96,6 @@ function UsersAdminPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // ולידציה בסיסית בקליינט
     const errors = [];
     if (!form.first_name) errors.push('שם פרטי הוא שדה חובה.');
     if (!form.last_name) errors.push('שם משפחה הוא שדה חובה.');
@@ -99,7 +106,7 @@ function UsersAdminPage() {
     if (form.user_type === 'trainee') {
       if (!form.date_of_birth.match(/^\d{4}-\d{2}-\d{2}$/)) errors.push('פורמט תאריך לידה חייב להיות YYYY-MM-DD.');
       if (!form.gender) errors.push('מין לא יכול להיות ריק.');
-      if (!['male','female','other'].includes(form.gender)) errors.push('מין חייב להיות "male", "female" או "other".');
+      if (!['male', 'female', 'other'].includes(form.gender)) errors.push('מין חייב להיות "male", "female" או "other".');
     }
     if (form.user_type === 'trainer') {
       if (!form.specialization) errors.push('התמחות היא שדה חובה עבור מאמן.');
@@ -109,8 +116,8 @@ function UsersAdminPage() {
     try {
       if (editUser) {
         await updateUser(editUser.id, form);
+        toaster.success({ title: 'המשתמש עודכן בהצלחה' });
       } else {
-        // שלח רק שדות רלוונטיים לפי סוג המשתמש
         const userData = {
           first_name: form.first_name,
           last_name: form.last_name,
@@ -122,9 +129,9 @@ function UsersAdminPage() {
           gender: form.gender,
           specialization: form.user_type === 'trainer' ? form.specialization : undefined
         };
-        // הסר שדות ריקים/undefined
         Object.keys(userData).forEach(key => (userData[key] === '' || userData[key] === undefined) && delete userData[key]);
         await createUser(userData);
+        toaster.success({ title: 'המשתמש נוצר בהצלחה' });
       }
       setShowModal(false);
       loadUsers();
@@ -140,82 +147,137 @@ function UsersAdminPage() {
     { key: 'user_type', label: 'סוג משתמש' },
     { key: 'actions', label: 'פעולות' },
   ];
+
   const data = (Array.isArray(users) ? users : []).map(user => ({
     name: user.first_name + ' ' + user.last_name,
     email: user.email,
     phone: user.phone_number,
     user_type: user.user_type,
-    actions: <>
-      <button onClick={() => handleEdit(user)}>ערוך</button>
-      <button onClick={() => handleDelete(user.id)} style={{ color: 'red' }}>מחק</button>
-    </>
+    actions: (
+      <Flex gap={2}>
+        <Button size="xs" variant="outline" onClick={() => handleEdit(user)}>ערוך</Button>
+        <Button size="xs" colorPalette="red" variant="ghost" onClick={() => handleDelete(user.id)}>מחק</Button>
+      </Flex>
+    )
   }));
 
   return (
-    <div style={{ maxWidth: 900, margin: 'auto', padding: 24 }}>
-      <h2>ניהול משתמשים</h2>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <select value={filter} onChange={e => setFilter(e.target.value)}>
-          {USER_TYPES.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <button onClick={handleAdd}>הוסף משתמש חדש</button>
-      </div>
-      {loading ? <div>טוען...</div> : (
-        <DataTable columns={columns} data={data} />
-      )}
-      {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0008', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <form onSubmit={handleSubmit} style={{ background: '#fff', padding: 24, borderRadius: 8, minWidth: 320 }}>
-            <h3>{editUser ? 'עריכת משתמש' : 'הוספת משתמש חדש'}</h3>
-            {formErrors.length > 0 && (
-              <ul style={{ color: 'red' }}>{formErrors.map((err, i) => <li key={i}>{err}</li>)}</ul>
-            )}
-            <input placeholder="שם פרטי" value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} required />
-            <input placeholder="שם משפחה" value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} required />
-            <input placeholder="אימייל" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required type="email" />
-            <input placeholder="טלפון (10 ספרות)" value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} required />
-            <input placeholder="תאריך לידה" value={form.date_of_birth} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} type="date" />
-            <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}>
-              <option value="">בחר מין</option>
-              <option value="male">זכר</option>
-              <option value="female">נקבה</option>
-              <option value="other">אחר</option>
-            </select>
-            <select value={form.user_type} onChange={e => setForm(f => ({ ...f, user_type: e.target.value }))} required>
-              <option value="">בחר סוג</option>
-              <option value="trainee">מתאמן</option>
-              <option value="trainer">מאמן</option>
-              <option value="admin">מנהל</option>
-            </select>
-            {form.user_type === 'trainer' && (
-              <div>
-                <input placeholder="התמחות" value={form.specialization} onChange={e => setForm(f => ({ ...f, specialization: e.target.value }))} required />
-              </div>
-            )}
-            {(!editUser) && (
-              <input
-                type="password"
-                placeholder="סיסמה"
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                required
-                autoComplete="new-password"
-              />
-            )}
-            <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-              <button type="submit">שמור</button>
-              <button type="button" onClick={() => setShowModal(false)}>ביטול</button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+    <Box bg="dark.bg" minH="100vh" py={10}>
+      <Container maxW="container.xl">
+        <Heading mb={8} color="brand.500">ניהול משתמשים</Heading>
+
+        <Flex justify="space-between" mb={6}>
+          <Box w="200px">
+            <NativeSelect.Root>
+              <NativeSelect.Field value={filter} onChange={e => setFilter(e.target.value)} bg="dark.bg" color="white" borderColor="dark.border">
+                {USER_TYPES.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </NativeSelect.Field>
+            </NativeSelect.Root>
+          </Box>
+          <Button onClick={handleAdd} colorPalette="brand">הוסף משתמש חדש</Button>
+        </Flex>
+
+        {loading ? (
+          <Text color="white">טוען...</Text>
+        ) : (
+          <DataTable columns={columns} data={data} />
+        )}
+
+        <Dialog.Root open={showModal} onOpenChange={() => setShowModal(false)}>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content bg="dark.card" borderColor="dark.border">
+              <Dialog.CloseTrigger color="gray.400" />
+              <Dialog.Header>
+                <Dialog.Title color="brand.400">{editUser ? 'עריכת משתמש' : 'הוספת משתמש חדש'}</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <form onSubmit={handleSubmit}>
+                  <Flex direction="column" gap={4}>
+                    {formErrors.length > 0 && (
+                      <Box color="red.500">
+                        {formErrors.map((err, i) => <Text key={i}>{err}</Text>)}
+                      </Box>
+                    )}
+                    <SimpleGrid columns={2} gap={4}>
+                      <Field.Root required>
+                        <Field.Label color="gray.300">שם פרטי</Field.Label>
+                        <Input value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                      </Field.Root>
+                      <Field.Root required>
+                        <Field.Label color="gray.300">שם משפחה</Field.Label>
+                        <Input value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                      </Field.Root>
+                    </SimpleGrid>
+
+                    <Field.Root required>
+                      <Field.Label color="gray.300">אימייל</Field.Label>
+                      <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                    </Field.Root>
+
+                    <Field.Root required>
+                      <Field.Label color="gray.300">טלפון</Field.Label>
+                      <Input value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                    </Field.Root>
+
+                    <Field.Root required>
+                      <Field.Label color="gray.300">סוג משתמש</Field.Label>
+                      <NativeSelect.Root>
+                        <NativeSelect.Field value={form.user_type} onChange={e => setForm(f => ({ ...f, user_type: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border">
+                          <option value="">בחר סוג</option>
+                          <option value="trainee">מתאמן</option>
+                          <option value="trainer">מאמן</option>
+                          <option value="admin">מנהל</option>
+                        </NativeSelect.Field>
+                      </NativeSelect.Root>
+                    </Field.Root>
+
+                    {form.user_type === 'trainee' && (
+                      <>
+                        <Field.Root required>
+                          <Field.Label color="gray.300">תאריך לידה</Field.Label>
+                          <Input type="date" value={form.date_of_birth} onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                        </Field.Root>
+                        <Field.Root required>
+                          <Field.Label color="gray.300">מין</Field.Label>
+                          <NativeSelect.Root>
+                            <NativeSelect.Field value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border">
+                              <option value="">בחר מין</option>
+                              <option value="male">זכר</option>
+                              <option value="female">נקבה</option>
+                              <option value="other">אחר</option>
+                            </NativeSelect.Field>
+                          </NativeSelect.Root>
+                        </Field.Root>
+                      </>
+                    )}
+
+                    {form.user_type === 'trainer' && (
+                      <Field.Root required>
+                        <Field.Label color="gray.300">התמחות</Field.Label>
+                        <Input value={form.specialization} onChange={e => setForm(f => ({ ...f, specialization: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" />
+                      </Field.Root>
+                    )}
+
+                    {!editUser && (
+                      <Field.Root required>
+                        <Field.Label color="gray.300">סיסמה</Field.Label>
+                        <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} bg="dark.bg" color="white" borderColor="dark.border" autoComplete="new-password" />
+                      </Field.Root>
+                    )}
+
+                    <Button type="submit" colorPalette="brand" w="full" mt={4}>שמור</Button>
+                  </Flex>
+                </form>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Dialog.Root>
+      </Container>
+    </Box>
   );
 }
-
-// ניתן להוסיף כאן קישור לעמוד ניהול החוגים בתפריט או בנתב הראשי של האדמין
-// לדוג' בנתב: <Route path="/admin/classes" element={<ClassesAdminPage />} />
 
 export default UsersAdminPage;

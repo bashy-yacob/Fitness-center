@@ -3,7 +3,7 @@ import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../api/apiService';
-import './Dashboard.css';
+import { Box, Container, Heading, SimpleGrid, Flex, Spinner, Button, Card, Text } from '@chakra-ui/react';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
@@ -22,8 +22,22 @@ export default function AdminDashboardPage() {
       });
   }, []);
 
-  if (error) return <div>{error}</div>;
-  if (!stats) return <div>טוען נתונים...</div>;
+  if (error) {
+    return (
+      <Flex justify="center" mt={10}>
+        <Text color="red.500">{error}</Text>
+      </Flex>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <Flex justify="center" align="center" minH="50vh">
+        <Spinner size="xl" color="brand.500" />
+        <Text ml={4} color="white">טוען נתונים...</Text>
+      </Flex>
+    );
+  }
 
   const barData = {
     labels: ['משתמשים', 'הכנסות (₪)', 'חוגים פעילים'],
@@ -47,22 +61,35 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
-      <h2>דשבורד מנהל</h2>
-      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 300 }}>
-          <Bar data={barData} />
-        </div>
-        <div style={{ flex: 1, minWidth: 300 }}>
-          <Pie data={pieData} />
-        </div>
-      </div>
-      <div style={{ marginTop: 32, display: 'flex', gap: 16 }}>
-        <button onClick={() => navigate('/admin/users')}>ניהול משתמשים</button>
-        <button onClick={() => navigate('/admin/classes')}>ניהול חוגים</button>
-        <button onClick={() => navigate('/admin/packages')}>ניהול סוגי מנויים</button>
-        <button onClick={() => navigate('/admin/payments')}>ניהול תשלומים</button>
-      </div>
-    </div>
+    <Box bg="dark.bg" minH="100vh" py={10}>
+      <Container maxW="container.xl">
+        <Heading mb={8} color="brand.500">דשבורד מנהל</Heading>
+
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} mb={10}>
+          <Card.Root bg="dark.card" borderColor="dark.border" borderWidth="1px">
+            <Card.Body>
+              <Box h="300px">
+                <Bar data={barData} options={{ maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { x: { ticks: { color: 'white' } }, y: { ticks: { color: 'white' } } } }} />
+              </Box>
+            </Card.Body>
+          </Card.Root>
+
+          <Card.Root bg="dark.card" borderColor="dark.border" borderWidth="1px">
+            <Card.Body>
+              <Box h="300px" display="flex" justifyContent="center">
+                <Pie data={pieData} options={{ maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } } }} />
+              </Box>
+            </Card.Body>
+          </Card.Root>
+        </SimpleGrid>
+
+        <Flex gap={4} wrap="wrap" justify="center">
+          <Button onClick={() => navigate('/admin/users')} colorPalette="brand" variant="outline">ניהול משתמשים</Button>
+          <Button onClick={() => navigate('/admin/classes')} colorPalette="brand" variant="outline">ניהול חוגים</Button>
+          <Button onClick={() => navigate('/admin/packages')} colorPalette="brand" variant="outline">ניהול סוגי מנויים</Button>
+          <Button onClick={() => navigate('/admin/payments')} colorPalette="brand" variant="outline">ניהול תשלומים</Button>
+        </Flex>
+      </Container>
+    </Box>
   );
 }

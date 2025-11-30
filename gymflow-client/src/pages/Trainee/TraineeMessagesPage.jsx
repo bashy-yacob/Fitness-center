@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import apiService from '../../../api/apiService.js';
-import SendPrivateMessageForm from '../../all/jsx/SendPrivateMessageForm.jsx';
+import apiService from '../../api/apiService.js';
+import SendPrivateMessageForm from '../all/SendPrivateMessageForm.jsx';
 import '../../../styles/theme.css';
 
 const TraineeMessagesPage = () => {
@@ -18,9 +18,9 @@ const TraineeMessagesPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const privateMsgs = await apiService.get('/trainee/messages/private').catch(e => {console.error('שגיאה בהודעות פרטיות', e); throw e;});
-        const broadcastMsgs = await apiService.get('/broadcast-messages').catch(e => {console.error('שגיאה בהודעות כלליות', e); throw e;});
-        const sentMsgs = await apiService.get('/messages/sent-private').catch(e => {console.error('שגיאה בהודעות פרטיות שנשלחו', e); throw e;});
+        const privateMsgs = await apiService.get('/trainee/messages/private').catch(e => { console.error('שגיאה בהודעות פרטיות', e); throw e; });
+        const broadcastMsgs = await apiService.get('/broadcast-messages').catch(e => { console.error('שגיאה בהודעות כלליות', e); throw e; });
+        const sentMsgs = await apiService.get('/messages/sent-private').catch(e => { console.error('שגיאה בהודעות פרטיות שנשלחו', e); throw e; });
         setPrivateMessages(privateMsgs);
         setBroadcastMessages(broadcastMsgs);
         setSentPrivateMessages(sentMsgs);
@@ -45,7 +45,7 @@ const TraineeMessagesPage = () => {
         <div style={{ margin: '24px 0' }}>
           <SendPrivateMessageForm />
         </div>
-        {loading && <div style={{textAlign:'center',marginTop:40}}>טוען...</div>}
+        {loading && <div style={{ textAlign: 'center', marginTop: 40 }}>טוען...</div>}
         {error && <div className="toast-error">{error}</div>}
         {!loading && !error && privateMessages.length === 0 && broadcastMessages.length === 0 && <div>לא נמצאו הודעות.</div>}
         {selectedTab === 'broadcast' && (

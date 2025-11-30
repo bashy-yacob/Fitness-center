@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth.js';
-import '../src/index.css'; // Assuming you have a global CSS file for styles
+import { Box } from '@chakra-ui/react';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard.jsx';
@@ -13,7 +13,7 @@ import AdminPaymentsPage from './pages/admin/AdminPaymentsPage.jsx';
 import AdminMessagesPage from './pages/admin/AdminMessagesPage.jsx';
 
 // Trainer Pages
-import Dashboard from './pages/all/jsx/Dashboard.jsx';
+import Dashboard from './pages/all/Dashboard.jsx';
 import TrainerDashboard from './pages/Trainer/Dashboard';
 import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
 import TrainerClassesPage from './pages/Trainer/Classes.jsx';
@@ -22,22 +22,21 @@ import TrainerSchedulePage from './pages/trainer/TrainerSchedulePage.jsx';
 import AssignProgramPage from './pages/Trainer/AssignProgramPage.jsx';
 
 // Trainee Pages
-import TraineeDashboard from './pages/Trainee/jsx/Dashboard.jsx';
-import ClassesPage from './pages/Trainee/jsx/ClassesPage.jsx';
-import MySchedulePage from './pages/Trainee/jsx/MySchedulePage.jsx';
-import ProfilePage from './pages/all/jsx/ProfilePage.jsx';
-import PurchaseSubscriptionPage from './pages/Trainee/jsx/PurchaseSubscriptionPage.jsx';
-import TraineeMessagesPage from './pages/Trainee/jsx/TraineeMessagesPage.jsx';
-import TrainingProgramPage from './pages/Trainee/jsx/TrainingProgramPage.jsx';
-import SubscriptionManagementPage from './pages/Trainee/jsx/SubscriptionManagementPage.jsx';
-import PricingPage from './pages/Trainee/jsx/PricingPage.jsx';
-// ניצור את הקובץ הזה בהמשך
-import ConfirmPurchasePage from './pages/Trainee/jsx/ConfirmPurchasePage.jsx'; 
+import TraineeDashboard from './pages/Trainee/Dashboard.jsx';
+import ClassesPage from './pages/Trainee/ClassesPage.jsx';
+import MySchedulePage from './pages/Trainee/MySchedulePage.jsx';
+import ProfilePage from './pages/all/ProfilePage.jsx';
+import PurchaseSubscriptionPage from './pages/Trainee/PurchaseSubscriptionPage.jsx';
+import TraineeMessagesPage from './pages/Trainee/TraineeMessagesPage.jsx';
+import TrainingProgramPage from './pages/Trainee/TrainingProgramPage.jsx';
+import SubscriptionManagementPage from './pages/Trainee/SubscriptionManagementPage.jsx';
+import PricingPage from './pages/Trainee/PricingPage.jsx';
+import ConfirmPurchasePage from './pages/Trainee/ConfirmPurchasePage.jsx';
 
 // Shared Pages
-import LoginPage from './pages/all/jsx/LoginPage.jsx';
-import RegisterPage from './pages/all/jsx/RegisterPage.jsx';
-import LandingPage from './pages/all/jsx/LandingPage.jsx';
+import LoginPage from './pages/all/LoginPage.jsx';
+import RegisterPage from './pages/all/RegisterPage.jsx';
+import LandingPage from './pages/all/LandingPage.jsx';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -68,46 +67,8 @@ function App() {
         }
     };
 
-    // רשימת הקישורים בתפריט לפי סוג המשתמש
-    const getNavLinks = () => {
-        const links = [
-            <Link key="home" to={getHomePath()}>Home</Link>
-        ];
-
-        if (isAuthenticated && user) {
-            switch (user.user_type) {
-                case 'admin':
-                    links.push(<Link key="users" to="/admin/users">ניהול משתמשים</Link>);
-                    links.push(<Link key="classes" to="/admin/classes">ניהול חוגים</Link>);
-                    break;
-                case 'trainer':
-                    links.push(<Link key="dashboard" to="/trainer/dashboard">דשבורד</Link>);
-                    links.push(<Link key="classes" to="/trainer/classes">ניהול חוגים</Link>);
-                    links.push(<Link key="messages" to="/trainer/messages">הודעות</Link>);
-                    links.push(<Link key="stats" to="/trainer/stats">סטטיסטיקות</Link>);
-                    links.push(<Link key="assign-program" to="/trainer/assign-program">שיוך תוכנית למתאמן</Link>);
-                    break;
-                case 'trainee':
-                    links.push(
-                        <Link key="classes" to="/trainee/classes">Classes</Link>,
-                        <Link key="schedule" to="/trainee/schedule">My Schedule</Link>,
-                        <Link key="subscription" to="/trainee/subscription">My Subscription</Link>
-                    );
-                    break;
-            }
-            links.push(
-                <Link key="profile" to={`/${user.user_type}/profile`}>Profile</Link>,
-                <button key="logout" onClick={handleLogout}>Logout</button>
-            );
-        } else {
-            links.push(<Link key="login" to="/login">Login</Link>);
-        }
-
-        return links;
-    };
-
     return (
-        <div className="app">
+        <Box minH="100vh" bg="dark.bg">
             <Navbar onLogout={handleLogout} />
             <main>
                 <Routes>
@@ -212,7 +173,7 @@ function App() {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </main>
-        </div>
+        </Box>
     );
 }
 
