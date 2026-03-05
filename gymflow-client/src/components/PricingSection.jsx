@@ -1,14 +1,20 @@
-// בקובץ: src/components/PricingSection.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  List,
+  SimpleGrid,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 import { useAuth } from '../hooks/useAuth';
-// === 1. שינוי הייבוא: משתמשים ב-apiService הגנרי ===
 import apiService from '../api/apiService';
-import './css/PricingSection.css';
 
 const PricingSection = () => {
-  // === 2. שינוי שם המשתנה לבהירות ===
   const [subscriptionTypes, setSubscriptionTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,11 +25,10 @@ const PricingSection = () => {
     const fetchSubscriptionTypes = async () => {
       try {
         setLoading(true);
-        // === 3. שינוי קריאת ה-API לנתיב הנכון ===
         const types = await apiService.get('/subscriptions/types');
 
         const activeTypes = types
-          .filter(type => type.is_active)
+          .filter((type) => type.is_active)
           .sort((a, b) => a.price - b.price);
 
         setSubscriptionTypes(activeTypes);
@@ -40,57 +45,92 @@ const PricingSection = () => {
 
   const handleSelectPackage = (packageId) => {
     if (isAuthenticated) {
-      // אם מחובר, שלח לעמוד האישור (שניצור בהמשך)
       navigate(`/trainee/subscriptions/confirm/${packageId}`);
     } else {
-      // אם לא מחובר, שמור את היעד והפנה ללוגין
       setRedirectPath('/trainee/subscriptions/pricing');
       navigate('/login');
     }
   };
 
   if (loading) {
-    return <div className="pricing-section-loading">טוען חבילות...</div>;
+    return (
+      <Flex justify="center" py={12}>
+        <Spinner size="xl" color="brand.400" />
+      </Flex>
+    );
   }
 
   if (error) {
-    return <div className="pricing-section-error">{error}</div>;
+    return (
+      <Text textAlign="center" py={8} color="red.400">
+        {error}
+      </Text>
+    );
   }
 
   return (
-    <section className="pricing-section" id="pricing">
-      <h2 className="section-title">תוכניות מחיר</h2>
-      <p className="section-subtitle">בחר את החבילה המתאימה לך</p>
-      <div className="packages-grid">
-        {/* === 4. שינוי שם המשתנה בלולאה === */}
-        {subscriptionTypes.map((subType) => (
-          <div key={subType.id} className="package-card">
-            <h3>{subType.name}</h3>
-            <div className="package-price">
-              <span className="currency">₪</span>
-              <span className="amount">{parseFloat(subType.price).toFixed(0)}</span>
-              {/* === 5. התאמת שם השדה ל-duration_days === */}
-              <span className="period">/ {subType.duration_days} ימים</span>
-            </div>
-            <ul className="package-features">
-              {/* ודא שהאובייקט כולל תיאור */}
-              {(subType.description || '').split('\n').map((feature, idx) => (
-                <li key={idx}>
-                  <span className="check-icon">✓</span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              className="subscribe-button"
-              onClick={() => handleSelectPackage(subType.id)}
+    <Box py={20} bg="dark.section" id="pricing">
+      <Container maxW="container.xl">
+        <Heading textAlign="center" mb={4} color="brand.500" textTransform="uppercase">
+          תוכניות מחיר
+        </Heading>
+        <Text textAlign="center" color="gray.400" mb={12}>
+          בחר את החבילה המתאימה לך
+        </Text>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={8}>
+          {subscriptionTypes.map((subType) => (
+            <Box
+              key={subType.id}
+              bg="dark.card"
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="dark.border"
+              p={8}
+              textAlign="right"
+              dir="rtl"
+              boxShadow="xl"
+              transition="all 0.2s"
+              _hover={{ transform: 'translateY(-6px)', borderColor: 'brand.400' }}
             >
-              הצטרף עכשיו
-            </button>
-          </div>
-        ))}
-      </div>
-    </section>
+              <Heading size="lg" mb={6} color="brand.500">
+                {subType.name}
+              </Heading>
+
+              <Text fontSize="4xl" color="brand.400" fontWeight="bold" mb={6}>
+                ₪{parseFloat(subType.price).toFixed(0)}
+                <Text as="span" fontSize="md" color="gray.400" fontWeight="normal">
+                  {' '}/ {subType.duration_days} ימים
+                </Text>
+              </Text>
+
+              <List.Root gap={3} mb={8}>
+                {(subType.description || '')
+                  .split('\n')
+                  .filter(Boolean)
+                  .map((feature, idx) => (
+                    <List.Item key={idx} display="flex" alignItems="center" color="gray.300">
+                      <Text as="span" color="brand.400" me={2}>
+                        ✓
+                      </Text>
+                      <Text>{feature}</Text>
+                    </List.Item>
+                  ))}
+              </List.Root>
+
+              <Button
+                w="full"
+                colorPalette="brand"
+                size="lg"
+                onClick={() => handleSelectPackage(subType.id)}
+              >
+                הצטרף עכשיו
+              </Button>
+            </Box>
+          ))}
+        </SimpleGrid>
+      </Container>
+    </Box>
   );
 };
 
