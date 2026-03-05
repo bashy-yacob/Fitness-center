@@ -18,7 +18,7 @@ import TrainerDashboard from './pages/Trainer/Dashboard';
 import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
 import TrainerClassesPage from './pages/Trainer/Classes.jsx';
 import TrainerStats from './pages/TrainerStats.jsx';
-import TrainerSchedulePage from './pages/trainer/TrainerSchedulePage.jsx';
+import TrainerSchedulePage from './pages/Trainer/TrainerSchedulePage.jsx';
 import AssignProgramPage from './pages/Trainer/AssignProgramPage.jsx';
 
 // Trainee Pages
