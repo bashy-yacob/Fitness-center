@@ -122,7 +122,6 @@ class ClassService extends BaseService {
         // אם לא נמצא רישום פעיל, אין מה לבטל
         if (existingRegistration.length === 0) {
             await connection.rollback(); // בטל את הטרנזקציה
-            console.log(`Unregistration failed: No active registration found for trainee ${traineeId} in class ${classId}.`);
             return false;
         }
 

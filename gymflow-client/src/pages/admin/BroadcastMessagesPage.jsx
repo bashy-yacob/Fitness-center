@@ -38,12 +38,6 @@ const BroadcastMessagesPage = () => {
     setSuccess(null);
     setError(null);
     try {
-      // DEBUG: בדוק מה ה-token ומה user
-      const token = localStorage.getItem('token');
-      console.log('DEBUG token', token);
-      // נבצע קריאה לבדוק את המשתמש המחובר
-      const me = await apiService.get('/users/me');
-      console.log('DEBUG /users/me', me);
       await apiService.post('/broadcast-messages', { subject, text });
       setSuccess('ההודעה נשלחה בהצלחה!');
       await fetchMessages();

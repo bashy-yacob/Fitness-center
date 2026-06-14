@@ -131,7 +131,6 @@ export async function getUserWithCredentials(email) {
         if (!users.length) {
             throw new Error('User not found');
         }
-console.log(`DEBUG: Retrieved user with email ${email}`, users[0]); // DEBUG: בדוק את המשתמש שנמצא
         return users[0];
     } catch (error) {
         throw new Error(`Failed to get user: ${error.message}`);

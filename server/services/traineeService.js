@@ -85,7 +85,6 @@ export async function findActiveProgramForTrainee(traineeId) {
         `;
 
         const [rows] = await connection.execute(query, [traineeId]);
-        console.log('[Service] SQL query result (rows):', rows);
         return rows[0] || null;
 
     } catch (error) {
