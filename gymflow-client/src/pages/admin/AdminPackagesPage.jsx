@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { pricingPackageService } from '../../api/pricingPackageService.js';
 import PackageFormModal from '../../components/PackageFormModal.jsx';
-import './AdminPackagesPage.css';
+import { Box, Container, Heading, Button, Flex, Table } from '@chakra-ui/react';
 
 export default function AdminPackagesPage() {
   const [packages, setPackages] = useState([]);
@@ -67,42 +67,48 @@ export default function AdminPackagesPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: 'auto', padding: 24 }}>
-      <h1>ניהול סוגי מנויים</h1>
-      <button style={{ marginBottom: 12 }} onClick={handleAddNew}>הוסף מנוי חדש</button>
-      <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>שם</th>
-            <th>מחיר</th>
-            <th>תיאור</th>
-            <th>משך (ימים)</th>
-            <th>מגבלת חוגים</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-        <tbody>
-          {packages.map(pkg => (
-            <tr key={pkg.id}>
-              <td>{pkg.name}</td>
-              <td>{pkg.price}</td>
-              <td>{pkg.features ? pkg.features.join(', ') : pkg.description}</td>
-              <td>{pkg.duration_days ?? ''}</td>
-              <td>{pkg.max_classes_per_month ?? ''}</td>
-              <td>
-                <button onClick={() => handleEditPackage(pkg)}>ערוך</button>
-                <button onClick={() => handleDeletePackage(pkg.id)}>מחק</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <PackageFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleModalSubmit}
-        initialData={modalInitial}
-      />
-    </div>
+    <Box bg="dark.bg" minH="100vh" py={10}>
+      <Container maxW="container.lg">
+        <Heading mb={6} color="brand.500">ניהול סוגי מנויים</Heading>
+        <Button mb={3} onClick={handleAddNew} colorPalette="brand">הוסף מנוי חדש</Button>
+        <Box overflowX="auto">
+          <Table.Root variant="outline" bg="dark.card">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader color="brand.400">שם</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">מחיר</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">תיאור</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">משך (ימים)</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">מגבלת חוגים</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">פעולות</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {packages.map(pkg => (
+                <Table.Row key={pkg.id}>
+                  <Table.Cell color="white">{pkg.name}</Table.Cell>
+                  <Table.Cell color="white">{pkg.price}</Table.Cell>
+                  <Table.Cell color="white">{pkg.features ? pkg.features.join(', ') : pkg.description}</Table.Cell>
+                  <Table.Cell color="white">{pkg.duration_days ?? ''}</Table.Cell>
+                  <Table.Cell color="white">{pkg.max_classes_per_month ?? ''}</Table.Cell>
+                  <Table.Cell>
+                    <Flex gap={2}>
+                      <Button size="xs" variant="outline" onClick={() => handleEditPackage(pkg)}>ערוך</Button>
+                      <Button size="xs" colorPalette="red" variant="ghost" onClick={() => handleDeletePackage(pkg.id)}>מחק</Button>
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Box>
+        <PackageFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleModalSubmit}
+          initialData={modalInitial}
+        />
+      </Container>
+    </Box>
   );
 }

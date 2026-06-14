@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.js';
 import { ChakraProvider } from '@chakra-ui/react';
 import system from './theme';
+import './styles/theme.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

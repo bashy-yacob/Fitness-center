@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './BroadcastMessagesPage.css';
+import { Box, Heading, Text, Button, Flex, Spinner } from '@chakra-ui/react';
 import BroadcastMessageForm from './BroadcastMessageForm.jsx';
 import EditBroadcastMessageModal from './EditBroadcastMessageModal.jsx';
 import PrivateMessageForm from '../PrivateMessageForm.jsx';
@@ -80,35 +80,35 @@ const BroadcastMessagesPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #eee' }}>
-      <h2 style={{ textAlign: 'center' }}>הודעות שיווקיות שנשלחו</h2>
+    <Box maxW="600px" mx="auto" my="40px" p={6} bg="dark.card" borderRadius="18px" border="1.5px solid" borderColor="dark.border" boxShadow="0 4px 32px #0005">
+      <Heading as="h2" size="lg" textAlign="center" color="brand.500" mb={4}>הודעות שיווקיות שנשלחו</Heading>
       <BroadcastMessageForm onSend={handleSend} loading={sending} />
-      <div style={{ margin: '32px 0' }}>
+      <Box my="32px">
         <PrivateMessageForm />
-      </div>
-      {success && <div style={{ color: 'green', marginBottom: 12 }}>{success}</div>}
-      {loading && <div>טוען...</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      {!loading && !error && messages.length === 0 && <div>לא נמצאו הודעות.</div>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      </Box>
+      {success && <Text color="brand.500" mb={3}>{success}</Text>}
+      {loading && <Flex justify="center" py={4}><Spinner color="brand.500" /></Flex>}
+      {error && <Text color="red.400">{error}</Text>}
+      {!loading && !error && messages.length === 0 && <Text color="gray.400">לא נמצאו הודעות.</Text>}
+      <Box as="ul" listStyleType="none" p={0}>
         {messages.map((msg, idx) => (
-          <li key={msg.id || idx} style={{ borderBottom: '1px solid #eee', marginBottom: 16, paddingBottom: 12, position: 'relative' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
+          <Box as="li" key={msg.id || idx} borderBottom="1px solid" borderColor="dark.border" mb={4} pb={3} position="relative">
+            <Text fontWeight="bold" mb={1} color="white">
               {msg.message_text.split('\n')[0]}
-            </div>
-            <div style={{ color: '#555', marginBottom: 4 }}>
+            </Text>
+            <Text color="gray.400" mb={1}>
               {msg.message_text.split('\n').slice(1).join(' ')}
-            </div>
-            <div style={{ fontSize: 12, color: '#888' }}>
+            </Text>
+            <Text fontSize="xs" color="gray.500">
               {msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}
-            </div>
-            <div style={{ position: 'absolute', left: 8, top: 8, display: 'flex', gap: 8 }}>
-              <button onClick={() => handleEdit(msg)} style={{ background: '#ffc107', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}>ערוך</button>
-              <button onClick={() => handleDelete(msg.id)} style={{ background: '#e53935', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }} disabled={editLoading}>מחק</button>
-            </div>
-          </li>
+            </Text>
+            <Flex position="absolute" left={2} top={2} gap={2}>
+              <Button size="xs" colorPalette="yellow" onClick={() => handleEdit(msg)}>ערוך</Button>
+              <Button size="xs" colorPalette="red" onClick={() => handleDelete(msg.id)} disabled={editLoading}>מחק</Button>
+            </Flex>
+          </Box>
         ))}
-      </ul>
+      </Box>
       <EditBroadcastMessageModal
         open={!!editId}
         onClose={() => setEditId(null)}
@@ -116,7 +116,7 @@ const BroadcastMessagesPage = () => {
         initialSubject={editSubject}
         initialText={editText}
       />
-    </div>
+    </Box>
   );
 };
 
