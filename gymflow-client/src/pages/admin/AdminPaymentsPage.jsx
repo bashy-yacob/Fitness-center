@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllPayments } from '../../api/paymentService.js';
-import './AdminPaymentsPage.css';
+import { Box, Container, Heading, Table } from '@chakra-ui/react';
 
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState([]);
@@ -12,28 +12,32 @@ export default function AdminPaymentsPage() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: 'auto', padding: 24 }}>
-      <h1>ניהול תשלומים</h1>
-      <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>מתאמן</th>
-            <th>סכום</th>
-            <th>תאריך</th>
-            <th>סטטוס</th>
-          </tr>
-        </thead>
-        <tbody>
-          {payments.map(payment => (
-            <tr key={payment.id}>
-              <td>{payment.first_name} {payment.last_name}</td>
-              <td>{payment.amount}</td>
-              <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
-              <td>{payment.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Box bg="dark.bg" minH="100vh" py={10}>
+      <Container maxW="container.lg">
+        <Heading mb={6} color="brand.500">ניהול תשלומים</Heading>
+        <Box overflowX="auto">
+          <Table.Root variant="outline" bg="dark.card">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader color="brand.400">מתאמן</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">סכום</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">תאריך</Table.ColumnHeader>
+                <Table.ColumnHeader color="brand.400">סטטוס</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {payments.map(payment => (
+                <Table.Row key={payment.id}>
+                  <Table.Cell color="white">{payment.first_name} {payment.last_name}</Table.Cell>
+                  <Table.Cell color="white">{payment.amount}</Table.Cell>
+                  <Table.Cell color="white">{new Date(payment.payment_date).toLocaleDateString()}</Table.Cell>
+                  <Table.Cell color="white">{payment.status}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Box>
+      </Container>
+    </Box>
   );
 }

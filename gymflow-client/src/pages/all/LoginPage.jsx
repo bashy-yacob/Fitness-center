@@ -30,7 +30,6 @@ function LoginPage() {
         setError('');
         try {
             const token = await auth.login(email, password);
-            console.log('DEBUG token', token);
             const decodedToken = jwtDecode(token);
             let targetPath = '/dashboard';
             if (decodedToken.user_type === 'trainer') {

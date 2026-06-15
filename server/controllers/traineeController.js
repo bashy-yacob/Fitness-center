@@ -35,10 +35,7 @@ export async function getActiveTrainingProgram(req, res, next) {
     try {
         // מזהה המתאמן נלקח מהטוקן, שהוצמד ל-req.user על ידי ה-middleware
         const traineeId = req.user.id;
-        console.log(`[Controller] Fetching program for traineeId: ${traineeId}`);
-
         const program = await traineeService.findActiveProgramForTrainee(traineeId);
-        console.log('[Controller] Service returned:', program);
         // אם לא נמצאה תוכנית, נחזיר null. זו לא שגיאה.
         if (!program) {
             return res.status(200).json(null);

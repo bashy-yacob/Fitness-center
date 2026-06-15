@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Box, Heading, Text, Button, Flex, Input, Spinner } from '@chakra-ui/react';
 import apiService from '../../api/apiService.js';
 import SendPrivateMessageForm from '../all/SendPrivateMessageForm.jsx';
-import '../../../styles/theme.css';
 
 const TraineeMessagesPage = () => {
   const [privateMessages, setPrivateMessages] = useState([]);
@@ -33,66 +33,94 @@ const TraineeMessagesPage = () => {
     fetchMessages();
   }, []);
 
+  const tabs = [
+    { key: 'broadcast', label: 'הודעות כלליות' },
+    { key: 'private', label: 'הודעות פרטיות' },
+    { key: 'sent', label: 'הודעות שנשלחו' },
+  ];
+
+  const MessageCard = ({ title, body, date }) => (
+    <Box as="li" bg="dark.card" border="1.5px solid" borderColor="dark.border" borderRadius="18px" p={5} mb="18px" listStyleType="none">
+      <Text fontWeight="bold" color="brand.400" mb={1}>{title}</Text>
+      <Text color="gray.400" mb={1}>{body}</Text>
+      <Text fontSize="xs" color="brand.400">{date ? new Date(date).toLocaleString('he-IL') : ''}</Text>
+    </Box>
+  );
+
   return (
-    <div className="trainer-messages-container">
-      <h2>ההודעות שלי</h2>
-      <div className="tabs">
-        <button className={`tab-btn${selectedTab === 'broadcast' ? ' selected' : ''}`} onClick={() => setSelectedTab('broadcast')}>הודעות כלליות</button>
-        <button className={`tab-btn${selectedTab === 'private' ? ' selected' : ''}`} onClick={() => setSelectedTab('private')}>הודעות פרטיות</button>
-        <button className={`tab-btn${selectedTab === 'sent' ? ' selected' : ''}`} onClick={() => setSelectedTab('sent')}>הודעות שנשלחו</button>
-      </div>
-      <div className="card-section">
-        <div style={{ margin: '24px 0' }}>
+    <Box bg="dark.card" borderRadius="18px" boxShadow="0 4px 32px #0005" p={{ base: 4, md: 8 }} maxW="900px" mx="auto" my="40px" border="1.5px solid" borderColor="dark.border">
+      <Heading as="h2" size="lg" color="brand.500" mb={4}>ההודעות שלי</Heading>
+      <Flex gap={4} mb={6} wrap="wrap">
+        {tabs.map(tab => (
+          <Button
+            key={tab.key}
+            onClick={() => setSelectedTab(tab.key)}
+            borderRadius="18px"
+            variant={selectedTab === tab.key ? 'solid' : 'outline'}
+            colorPalette="brand"
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </Flex>
+      <Box bg="dark.section" borderRadius="14px" boxShadow="0 2px 12px #0003" p={5} border="1px solid" borderColor="dark.border">
+        <Box my="24px">
           <SendPrivateMessageForm />
-        </div>
-        {loading && <div style={{ textAlign: 'center', marginTop: 40 }}>טוען...</div>}
-        {error && <div className="toast-error">{error}</div>}
-        {!loading && !error && privateMessages.length === 0 && broadcastMessages.length === 0 && <div>לא נמצאו הודעות.</div>}
+        </Box>
+        {loading && <Flex justify="center" mt={10}><Spinner color="brand.500" /></Flex>}
+        {error && <Text color="red.400">{error}</Text>}
+        {!loading && !error && privateMessages.length === 0 && broadcastMessages.length === 0 && <Text color="gray.400">לא נמצאו הודעות.</Text>}
+
         {selectedTab === 'broadcast' && (
-          <div style={{ marginBottom: 32 }}>
-            <h3 className="section-title">הודעות כלליות</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+          <Box mb={8}>
+            <Heading as="h3" size="md" color="brand.500" mb={4}>הודעות כלליות</Heading>
+            <Box as="ul" p={0} m={0}>
               {broadcastMessages.map((msg, idx) => (
-                <li key={msg.id || idx} className="card" style={{ marginBottom: 18 }}>
-                  <div className="class-name">{msg.message_text.split('\n')[0]}</div>
-                  <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text.split('\n').slice(1).join(' ')}</div>
-                  <div style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</div>
-                </li>
+                <MessageCard
+                  key={msg.id || idx}
+                  title={msg.message_text.split('\n')[0]}
+                  body={msg.message_text.split('\n').slice(1).join(' ')}
+                  date={msg.sent_at}
+                />
               ))}
-            </ul>
-          </div>
+            </Box>
+          </Box>
         )}
+
         {selectedTab === 'private' && (
-          <div>
-            <h3 className="section-title">הודעות פרטיות</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+          <Box>
+            <Heading as="h3" size="md" color="brand.500" mb={4}>הודעות פרטיות</Heading>
+            <Box as="ul" p={0} m={0}>
               {privateMessages.map((msg, idx) => (
-                <li key={msg.id || idx} className="card" style={{ marginBottom: 18 }}>
-                  <div className="class-name">מאת: {msg.sender_name || msg.sender_email || 'משתמש'}</div>
-                  <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</div>
-                  <div style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</div>
-                </li>
+                <MessageCard
+                  key={msg.id || idx}
+                  title={`מאת: ${msg.sender_name || msg.sender_email || 'משתמש'}`}
+                  body={msg.message_text}
+                  date={msg.sent_at}
+                />
               ))}
-            </ul>
-          </div>
+            </Box>
+          </Box>
         )}
+
         {selectedTab === 'sent' && (
-          <div>
-            <h3 className="section-title">הודעות פרטיות שנשלחו</h3>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <input
-                type="text"
+          <Box>
+            <Heading as="h3" size="md" color="brand.500" mb={4}>הודעות פרטיות שנשלחו</Heading>
+            <Flex gap={2} mb={3}>
+              <Input
                 placeholder="סנן לפי שם/אימייל נמען..."
                 value={sentFilter}
                 onChange={e => setSentFilter(e.target.value)}
-                className="input-dark"
-                style={{ flex: 1 }}
+                bg="dark.bg"
+                color="white"
+                borderColor="dark.border"
+                flex={1}
               />
-              <button onClick={() => setSentSortAsc(v => !v)} className="action-btn" style={{ padding: '6px 12px', fontSize: '1rem' }}>
+              <Button onClick={() => setSentSortAsc(v => !v)} colorPalette="secondary">
                 מיין לפי נמען {sentSortAsc ? '▲' : '▼'}
-              </button>
-            </div>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+              </Button>
+            </Flex>
+            <Box as="ul" p={0} m={0}>
               {sentPrivateMessages
                 .filter(msg => {
                   const name = (msg.receiver_name || msg.receiver_email || '').toLowerCase();
@@ -106,17 +134,18 @@ const TraineeMessagesPage = () => {
                   return 0;
                 })
                 .map((msg, idx) => (
-                  <li key={msg.id || idx} className="card" style={{ marginBottom: 18 }}>
-                    <div className="class-name">ל: {msg.receiver_name || msg.receiver_email || msg.receiver_id}</div>
-                    <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{msg.message_text}</div>
-                    <div style={{ fontSize: 12, color: 'var(--accent-color)' }}>{msg.sent_at ? new Date(msg.sent_at).toLocaleString('he-IL') : ''}</div>
-                  </li>
+                  <MessageCard
+                    key={msg.id || idx}
+                    title={`ל: ${msg.receiver_name || msg.receiver_email || msg.receiver_id}`}
+                    body={msg.message_text}
+                    date={msg.sent_at}
+                  />
                 ))}
-            </ul>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './css/PackageFormModal.css';
+import { Dialog, Field, Input, Button, Flex, Portal } from '@chakra-ui/react';
 
 export default function PackageFormModal({ open, onClose, onSubmit, initialData }) {
   const [form, setForm] = useState(() => initialData || {
@@ -20,8 +20,6 @@ export default function PackageFormModal({ open, onClose, onSubmit, initialData 
     });
   }, [initialData, open]);
 
-  if (!open) return null;
-
   function handleChange(e) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   }
@@ -32,39 +30,50 @@ export default function PackageFormModal({ open, onClose, onSubmit, initialData 
   }
 
   return (
-    <div className="package-modal-backdrop">
-      <form className="package-modal-form" onSubmit={handleSubmit}>
-        <h2>{initialData ? 'עריכת מנוי' : 'הוספת מנוי חדש'}</h2>
-        <div>
-          <label>שם:<br/>
-            <input name="name" value={form.name} onChange={handleChange} required />
-          </label>
-        </div>
-        <div>
-          <label>מחיר:<br/>
-            <input name="price" type="number" value={form.price} onChange={handleChange} required />
-          </label>
-        </div>
-        <div>
-          <label>תיאור (רשימה מופרדת בפסיקים):<br/>
-            <input name="description" value={form.description} onChange={handleChange} required />
-          </label>
-        </div>
-        <div>
-          <label>משך (ימים):<br/>
-            <input name="duration_days" type="number" value={form.duration_days} onChange={handleChange} required />
-          </label>
-        </div>
-        <div>
-          <label>מגבלת חוגים:<br/>
-            <input name="max_classes_per_month" type="number" value={form.max_classes_per_month} onChange={handleChange} required />
-          </label>
-        </div>
-        <div className="modal-actions">
-          <button type="button" onClick={onClose}>ביטול</button>
-          <button type="submit">{initialData ? 'עדכן' : 'הוסף'}</button>
-        </div>
-      </form>
-    </div>
+    <Dialog.Root open={open} onOpenChange={(e) => { if (!e.open) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop bg="rgba(26,26,26,0.85)" />
+        <Dialog.Positioner>
+          <Dialog.Content bg="dark.card" color="white" borderRadius="18px" border="1.5px solid" borderColor="secondary.500" minW="340px" maxW="95vw">
+            <Dialog.CloseTrigger color="gray.400" />
+            <Dialog.Header>
+              <Dialog.Title color="brand.500" fontWeight="900" textTransform="uppercase" textShadow="0 2px 8px rgba(34,219,71,0.15)">
+                {initialData ? 'עריכת מנוי' : 'הוספת מנוי חדש'}
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <form onSubmit={handleSubmit}>
+                <Flex direction="column" gap={3}>
+                  <Field.Root required>
+                    <Field.Label color="secondary.500" fontWeight="700">שם</Field.Label>
+                    <Input name="name" value={form.name} onChange={handleChange} bg="#222" color="white" borderColor="dark.border" />
+                  </Field.Root>
+                  <Field.Root required>
+                    <Field.Label color="secondary.500" fontWeight="700">מחיר</Field.Label>
+                    <Input name="price" type="number" value={form.price} onChange={handleChange} bg="#222" color="white" borderColor="dark.border" />
+                  </Field.Root>
+                  <Field.Root required>
+                    <Field.Label color="secondary.500" fontWeight="700">תיאור (רשימה מופרדת בפסיקים)</Field.Label>
+                    <Input name="description" value={form.description} onChange={handleChange} bg="#222" color="white" borderColor="dark.border" />
+                  </Field.Root>
+                  <Field.Root required>
+                    <Field.Label color="secondary.500" fontWeight="700">משך (ימים)</Field.Label>
+                    <Input name="duration_days" type="number" value={form.duration_days} onChange={handleChange} bg="#222" color="white" borderColor="dark.border" />
+                  </Field.Root>
+                  <Field.Root required>
+                    <Field.Label color="secondary.500" fontWeight="700">מגבלת חוגים</Field.Label>
+                    <Input name="max_classes_per_month" type="number" value={form.max_classes_per_month} onChange={handleChange} bg="#222" color="white" borderColor="dark.border" />
+                  </Field.Root>
+                  <Flex gap={3} mt={2} justify="flex-end">
+                    <Button type="button" variant="outline" onClick={onClose}>ביטול</Button>
+                    <Button type="submit" colorPalette="brand">{initialData ? 'עדכן' : 'הוסף'}</Button>
+                  </Flex>
+                </Flex>
+              </form>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

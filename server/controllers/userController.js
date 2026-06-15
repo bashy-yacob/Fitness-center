@@ -31,7 +31,6 @@ export async function getActiveSubscription(req, res, next) {
 // או פונקציית יצירה ב-userService ללא קשר ללוגיקת אוטנטיקציה.
 // לשם הדוגמה, נציג פונקציית CRUD נפרדת.
 export async function createUserByAdmin(req, res, next) {
-    console.log('createUserByAdmin called. req.body:', req.body);
     try {
         // נשתמש בפונקציה הקיימת createUser (או נבצע לוגיקה מורחבת כאן)
         const userId = await userService.createUser(req.body);
@@ -45,12 +44,10 @@ export async function createUserByAdmin(req, res, next) {
             await userService.createTraineeProfile(userId, req.body.date_of_birth, req.body.gender);
         }
         if (req.body.user_type === 'trainer') {
-            console.log('Creating trainer profile:', userId, req.body.specialization, req.body.bio);
             await userService.createTrainerProfile(userId, req.body.specialization, req.body.bio || '');
         }
         res.status(201).json({ message: 'User created successfully by admin', userId });
     } catch (error) {
-        console.error('Error in createUserByAdmin:', error);
         next(error);
     }
 }
@@ -66,7 +63,6 @@ export async function getAllUsers(req, res, next) {
 }
 
 export async function getAllUsersMinimal(req, res, next) {
-    console.log('DEBUG: getAllUsersMinimal called by user', req.user);
     try {
         const users = await userService.getAllUsersMinimal();
         const myId = req.user.id;
@@ -81,7 +77,6 @@ export async function getAllUsersMinimal(req, res, next) {
         } else {
             filtered = [];
         }
-        console.log('DEBUG: filtered users for minimal:', filtered);
         res.status(200).json(filtered);
     } catch (error) {
         next(error);

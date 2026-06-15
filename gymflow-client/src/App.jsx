@@ -18,7 +18,7 @@ import TrainerDashboard from './pages/Trainer/Dashboard';
 import TrainerMessagesPage from './pages/Trainer/Messages.jsx';
 import TrainerClassesPage from './pages/Trainer/Classes.jsx';
 import TrainerStats from './pages/TrainerStats.jsx';
-import TrainerSchedulePage from './pages/trainer/TrainerSchedulePage.jsx';
+import TrainerSchedulePage from './pages/Trainer/TrainerSchedulePage.jsx';
 import AssignProgramPage from './pages/Trainer/AssignProgramPage.jsx';
 
 // Trainee Pages
@@ -158,8 +158,6 @@ function App() {
                     <Route path="/trainee/subscriptions/manage" element={<ProtectedRoute><SubscriptionManagementPage /></ProtectedRoute>} />
                     <Route path="/trainee/subscriptions/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
                     <Route path="/trainee/subscriptions/confirm/:packageId" element={<ProtectedRoute><ConfirmPurchasePage /></ProtectedRoute>} />
-                    <Route path="/trainee/messages" element={<ProtectedRoute><TraineeMessagesPage /></ProtectedRoute>} />
-                    <Route path="/trainee/training-program" element={<ProtectedRoute><TrainingProgramPage /></ProtectedRoute>} />
 
                     {/* פרופיל אחיד לכל המשתמשים */}
                     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
